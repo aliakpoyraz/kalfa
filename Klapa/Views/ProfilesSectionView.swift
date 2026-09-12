@@ -13,25 +13,25 @@ struct ProfilesSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Profiller")
+                Text(L10n.t("profiles"))
                     .font(.subheadline.weight(.medium))
                 Spacer()
                 if otherCount > 0 {
-                    Text("\(otherCount) tanesi başka dizilim için")
+                    Text(L10n.t("profiles.otherLayouts", otherCount))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
                 // Labels the switch column; without it the toggle on each row has
                 // no visible meaning.
                 if !matching.isEmpty {
-                    Text("otomatik")
+                    Text(L10n.t("profiles.autoColumn"))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
             }
 
             if matching.isEmpty {
-                Text("Bu dizilim için kayıtlı profil yok.")
+                Text(L10n.t("profiles.none"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -43,7 +43,7 @@ struct ProfilesSectionView: View {
             Button {
                 showingSaveSheet = true
             } label: {
-                Label("Şu anki durumu kaydet", systemImage: "plus.circle")
+                Label(L10n.t("profiles.saveCurrent"), systemImage: "plus.circle")
                     .font(.caption)
             }
             .buttonStyle(.borderless)
@@ -65,7 +65,7 @@ struct ProfilesSectionView: View {
 
             Spacer(minLength: 8)
 
-            Button("Uygula") {
+            Button(L10n.t("profiles.apply")) {
                 Task { await center.apply(profile) }
             }
             .buttonStyle(.borderless)
@@ -78,7 +78,7 @@ struct ProfilesSectionView: View {
                 Image(systemName: "trash")
             }
             .buttonStyle(.borderless)
-            .help("Profili sil")
+            .help(L10n.t("profiles.delete"))
 
             Toggle("", isOn: Binding(
                 get: { profile.autoApply },
@@ -91,7 +91,7 @@ struct ProfilesSectionView: View {
             .labelsHidden()
             .toggleStyle(.switch)
             .controlSize(.mini)
-            .help("Bu dizilim bağlandığında kendiliğinden uygula")
+            .help(L10n.t("profiles.autoApply.help"))
         }
         .padding(.vertical, 2)
     }
@@ -101,7 +101,7 @@ struct ProfilesSectionView: View {
             "\(entry.mode.width)×\(entry.mode.height) \(entry.mode.refreshRate)Hz"
         }
         var text = modes.joined(separator: ", ")
-        if profile.restoresBrightness { text += " · parlaklık" }
+        if profile.restoresBrightness { text += L10n.t("profiles.summary.brightness") }
         return text
     }
 

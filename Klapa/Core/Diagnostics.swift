@@ -14,35 +14,43 @@ enum Diagnostics {
         // so the dump probes it rather than only describing what should happen.
         let ddc = probeDDC(screens)
 
-        print("Klapa — ekran dökümü")
-        print("Dizilim anahtarı: \(DisplaySetKey(screens))")
-        print("Kapak kapalı: \(screens.contains(where: \.isBuiltIn) ? "hayır" : "evet")")
+        print("Klapa — display dump")
+        print("Layout key: \(DisplaySetKey(screens))")
+        print("Lid closed: \(screens.contains(where: \.isBuiltIn) ? "no" : "yes")")
         print("")
 
         for screen in screens {
             print("\(screen.name)")
             print("  displayID   \(screen.displayID)")
             print("  uuid        \(screen.uuid)")
-            print("  dahili      \(screen.isBuiltIn ? "evet" : "hayır")")
-            print("  ana ekran   \(screen.isMain ? "evet" : "hayır")")
+            print("  built-in    \(screen.isBuiltIn ? "yes" : "no")")
+            print("  main        \(screen.isMain ? "yes" : "no")")
             print("  vendor/model 0x\(String(screen.vendorID, radix: 16))/0x\(String(screen.modelID, radix: 16))")
 
             if let current = ModeService.current(for: screen.displayID) {
-                print("  aktif mod   \(describe(current))")
+                print("  active mode \(describe(current))")
                 if !current.isNativeTiming {
-                    print("  !! aktif mod EDID yerel zamanlaması değil — macOS türetti")
+                    print("  !! active mode is not the panel's native timing — macOS synthesized it")
                 }
             }
             if let native = ModeService.nativeMode(for: screen.displayID) {
-                print("  yerel mod   \(describe(native))")
+                print("  native mode \(describe(native))")
             }
 
             if screen.supportsDDC {
-                print("  DDC         \(ddc[screen.displayID] ?? "yanıt yok")")
+                print("  DDC         \(ddc[screen.displayID] ?? "no response")")
+            }
+
+            let setKey = DisplaySetKey(screens)
+            if let link = LinkInfo.link(for: screen.uuid, in: setKey) {
+                print("  link        \(link.label)")
+            }
+            if let bits = LinkInfo.framebufferBitsPerChannel(for: screen.displayID) {
+                print("  framebuffer \(bits)-bit per channel")
             }
 
             let modes = ModeService.modes(for: screen.displayID)
-            print("  \(modes.count) mod:")
+            print("  \(modes.count) modes:")
             for mode in modes {
                 print("    \(describe(mode))")
             }
@@ -68,17 +76,17 @@ enum Diagnostics {
 
                 var parts: [String] = []
                 if let brightness {
-                    parts.append("parlaklık \(brightness.percent)% (\(brightness.current)/\(brightness.max))")
+                    parts.append("brightness \(brightness.percent)% (\(brightness.current)/\(brightness.max))")
                 }
                 if let contrast {
-                    parts.append("kontrast \(contrast.percent)% (\(contrast.current)/\(contrast.max))")
+                    parts.append("contrast \(contrast.percent)% (\(contrast.current)/\(contrast.max))")
                 }
-                box.value = parts.isEmpty ? "yanıt yok" : parts.joined(separator: ", ")
+                box.value = parts.isEmpty ? "no response" : parts.joined(separator: ", ")
                 semaphore.signal()
             }
 
             if semaphore.wait(timeout: .now() + 5) == .timedOut {
-                result[displayID] = "zaman aşımı"
+                result[displayID] = "timed out"
             } else {
                 result[displayID] = box.value
             }
@@ -91,7 +99,7 @@ enum Diagnostics {
     /// concurrency checker.
     private final class Box: @unchecked Sendable {
         private let lock = NSLock()
-        private var storage = "yanıt yok"
+        private var storage = "no response"
 
         var value: String {
             get { lock.lock(); defer { lock.unlock() }; return storage }
@@ -102,11 +110,11 @@ enum Diagnostics {
     private static func describe(_ mode: ScreenMode) -> String {
         var flags: [String] = []
         if mode.isHiDPI { flags.append("HiDPI") }
-        if mode.isNativeTiming { flags.append("yerel") }
-        if mode.isHidden { flags.append("gösterilmez") }
-        if mode.isExtended { flags.append("yalnız-SkyLight") }
-        if mode.isStretched { flags.append("gerilmiş") }
-        if !mode.isSafe { flags.append("güvensiz") }
+        if mode.isNativeTiming { flags.append("native") }
+        if mode.isHidden { flags.append("hidden") }
+        if mode.isExtended { flags.append("skylight-only") }
+        if mode.isStretched { flags.append("stretched") }
+        if !mode.isSafe { flags.append("unverified") }
 
         let size = "\(mode.resolutionLabel) (\(mode.pixelLabel) px)".padding(
             toLength: 34, withPad: " ", startingAt: 0

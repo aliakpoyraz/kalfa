@@ -254,7 +254,14 @@ enum ModeService {
             }
 
             for request in requests {
-                guard stage(request, in: config) else {
+                guard let live = resolve(request.mode, on: request.displayID) else {
+                    Log.display.error(
+                        "mode \(request.mode.summary) no longer available on display \(request.displayID)"
+                    )
+                    CGCancelDisplayConfiguration(config)
+                    return false
+                }
+                guard stage(Request(displayID: request.displayID, mode: live), in: config) else {
                     CGCancelDisplayConfiguration(config)
                     return false
                 }
@@ -267,6 +274,27 @@ enum ModeService {
             }
             return true
         }
+    }
+
+    /// Re-resolves a mode against the display's current list.
+    ///
+    /// IODisplayModeIDs are not stable: the window server renumbers them after a
+    /// reconfiguration, so a mode captured a moment ago may now carry a different
+    /// ID — or another mode may have inherited the old one. Matching on geometry
+    /// first and treating the ID as a hint is the only safe way to apply a mode
+    /// that was chosen earlier, which is exactly what reverting does.
+    static func resolve(_ mode: ScreenMode, on displayID: CGDirectDisplayID) -> ScreenMode? {
+        let live = modes(for: displayID)
+
+        // Trust the ID only when the mode behind it still looks the same.
+        if let sameID = live.first(where: { $0.id == mode.id }),
+           sameID.fingerprint == mode.fingerprint {
+            return sameID
+        }
+        if let exact = live.first(where: { $0.fingerprint == mode.fingerprint }) {
+            return exact
+        }
+        return match(mode.fingerprint, on: displayID)
     }
 
     private static func stage(_ request: Request, in config: CGDisplayConfigRef) -> Bool {

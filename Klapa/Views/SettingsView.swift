@@ -9,27 +9,35 @@ struct SettingsView: View {
         @Bindable var settings = center.settings
 
         VStack(alignment: .leading, spacing: 12) {
-            Text("Ayarlar")
+            Text(L10n.t("settings.title"))
                 .font(.headline)
 
-            Toggle("Dizilim değişince profili uygula", isOn: $settings.autoApplyProfiles)
-            Toggle("Değişiklikleri kalıcı yaz", isOn: $settings.persistModeChanges)
-            helpText("""
-                Kapalıyken değişiklik yalnızca bu oturumda geçerli olur. Açıkken pencere \
-                sunucusunun kayıtlı dizilim ayarının üzerine yazılır — kapak kapalıyken \
-                hatırlanan bozuk ayarı düzeltmenin yolu budur.
-                """)
+            Picker(L10n.t("language"), selection: $settings.language) {
+                ForEach(L10n.Language.allCases) { language in
+                    Text(language.nativeName).tag(language)
+                }
+            }
+            .pickerStyle(.menu)
+            .fixedSize()
 
             Divider()
 
-            Toggle("Düşük çözünürlüklü eşleri göster", isOn: $settings.showLowResolutionTwins)
-            Toggle("Gizli modları göster", isOn: $settings.showHiddenModes)
-            helpText("Gizli modlar macOS'un \"asla gösterme\" işaretlediği zamanlamalardır; monitör kararabilir.")
+            Toggle(L10n.t("settings.autoApply"), isOn: $settings.autoApplyProfiles)
+            Toggle(L10n.t("settings.persist"), isOn: $settings.persistModeChanges)
+            helpText(L10n.t("settings.persist.help"))
 
             Divider()
 
-            Toggle("Girişte başlat", isOn: $launchAtLogin)
+            Toggle(L10n.t("settings.showLowRes"), isOn: $settings.showLowResolutionTwins)
+            Toggle(L10n.t("settings.showHidden"), isOn: $settings.showHiddenModes)
+            helpText(L10n.t("settings.showHidden.help"))
+
+            Divider()
+
+            Toggle(L10n.t("settings.launchAtLogin"), isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, newValue in
+                    // macOS refuses registration while the user has the item
+                    // disabled in System Settings; only they can undo that.
                     if !LaunchAtLogin.set(newValue) {
                         launchAtLogin = LaunchAtLogin.isEnabled
                     }
@@ -38,7 +46,7 @@ struct SettingsView: View {
         .toggleStyle(.checkbox)
         .font(.callout)
         .padding(18)
-        .frame(width: 340, alignment: .leading)
+        .frame(width: 360, alignment: .leading)
     }
 
     private func helpText(_ text: String) -> some View {

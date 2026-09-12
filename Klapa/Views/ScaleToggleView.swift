@@ -23,7 +23,7 @@ struct ScaleToggleView: View {
     /// 2560 × 1440 drawn into 5120 × 2880 pixels instead of 2560 × 1440.
     private var hiDPIRow: some View {
         SwitchRow(
-            "HiDPI (Retina)",
+            L10n.t("hidpi"),
             value: center.currentMode(for: screen).map { $0.pixelLabel + " px" },
             isOn: Binding(
                 get: { center.currentMode(for: screen)?.isHiDPI ?? false },
@@ -33,6 +33,10 @@ struct ScaleToggleView: View {
             help: scaleHelp
         ) {
             renderingBadge
+            if scaleTarget?.isExtended == true {
+                TagPill(L10n.t("hidpi.badge.hidden"), tint: .orange)
+                    .help(L10n.t("hidpi.badge.hidden.help"))
+            }
         }
     }
 
@@ -44,11 +48,11 @@ struct ScaleToggleView: View {
     private var renderingBadge: some View {
         switch rendering {
         case .exact:
-            TagPill("birebir", tint: .green)
+            TagPill(L10n.t("grid.exact"), tint: .green)
         case .supersampled(let factor):
-            TagPill("\(factor)× temiz", tint: .green)
+            TagPill(L10n.t("grid.supersampled", factor), tint: .green)
         case .fractional:
-            TagPill("ölçekli · yumuşak", tint: .orange)
+            TagPill(L10n.t("grid.fractional"), tint: .orange)
         case nil:
             EmptyView()
         }
@@ -67,10 +71,12 @@ struct ScaleToggleView: View {
     private var scaleHelp: String {
         guard let current = center.currentMode(for: screen) else { return "" }
         guard let scaleTarget else {
-            return "\(current.resolutionLabel) için bu ekranda karşıt ölçek yok."
+            return L10n.t("hidpi.noCounterpart", current.resolutionLabel)
         }
-        let direction = current.isHiDPI ? "Kapat" : "Aç"
-        return "\(direction): \(scaleTarget.pixelLabel) px arka tampon, \(scaleTarget.refreshLabel)"
+        return L10n.t(
+            current.isHiDPI ? "hidpi.turnOff" : "hidpi.turnOn",
+            scaleTarget.pixelLabel, scaleTarget.refreshLabel
+        )
     }
 
     // MARK: Softness warning
@@ -93,7 +99,7 @@ struct ScaleToggleView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button("\(sharpest.resolutionLabel) HiDPI'ye geç") { apply(sharpest) }
+                Button(L10n.t("grid.switchTo", sharpest.resolutionLabel)) { apply(sharpest) }
                     .buttonStyle(.borderless)
                     .font(.caption2)
                     .disabled(center.isApplying)
@@ -107,17 +113,14 @@ struct ScaleToggleView: View {
               let panel = center.panelPixelSize(for: screen)
         else { return "" }
         let factor = Double(current.pixelWidth) / Double(panel.width)
-        return String(
-            format: "Arka tampon %@ px, panel %d × %d px. %.2f× küsuratlı küçültme yapılıyor; metin bu yüzden yumuşak.",
-            current.pixelLabel, panel.width, panel.height, factor
-        )
+        return L10n.t("grid.warning", current.pixelLabel, panel.width, panel.height, factor)
     }
 
     // MARK: Refresh rate
 
     private var refreshRow: some View {
         SwitchRow(
-            "Yüksek yenileme hızı",
+            L10n.t("refresh"),
             value: center.currentMode(for: screen)?.refreshLabel,
             isOn: Binding(
                 get: { isAtPeakRefresh },
@@ -138,7 +141,9 @@ struct ScaleToggleView: View {
 
     private var refreshHelp: String {
         guard let peak = center.peakRefreshRate(for: screen) else { return "" }
-        return isAtPeakRefresh ? "Kapat: 60 Hz'e düşer" : "Aç: \(Int(peak.rounded())) Hz"
+        return isAtPeakRefresh
+            ? L10n.t("refresh.off")
+            : L10n.t("refresh.on", Int(peak.rounded()))
     }
 
     // MARK: -

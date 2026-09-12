@@ -13,10 +13,10 @@ struct SaveProfileView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Profili kaydet")
+            Text(L10n.t("save.title"))
                 .font(.headline)
 
-            TextField("Profil adı", text: $name)
+            TextField(L10n.t("save.name"), text: $name)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit(save)
 
@@ -37,19 +37,19 @@ struct SaveProfileView: View {
             .padding(10)
             .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 8))
 
-            Toggle("Bu dizilim bağlandığında kendiliğinden uygula", isOn: $autoApply)
+            Toggle(L10n.t("save.autoApply"), isOn: $autoApply)
                 .font(.caption)
 
             if hasDDCCapableScreen {
-                Toggle("Parlaklık ve kontrastı da kaydet", isOn: $includeBrightness)
+                Toggle(L10n.t("save.includeBrightness"), isOn: $includeBrightness)
                     .font(.caption)
-                    .help("Kaydetme sırasında her monitöre DDC sorgusu gider; birkaç saniye sürebilir.")
+                    .help(L10n.t("save.includeBrightness.help"))
             }
 
             HStack {
                 Spacer()
-                Button("Vazgeç") { dismiss() }
-                Button("Kaydet", action: save)
+                Button(L10n.t("save.cancel")) { dismiss() }
+                Button(L10n.t("save.confirm"), action: save)
                     .keyboardShortcut(.defaultAction)
                     .disabled(trimmedName.isEmpty || saving)
             }

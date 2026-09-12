@@ -99,7 +99,7 @@ struct ScreenInfo: Identifiable, Hashable {
 
     /// Offline or mirrored displays are absent from `NSScreen.screens`.
     private static func fallbackName(for id: CGDirectDisplayID) -> String {
-        CGDisplayIsBuiltin(id) != 0 ? "Dahili Ekran" : "Ekran \(id)"
+        CGDisplayIsBuiltin(id) != 0 ? L10n.t("display.builtIn") : L10n.t("display.unnamed", id)
     }
 }
 

@@ -45,6 +45,13 @@ final class AppSettings {
         set { defaults.set(newValue, forKey: Key.showHiddenModes) }
     }
 
+    /// Interface language. Kept here so SwiftUI can observe it; the lookup
+    /// itself lives in `L10n`, which is reachable from non-isolated code too.
+    var language: L10n.Language {
+        get { L10n.language }
+        set { L10n.language = newValue }
+    }
+
     /// Include the non-HiDPI twin of each scaled resolution. Off by default
     /// because on a Retina setup these are the modes you never want.
     var showLowResolutionTwins: Bool {

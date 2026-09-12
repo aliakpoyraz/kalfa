@@ -20,12 +20,12 @@ struct DDCControlsView: View {
             if !probeFinished {
                 HStack(spacing: 6) {
                     ProgressView().controlSize(.small)
-                    Text("DDC sorgulanıyor…")
+                    Text(L10n.t("ddc.probing"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             } else if brightness == nil && contrast == nil {
-                Text("Bu ekran DDC/CI ile yanıt vermiyor.")
+                Text(L10n.t("ddc.noResponse"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -33,7 +33,7 @@ struct DDCControlsView: View {
                     if brightness != nil {
                         slider(
                             icon: "sun.max",
-                            help: "Parlaklık",
+                            help: L10n.t("ddc.brightness"),
                             value: Binding(
                                 get: { brightness ?? 0 },
                                 set: { brightness = $0; schedule(.brightness, $0) }
@@ -43,7 +43,7 @@ struct DDCControlsView: View {
                     if contrast != nil {
                         slider(
                             icon: "circle.lefthalf.filled",
-                            help: "Kontrast",
+                            help: L10n.t("ddc.contrast"),
                             value: Binding(
                                 get: { contrast ?? 0 },
                                 set: { contrast = $0; schedule(.contrast, $0) }

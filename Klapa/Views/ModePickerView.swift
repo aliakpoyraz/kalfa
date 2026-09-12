@@ -11,7 +11,7 @@ struct ModePickerView: View {
     var body: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 1) {
-                Text("Çözünürlük")
+                Text(L10n.t("resolution"))
                     .font(.caption)
                 Text(center.currentMode(for: screen)?.resolutionLabel ?? "—")
                     .font(.caption2.monospacedDigit())
@@ -21,10 +21,10 @@ struct ModePickerView: View {
             Spacer(minLength: 8)
 
             if let native = nativeMode, shouldOfferNative(native) {
-                Button("Yerel") { apply(native) }
+                Button(L10n.t("resolution.monitorMode")) { apply(native) }
                     .buttonStyle(.borderless)
                     .font(.caption)
-                    .help("Monitörün EDID'de bildirdiği en iyi zamanlama: \(native.summary)")
+                    .help(L10n.t("resolution.monitorMode.help", native.summary))
                     .disabled(center.isApplying)
             }
 
@@ -33,7 +33,7 @@ struct ModePickerView: View {
                     groupItem(group)
                 }
             } label: {
-                Text("Değiştir")
+                Text(L10n.t("resolution.change"))
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
@@ -67,10 +67,10 @@ struct ModePickerView: View {
         var text = group.modes.count == 1 ? mode.summary : mode.refreshLabel
         if mode.id == center.currentMode(for: screen)?.id { text = "✓ " + text }
         // Softness is the thing most worth knowing before picking, so it leads.
-        if center.rendering(of: mode, on: screen)?.isSoft == true { text += " ·yumuşak" }
-        if mode.isExtended { text += " ·gizli HiDPI" }
-        else if !mode.isNativeTiming { text += " ·türetilmiş" }
-        if mode.isHidden { text += " ·gösterilmez" }
+        if center.rendering(of: mode, on: screen)?.isSoft == true { text += L10n.t("mode.suffix.soft") }
+        if mode.isExtended { text += L10n.t("mode.suffix.hiddenHiDPI") }
+        else if !mode.isNativeTiming { text += L10n.t("mode.suffix.derived") }
+        if mode.isHidden { text += L10n.t("mode.suffix.neverShown") }
         return text
     }
 

@@ -1,0 +1,124 @@
+/* Dil seçimi */
+"language" = "Dil";
+"language.system" = "Sistem";
+
+/* Başlık */
+"app.name" = "Klapa";
+"header.clamshell" = "Kapak kapalı";
+"header.displayCount.one" = "1 ekran";
+"header.displayCount.many" = "%d ekran";
+"header.noDisplays" = "Ekran bulunamadı";
+"header.rescan" = "Ekranları yeniden tara";
+"header.settings" = "Ayarlar";
+"header.about" = "Hakkında";
+"footer.quit" = "Çık";
+"empty.displays" = "Bağlı ekran okunamadı.";
+
+/* Ekran kartı */
+"display.builtIn" = "Dahili Ekran";
+"display.unnamed" = "Ekran %u";
+"display.badge.main" = "ana";
+"display.badge.mirrored" = "yansıtma";
+"display.badge.derived" = "üretilmiş";
+"display.badge.derived.help" = "Bu sinyal monitörün EDID'sinden gelmiyor, macOS kendisi üretti.";
+"display.currentUnknown" = "Kullanılan mod okunamadı.";
+
+/* Çözünürlük */
+"resolution" = "Çözünürlük";
+"resolution.change" = "Değiştir";
+"resolution.monitorMode" = "Monitörün modu";
+"resolution.monitorMode.help" = "Monitörün EDID'sinde bildirdiği en iyi mod: %@";
+"mode.suffix.soft" = " · yumuşak";
+"mode.suffix.hiddenHiDPI" = " · gizli HiDPI";
+"mode.suffix.derived" = " · üretilmiş";
+"mode.suffix.neverShown" = " · gizli";
+
+/* HiDPI + yenileme hızı */
+"hidpi" = "HiDPI (Retina)";
+"hidpi.badge.hidden" = "gizli mod";
+"hidpi.badge.hidden.help" = "macOS bu modu listelemiyor; Klapa onu pencere sunucusunun kendi listesinden buluyor.";
+"hidpi.noCounterpart" = "Bu ekranda %@ için karşıt ölçek yok.";
+"hidpi.turnOn" = "Aç: %@ px çizim çözünürlüğü, %@";
+"hidpi.turnOff" = "Kapat: %@ px çizim çözünürlüğü, %@";
+"refresh" = "Yüksek yenileme hızı";
+"refresh.on" = "Açık: %d Hz";
+"refresh.off" = "Kapalı: 60 Hz'e düşer";
+
+/* Piksel eşleşmesi */
+"grid.exact" = "birebir";
+"grid.supersampled" = "tam %d×";
+"grid.fractional" = "küsuratlı · yumuşak";
+"grid.warning" = "Çizim çözünürlüğü %@ px, panel ise %d × %d px. Araya %.2f× küsuratlı küçültme giriyor; metnin yumuşak görünmesinin sebebi bu.";
+"grid.switchTo" = "%@ HiDPI'ye geç";
+
+/* Bağlantı */
+"link" = "Kablo sinyali";
+"link.unknown" = "bilinmiyor";
+"link.help" = "Kablodaki renk biçimi ve çerçeve tamponundaki kanal başına bit sayısı. Salt okunur: macOS bunları seçmek için desteklenen bir yol sunmuyor.";
+"link.subsampled.help" = "%@ yatay renk çözünürlüğünü yarıya indirir. Metin kenarları yumuşar, renk taşması olabilir. macOS bunu kendisi seçiyor ve ayarı yok.";
+"link.framebuffer" = "%d-bit çerçeve tamponu";
+
+/* DDC */
+"ddc.probing" = "DDC sorgulanıyor…";
+"ddc.noResponse" = "Bu ekran DDC/CI ile yanıt vermiyor.";
+"ddc.brightness" = "Parlaklık";
+"ddc.contrast" = "Kontrast";
+
+/* Onay ve geri alma */
+"revert.title" = "Görüntü düzgün mü?";
+"revert.body" = "%1$@ · %2$@\n%3$d saniye içinde eski moda dönülecek.";
+"revert.keep" = "Bu modu koru";
+"revert.undo" = "Geri al";
+
+/* Profiller */
+"profiles" = "Profiller";
+"profiles.none" = "Bu ekran düzeni için kayıtlı profil yok.";
+"profiles.otherLayouts" = "%d tanesi başka düzen için";
+"profiles.autoColumn" = "kendiliğinden";
+"profiles.apply" = "Uygula";
+"profiles.delete" = "Profili sil";
+"profiles.autoApply.help" = "Bu ekran düzeni bağlandığında kendiliğinden uygula";
+"profiles.saveCurrent" = "Şu anki ayarları kaydet";
+"profiles.summary.brightness" = " · parlaklık";
+
+/* Kaydetme penceresi */
+"save.title" = "Profili kaydet";
+"save.name" = "Profil adı";
+"save.autoApply" = "Bu ekran düzeni bağlandığında kendiliğinden uygula";
+"save.includeBrightness" = "Parlaklık ve kontrastı da kaydet";
+"save.includeBrightness.help" = "Kaydetme sırasında her monitöre DDC sorgusu gider, birkaç saniye sürebilir.";
+"save.cancel" = "Vazgeç";
+"save.confirm" = "Kaydet";
+"save.defaultName.clamshell" = "Kapak kapalı";
+"save.defaultName.count" = "%d ekran";
+
+/* Ayarlar */
+"settings.title" = "Ayarlar";
+"settings.autoApply" = "Ekran düzeni değişince profili uygula";
+"settings.persist" = "Değişiklikleri kalıcı yap";
+"settings.persist.help" = "Kapalıyken değişiklik yalnızca bu oturum boyunca geçerli olur. Açıkken pencere sunucusunun kayıtlı düzen ayarının üzerine yazılır — kapak kapalıyken hatırlanan bozuk ayarı düzeltmenin yolu budur.";
+"settings.showLowRes" = "Her çözünürlüğün HiDPI olmayan eşini de göster";
+"settings.showHidden" = "Gizli modları göster";
+"settings.showHidden.help" = "Gizli modlar macOS'un \"asla gösterme\" diye işaretlediği modlardır; ekran kararabilir.";
+"settings.launchAtLogin" = "Girişte başlat";
+
+/* Hakkında */
+"about.title" = "Klapa Hakkında";
+"about.tagline" = "Menü çubuğundan ekran yönetimi.";
+"about.version" = "Sürüm %@ (%@)";
+"about.repository" = "Kaynak kodu";
+"about.license" = "MIT Lisansı";
+"about.credits" = "BetterDisplay ve FreeDisplay referans alınarak yazıldı. CoreGraphics'in listelemediği ekran modlarına ulaşmak için belgelenmemiş SkyLight çağrıları kullanır.";
+"about.copyright" = "© 2026 Ali Akpoyraz";
+
+/* Durum satırı */
+"status.applied" = "%1$@: %2$@";
+"status.applyFailed" = "%@: mod uygulanamadı";
+"status.kept" = "%1$@: %2$@ korundu";
+"status.reverted" = "%@: eski moda dönüldü";
+"status.revertFailed" = "%@: eski mod geri getirilemedi";
+"status.displayGone" = "%@: ekran artık bağlı değil";
+"status.profileSaved" = "Profil kaydedildi: %@";
+"status.profileApplied" = "Profil uygulandı: %@";
+"status.profileFailed" = "Profil uygulanamadı: %@";
+"status.profileMissingModes" = "%1$@: %2$@ için eşleşen mod yok";

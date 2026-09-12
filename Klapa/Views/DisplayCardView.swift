@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// One display: what it is running now, what else it can run, and — for external
-/// panels that answer DDC — its hardware brightness and contrast.
+/// One display: what it is running now, what else it can run, what the cable is
+/// carrying, and — for external panels that answer DDC — hardware brightness.
 struct DisplayCardView: View {
 
     @Environment(DisplayCenter.self) private var center
@@ -13,6 +13,7 @@ struct DisplayCardView: View {
             currentModeLine
             ModePickerView(screen: screen)
             ScaleToggleView(screen: screen)
+            LinkRow(screen: screen)
 
             if screen.supportsDDC && DDCService.shared.isSupported {
                 DDCControlsView(screen: screen)
@@ -30,8 +31,8 @@ struct DisplayCardView: View {
             Text(screen.name)
                 .font(.subheadline.weight(.medium))
                 .lineLimit(1)
-            if screen.isMain { TagPill("ana", tint: .accentColor) }
-            if screen.isMirrored { TagPill("yansıma", tint: .orange) }
+            if screen.isMain { TagPill(L10n.t("display.badge.main"), tint: .accentColor) }
+            if screen.isMirrored { TagPill(L10n.t("display.badge.mirrored"), tint: .orange) }
             Spacer()
         }
     }
@@ -43,21 +44,22 @@ struct DisplayCardView: View {
                 Text(mode.summary)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                // The point of the app: say out loud when the active timing is one
-                // macOS synthesised rather than one the monitor advertises.
+                // Says out loud when the active timing is one macOS synthesized
+                // rather than one the monitor advertises.
                 if !mode.isNativeTiming {
-                    TagPill("türetilmiş zamanlama", tint: .orange)
+                    TagPill(L10n.t("display.badge.derived"), tint: .orange)
+                        .help(L10n.t("display.badge.derived.help"))
                 }
             }
         } else {
-            Text("Aktif mod okunamadı")
+            Text(L10n.t("display.currentUnknown"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
     }
 }
 
-/// Small pill used for "ana", "yansıma", "türetilmiş zamanlama".
+/// Small pill used for the inline markers on a card.
 struct TagPill: View {
     let text: String
     let tint: Color

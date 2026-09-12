@@ -158,10 +158,10 @@ final class DisplayCenter {
         refreshNow()
 
         guard ok else {
-            status("\(screen.name): mod uygulanamadı")
+            status(L10n.t("status.applyFailed", screen.name))
             return
         }
-        status("\(screen.name): \(mode.summary)")
+        status(L10n.t("status.applied", screen.name, mode.summary))
 
         // Modes CoreGraphics withheld carry no safety guarantee from macOS. Arm
         // the countdown so a black or scrambled picture undoes itself.
@@ -178,51 +178,66 @@ final class DisplayCenter {
 
     /// Keeps the new mode and disarms the countdown.
     func confirmPendingMode() {
-        revertTask?.cancel()
-        revertTask = nil
-        if let pending = pendingRevert {
-            status("\(pending.screenName): \(pending.applied.summary) korundu")
+        let pending = pendingRevert
+        cancelPendingRevert()
+        if let pending {
+            status(L10n.t("status.kept", pending.screenName, pending.applied.summary))
         }
-        pendingRevert = nil
     }
 
     /// Puts the previous mode back immediately.
     func revertPendingMode() async {
         guard let pending = pendingRevert else { return }
-        revertTask?.cancel()
-        revertTask = nil
-        pendingRevert = nil
+        cancelPendingRevert()
+        await performRevert(pending)
+    }
 
-        guard let displayID = ScreenInfo.displayID(forUUID: pending.screenUUID) else { return }
+    /// The actual restore. Kept separate from `revertPendingMode` so the
+    /// countdown can call it without cancelling the task it is itself running on.
+    private func performRevert(_ pending: PendingRevert) async {
+        guard let displayID = ScreenInfo.displayID(forUUID: pending.screenUUID) else {
+            status(L10n.t("status.displayGone", pending.screenName))
+            return
+        }
+
+        isApplying = true
+        defer { isApplying = false }
+
         suppressAutoApply(for: 6)
-        await ModeService.apply(
+        let ok = await ModeService.apply(
             pending.previous,
             to: displayID,
             persistence: settings.persistModeChanges ? .permanent : .session
         )
+        DDCService.shared.invalidate()
         refreshNow()
-        status("\(pending.screenName): eski moda dönüldü")
+        status(ok
+               ? L10n.t("status.reverted", pending.screenName)
+               : L10n.t("status.revertFailed", pending.screenName))
     }
 
     private func armRevert(screen: ScreenInfo, previous: ScreenMode, applied: ScreenMode) {
-        pendingRevert = PendingRevert(
+        let pending = PendingRevert(
             screenUUID: screen.uuid,
             screenName: screen.name,
             previous: previous,
             applied: applied,
             secondsLeft: 15
         )
+        pendingRevert = pending
 
         revertTask = Task { @MainActor [weak self] in
-            while let self, var pending = self.pendingRevert, pending.secondsLeft > 0 {
+            for remaining in stride(from: pending.secondsLeft - 1, through: 0, by: -1) {
                 try? await Task.sleep(for: .seconds(1))
-                if Task.isCancelled { return }
+                guard !Task.isCancelled, let self else { return }
+                // A different countdown replaced this one, or the user answered.
                 guard self.pendingRevert?.id == pending.id else { return }
-                pending.secondsLeft -= 1
-                self.pendingRevert = pending
+                self.pendingRevert?.secondsLeft = remaining
             }
-            guard let self, self.pendingRevert != nil, !Task.isCancelled else { return }
-            await self.revertPendingMode()
+            guard !Task.isCancelled, let self, self.pendingRevert?.id == pending.id else { return }
+            self.pendingRevert = nil
+            self.revertTask = nil
+            await self.performRevert(pending)
         }
     }
 
@@ -261,15 +276,15 @@ final class DisplayCenter {
             restoresBrightness: includeBrightness
         )
         profiles.add(profile)
-        status("Profil kaydedildi: \(name)")
+        status(L10n.t("status.profileSaved", name))
         return profile
     }
 
     /// Default name for a new profile, based on what is connected.
     func suggestedProfileName() -> String {
-        if isClamshell { return "Kapak kapalı" }
-        if screens.count == 1 { return screens.first?.name ?? "Tek ekran" }
-        return "\(screens.count) ekran"
+        if isClamshell { return L10n.t("save.defaultName.clamshell") }
+        if screens.count == 1 { return screens.first?.name ?? L10n.t("header.displayCount.one") }
+        return L10n.t("save.defaultName.count", screens.count)
     }
 
     @discardableResult
@@ -316,9 +331,13 @@ final class DisplayCenter {
         refreshNow()
 
         if !missing.isEmpty {
-            status("\(profile.name): \(missing.joined(separator: ", ")) için mod bulunamadı")
+            status(L10n.t(
+                "status.profileMissingModes", profile.name, missing.joined(separator: ", ")
+            ))
         } else {
-            status(ok ? "Profil uygulandı: \(profile.name)" : "Profil uygulanamadı: \(profile.name)")
+            status(ok
+                   ? L10n.t("status.profileApplied", profile.name)
+                   : L10n.t("status.profileFailed", profile.name))
         }
         return ok && missing.isEmpty
     }
