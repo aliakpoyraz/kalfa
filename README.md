@@ -1,99 +1,215 @@
 # Klapa
 
-macOS menü çubuğu ekran yöneticisi. BetterDisplay ve FreeDisplay'in çözdüğü işin
-çekirdeği: çözünürlük/HiDPI seçimi, dizilim başına profil, harici monitörde
-donanım parlaklığı.
+**A macOS menu bar app for display management.** Resolution and HiDPI switching,
+per-layout profiles, hardware brightness over DDC/CI.
 
-Adı, çözmek için yazıldığı sorundan geliyor: dizüstünün kapağını kapatınca
-görüntünün bozulması.
+*[Türkçe README](README.tr.md)*
 
-## Ne yapar
+Klapa exists because of one specific failure: close a MacBook's lid to drive an
+external monitor, and the desktop stops being Retina. macOS quietly stops
+offering the HiDPI mode it was using a moment earlier, and System Settings has
+no way to get it back.
 
-| Özellik | Not |
+---
+
+## What it does
+
+| | |
 |---|---|
-| Tüm çözünürlük modları | CoreGraphics **ve** SkyLight listeleri birleştirilir |
-| Gizli HiDPI modları | Kapak kapalıyken macOS'un sakladığı Retina modları |
-| Yenileme hızı seçimi | Çözünürlük başına alt menü |
-| Yerel zamanlama işareti | Aktif mod EDID'den mi, macOS'un türettiği mi |
-| Dizilim profilleri | Ekran kümesi bağlanınca kendiliğinden uygulanır |
-| DDC/CI parlaklık + kontrast | Apple Silicon `IOAVService` üzerinden |
-| Geri alma sayacı | Güvensiz mod 15 saniyede kendiliğinden geri alınır |
-| Girişte başlat | `SMAppService` |
+| **Every resolution mode** | Merges the CoreGraphics list with the window server's own, longer one |
+| **Hidden HiDPI modes** | The Retina modes macOS withholds when the lid is closed |
+| **Refresh rate** | Submenu per resolution, plus a high/60 Hz switch |
+| **Pixel-grid check** | Labels every mode `pixel for pixel` / `clean 2×` / `scaled · soft` |
+| **Native timing marker** | Says when the active mode is one macOS synthesized rather than one the monitor advertises |
+| **Cable signal readout** | Colour format and framebuffer bit depth, e.g. `10-bit YCbCr 4:2:2` |
+| **Layout profiles** | Saved per set of connected panels; re-applied automatically when that set appears |
+| **DDC/CI brightness + contrast** | Apple Silicon, via `IOAVService` |
+| **Confirm-or-revert** | Unverified modes roll back after 15 seconds unless kept |
+| **Turkish / English** | Switchable in-app, independent of the system language |
+| **Launch at login** | `SMAppService` |
 
-## Neden SkyLight listesi okunuyor
+No permissions required. No network access.
 
-`CGDisplayCopyAllDisplayModes` yalnızca IOKit'in "safe" bayrağını taşıyan modları
-döndürür. SkyLight'ın kendi listesi daha uzundur ve kapak kapalıyken sakladığı
-modlar tam da işe yarayanlardır.
+---
 
-Bu makinede, MAG 274QF kapak kapalıyken:
+## Why it reads the window server's private mode list
+
+`CGDisplayCopyAllDisplayModes` only returns modes carrying IOKit's "safe" flag.
+SkyLight — the window server — keeps a longer list, and the modes it withholds
+on a clamshell MacBook are the ones worth having.
+
+Measured on a MacBook Pro driving an MSI MAG 274QF with the lid closed:
 
 ```
-CoreGraphics : 139 mod — en büyük HiDPI 1280 × 720 (2560 × 1440 px)
-SkyLight     : 304 mod — 2560 × 1440 HiDPI (5120 × 2880 px), mod 193, 180 Hz
+CoreGraphics :  139 modes — largest HiDPI is 1280 × 720 (2560 × 1440 px)
+SkyLight     :  304 modes — including 2560 × 1440 HiDPI (5120 × 2880 px) at 180 Hz
 ```
 
-Kapak kapanınca masaüstünün Retina olmaktan çıkmasının sebebi bu: macOS
-2560×1440 HiDPI modunu listelemeyi bırakıyor, System Settings de onu gösteremiyor.
-Klapa bu modu SkyLight listesinden bulur ve `CGSConfigureDisplayMode` ile uygular.
+That missing mode is the entire problem. Klapa finds it in SkyLight's list and
+applies it with `CGSConfigureDisplayMode`, staged inside a normal
+`CGDisplayConfiguration` transaction so it is atomic and honours the same
+persistence rules as any other mode change.
 
-Bu modlar macOS'un güvenli saymadığı modlardır. Uygulandıklarında 15 saniyelik
-"Görüntü düzgün mü?" sayacı devreye girer; onaylanmazsa eski moda dönülür.
+These modes lack the "safe" flag, so selecting one arms a 15-second
+**"Does the picture look right?"** countdown. Say nothing and the previous mode
+comes back.
 
-## Kurulum
+---
+
+## The pixel-grid check
+
+A HiDPI switch keeps the logical desktop size and only changes the backing
+store. Which combination you land on decides how sharp the result is:
+
+| Logical | Backing store | On a 2560 × 1440 panel | |
+|---|---|---|---|
+| 2560 × 1440 | 2560 × 1440 | 1:1 | **pixel for pixel** |
+| 2560 × 1440 | 5120 × 2880 | exact 2× downscale | **clean 2×** |
+| 1920 × 1080 | 3840 × 2160 | 1.5× fractional downscale | **scaled · soft** |
+
+The third row is easy to select by accident and is the usual reason "HiDPI
+looks blurry". Klapa labels every mode and offers a one-click jump to the
+sharpest option when you are on a fractional one.
+
+---
+
+## The cable signal readout
+
+The row is deliberately read-only:
+
+```
+Cable signal
+10-bit YCbCr 4:2:2 · 10-bit framebuffer
+```
+
+`YCbCr 4:2:2` halves horizontal colour resolution. Text edges soften and can
+fringe. On the machine this was developed against, the link runs 8-bit
+YCbCr 4:4:4 with the lid open and 10-bit YCbCr 4:2:2 with it closed — same
+resolution, same refresh rate.
+
+**There is no supported way to change this.** It was checked properly:
+
+- No display mode advertises anything but 8 bits per channel, so the mode is not
+  the lever.
+- HDR is off (EDR reports 1.0), so it is not HDR forcing a 10-bit framebuffer.
+- Lowering the refresh rate to 165, 144 or 120 Hz does not change the format, so
+  it is not link bandwidth.
+- SkyLight exports `SLSGetDisplayPixelEncodingOfLength` and
+  `SLSCopyDisplayModePixelEncoding` — getters only. There is no setter.
+- DDC/CI has no standard VCP code for link pixel encoding.
+
+So Klapa reports the value instead of pretending to control it. If yours is
+subsampled, the things that can actually help are the monitor's own OSD (DisplayPort
+version / input colour format), a different cable, or a different port.
+
+---
+
+## Install
 
 ```bash
 brew install xcodegen
-./build.sh          # dist/Klapa.app
+git clone https://github.com/aliakpoyraz/klapa.git
+cd klapa
+./build.sh
 cp -R dist/Klapa.app /Applications/
 ```
 
-Uygulama ad-hoc imzalıdır. İlk açılışta sağ tık → **Aç**.
+The app is ad-hoc signed. On first launch, right-click → **Open**.
 
-Xcode gerekir; bu makinede `xcode-select` Command Line Tools'u gösterdiği için
-`build.sh` `DEVELOPER_DIR`'i kendisi ayarlar.
+Xcode is required; the Command Line Tools alone cannot build an app bundle.
+`build.sh` sets `DEVELOPER_DIR` itself, so `xcode-select` pointing at the
+Command Line Tools is not a problem.
 
-## Teşhis
+**Requirements:** macOS 14 or later. Apple Silicon for DDC brightness; everything
+else works on Intel too.
+
+---
+
+## Diagnostics
 
 ```bash
 /Applications/Klapa.app/Contents/MacOS/Klapa --dump
 ```
 
-Bağlı ekranları, aktif modu ve her modun bayraklarını basar. Aktif mod EDID yerel
-zamanlaması değilse ayrıca uyarır.
+Prints every connected display, its active mode, the cable signal, the DDC
+reading, and the full mode list with IOKit flags. It calls out an active mode
+that is not the panel's native timing.
 
-## Profiller
+```
+MAG 274QF
+  displayID   3
+  uuid        A1B2C3D4-0000-0000-0000-000000000000
+  active mode 2560 × 1440 (5120 × 2880 px)       180 Hz   [HiDPI,skylight-only,unverified] id=193
+  native mode 2560 × 1440 (2560 × 1440 px)       180 Hz   [native] id=130
+  link        10-bit YCbCr 4:2:2
+  DDC         brightness 100% (100/100), contrast 75% (75/100)
+```
 
-`~/Library/Application Support/Klapa/profiles.json` — düz JSON, elle okunabilir.
+---
 
-Profiller **dizilim anahtarına** göre saklanır: bağlı panellerin UUID kümesi.
-macOS'un kendi ayarlarını sakladığı anahtarın aynısı. Kapak açık (dahili +
-harici) ile kapak kapalı (yalnız harici) iki ayrı kayıttır — biri doğruyken
-diğerinin bozuk kalmasının sebebi budur.
+## Profiles
 
-## İzinler
+Stored as plain JSON at `~/Library/Application Support/Klapa/profiles.json`.
 
-Hiçbir izin gerekmez. DDC/CI ve ekran yapılandırma API'leri her sürece açıktır.
-Uygulama ağ kullanmaz.
+A profile is keyed by **layout**: the sorted set of connected panel UUIDs. This
+is the same key macOS uses for its own per-arrangement display settings, which
+is why lid-open and lid-closed are two separate records and why one can be
+correct while the other is wrong.
 
-## Kapsam dışı
+Modes are stored by geometry, never by `IODisplayModeID` — the window server
+renumbers those after a reconfiguration, so a stored ID goes stale.
 
-Sanal ekran, gamma/renk sıcaklığı, ICC profilleri, çentik gizleme, parlaklık
-tuşlarının yakalanması. İhtiyaç olursa ayrı servis olarak eklenebilir.
+---
 
-## Mimari
+## Architecture
 
 ```
 Klapa/
-  Core/        ScreenMode, ScreenInfo, DisplaySetKey, Watchdog, Diagnostics
-  Services/    ModeService (CoreGraphics)   SkyLightModes (özel API)
-               DisplayCenter (durum + yeniden yapılandırma geri çağrısı)
-               ProfileStore, DDCService, AppSettings, LaunchAtLogin
-  Views/       RootView, DisplayCardView, ModePickerView, DDCControlsView,
-               ProfilesSectionView, SaveProfileView, SettingsView
-  Bridging/    IOAVService + CGS bildirimleri
+  Core/        ScreenMode · ScreenInfo · DisplaySetKey · L10n · Watchdog · Diagnostics
+  Services/    ModeService     CoreGraphics enumeration and application
+               SkyLightModes   the private mode list
+               LinkInfo        cable signal and framebuffer readings
+               DisplayCenter   state, reconfiguration callback, auto-apply
+               ProfileStore · DDCService · AppSettings · LaunchAtLogin
+  Views/       RootView · DisplayCardView · ModePickerView · ScaleToggleView
+               LinkRow · DDCControlsView · ProfilesSectionView · SaveProfileView
+               SettingsView · AboutView · SwitchRow
+  Bridging/    IOAVService and CGS declarations
 ```
 
-Pencere sunucusuna giden her çağrı `Watchdog` içinden geçer; yeniden yapılandırma
-sırasında `CGCompleteDisplayConfiguration` süresiz bloke olabilir ve menü
-çubuğunun donmaması gerekir.
+Every window server call goes through `Watchdog`.
+`CGCompleteDisplayConfiguration` can block indefinitely during a
+reconfiguration, which is exactly when Klapa is doing its work, and the menu bar
+must not freeze.
+
+### Private API notes
+
+- `CGSConfigureDisplayMode`'s first parameter is a `CGDisplayConfigRef` from
+  `CGBeginDisplayConfiguration`, **not** a CGS connection ID. Passing a
+  connection ID segfaults inside SkyLight, which dereferences it as the config
+  object.
+- `CGSGetDisplayModeDescriptionOfLength` expects a 212-byte (`0xD4`) struct.
+  Offsets: mode number `0x00`, flags `0x04`, width `0x08`, height `0x0C`,
+  depth `0x10`, refresh rate `0xBE` (`uint16`), density `0xD0` (`float`).
+- SkyLight exists only inside the dyld shared cache, so `SLS*` symbols cannot be
+  linked. They are resolved with `dlopen` + `dlsym` and degrade to "unavailable"
+  if missing.
+- A `ScrollView` inside a `MenuBarExtra` window resolves to zero ideal height and
+  silently swallows its content.
+
+---
+
+## Not included
+
+Virtual displays, gamma and colour temperature, ICC profile switching, notch
+hiding, brightness-key interception. [BetterDisplay](https://github.com/waydabber/BetterDisplay)
+and [FreeDisplay](https://github.com/huberdf/FreeDisplay) cover those.
+
+## Credits
+
+Written with BetterDisplay and FreeDisplay as references for which private APIs
+exist and how the DDC/CI wire format is framed on Apple Silicon.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
