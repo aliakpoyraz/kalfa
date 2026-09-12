@@ -66,6 +66,8 @@ struct ModePickerView: View {
     private func label(for mode: ScreenMode, in group: ModeGroup) -> String {
         var text = group.modes.count == 1 ? mode.summary : mode.refreshLabel
         if mode.id == center.currentMode(for: screen)?.id { text = "✓ " + text }
+        // Softness is the thing most worth knowing before picking, so it leads.
+        if center.rendering(of: mode, on: screen)?.isSoft == true { text += " ·yumuşak" }
         if mode.isExtended { text += " ·gizli HiDPI" }
         else if !mode.isNativeTiming { text += " ·türetilmiş" }
         if mode.isHidden { text += " ·gösterilmez" }

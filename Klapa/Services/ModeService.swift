@@ -79,11 +79,11 @@ enum ModeService {
     static func scaleSibling(
         of mode: ScreenMode,
         hiDPI: Bool,
-        on displayID: CGDirectDisplayID
+        among modes: [ScreenMode]
     ) -> ScreenMode? {
         let wantedRate = Int(mode.refreshRate.rounded())
 
-        let candidates = modes(for: displayID).filter {
+        let candidates = modes.filter {
             $0.width == mode.width
                 && $0.height == mode.height
                 && $0.isHiDPI == hiDPI
@@ -91,8 +91,8 @@ enum ModeService {
         }
         guard !candidates.isEmpty else { return nil }
 
-        // Same refresh rate if it exists, otherwise the fastest available; a
-        // publicly-listed mode beats a SkyLight-only one at equal footing.
+        // Same refresh rate if it exists, otherwise the closest; a publicly-listed
+        // mode beats a SkyLight-only one at equal footing.
         return candidates.min { a, b in
             let da = abs(Int(a.refreshRate.rounded()) - wantedRate)
             let db = abs(Int(b.refreshRate.rounded()) - wantedRate)
@@ -111,9 +111,9 @@ enum ModeService {
     static func refreshSibling(
         of mode: ScreenMode,
         fastest: Bool,
-        on displayID: CGDirectDisplayID
+        among modes: [ScreenMode]
     ) -> ScreenMode? {
-        let candidates = modes(for: displayID).filter {
+        let candidates = modes.filter {
             $0.width == mode.width
                 && $0.height == mode.height
                 && $0.isHiDPI == mode.isHiDPI
@@ -138,13 +138,48 @@ enum ModeService {
         return a.isExtended && !b.isExtended
     }
 
-    /// The highest refresh rate this display can do at the given mode's
-    /// resolution and scale.
-    static func peakRefreshRate(for mode: ScreenMode, on displayID: CGDirectDisplayID) -> Double {
-        modes(for: displayID)
+    /// Highest refresh rate available at a mode's resolution and scale.
+    static func peakRefreshRate(for mode: ScreenMode, among modes: [ScreenMode]) -> Double {
+        modes
             .filter { $0.width == mode.width && $0.height == mode.height && $0.isHiDPI == mode.isHiDPI }
             .map(\.refreshRate)
             .max() ?? mode.refreshRate
+    }
+
+    // MARK: Panel geometry
+
+    /// The panel's own pixel grid, taken from the largest 1× mode it offers.
+    ///
+    /// Everything else is measured against this. A backing store that is not an
+    /// integer multiple of it has to be resampled by a fractional factor before
+    /// it reaches the glass, and no amount of resolution makes that sharp.
+    static func panelPixelSize(among modes: [ScreenMode]) -> (width: Int, height: Int)? {
+        guard let native = modes.filter({ !$0.isHiDPI }).max(by: { $0.pixelWidth < $1.pixelWidth })
+        else { return nil }
+        return (native.pixelWidth, native.pixelHeight)
+    }
+
+    /// How a mode's backing store reaches the panel.
+    enum Rendering: Equatable {
+        /// Backing store is the panel's own grid. Nothing is resampled.
+        case exact
+        /// Backing store is an whole-number multiple; downsampling is clean.
+        case supersampled(Int)
+        /// Backing store maps onto the panel at a fractional ratio. This is the
+        /// one that looks soft, and it is easy to select by accident: 1920 × 1080
+        /// HiDPI on a 1440p panel means a 3840 × 2160 buffer squeezed by 1.5.
+        case fractional(Double)
+
+        var isSoft: Bool { if case .fractional = self { return true }; return false }
+    }
+
+    static func rendering(of mode: ScreenMode, panel: (width: Int, height: Int)) -> Rendering {
+        guard panel.width > 0, mode.pixelWidth > 0 else { return .exact }
+        if mode.pixelWidth == panel.width && mode.pixelHeight == panel.height { return .exact }
+        if mode.pixelWidth % panel.width == 0 && mode.pixelHeight % panel.height == 0 {
+            return .supersampled(mode.pixelWidth / panel.width)
+        }
+        return .fractional(Double(mode.pixelWidth) / Double(panel.width))
     }
 
     /// Finds the closest live mode to a stored fingerprint. Used when restoring a

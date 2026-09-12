@@ -11,14 +11,16 @@ struct ScaleToggleView: View {
         VStack(spacing: 6) {
             hiDPIRow
             refreshRow
+            if let warning = softnessWarning {
+                softnessNote(warning)
+            }
         }
     }
 
     // MARK: HiDPI
 
     /// Flipping this keeps the desktop size and only changes the backing store —
-    /// 2560 × 1440 drawn into 5120 × 2880 pixels instead of 2560 × 1440. That is
-    /// the whole difference between a Retina desktop and a blurry one.
+    /// 2560 × 1440 drawn into 5120 × 2880 pixels instead of 2560 × 1440.
     private var hiDPIRow: some View {
         SwitchRow(
             "HiDPI (Retina)",
@@ -30,15 +32,36 @@ struct ScaleToggleView: View {
             isEnabled: scaleTarget != nil && !center.isApplying,
             help: scaleHelp
         ) {
-            if let scaleTarget, scaleTarget.isExtended {
-                TagPill("gizli mod", tint: .orange)
-            }
+            renderingBadge
         }
+    }
+
+    /// Says how the current backing store reaches the glass. The fractional case
+    /// is the one worth interrupting someone over — it is the difference between
+    /// a sharp desktop and a soft one, and nothing in the resolution name hints
+    /// at it.
+    @ViewBuilder
+    private var renderingBadge: some View {
+        switch rendering {
+        case .exact:
+            TagPill("birebir", tint: .green)
+        case .supersampled(let factor):
+            TagPill("\(factor)× temiz", tint: .green)
+        case .fractional:
+            TagPill("ölçekli · yumuşak", tint: .orange)
+        case nil:
+            EmptyView()
+        }
+    }
+
+    private var rendering: ModeService.Rendering? {
+        guard let current = center.currentMode(for: screen) else { return nil }
+        return center.rendering(of: current, on: screen)
     }
 
     private var scaleTarget: ScreenMode? {
         guard let current = center.currentMode(for: screen) else { return nil }
-        return ModeService.scaleSibling(of: current, hiDPI: !current.isHiDPI, on: screen.displayID)
+        return center.scaleSibling(for: screen, hiDPI: !current.isHiDPI)
     }
 
     private var scaleHelp: String {
@@ -50,6 +73,46 @@ struct ScaleToggleView: View {
         return "\(direction): \(scaleTarget.pixelLabel) px arka tampon, \(scaleTarget.refreshLabel)"
     }
 
+    // MARK: Softness warning
+
+    private var softnessWarning: ScreenMode? {
+        guard rendering?.isSoft == true else { return nil }
+        guard let sharpest = center.sharpestMode(for: screen),
+              sharpest.id != center.currentMode(for: screen)?.id
+        else { return nil }
+        return sharpest
+    }
+
+    private func softnessNote(_ sharpest: ScreenMode) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: "exclamationmark.triangle")
+                .foregroundStyle(.orange)
+                .font(.caption2)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(noteText(sharpest))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("\(sharpest.resolutionLabel) HiDPI'ye geç") { apply(sharpest) }
+                    .buttonStyle(.borderless)
+                    .font(.caption2)
+                    .disabled(center.isApplying)
+            }
+        }
+        .padding(.top, 2)
+    }
+
+    private func noteText(_ sharpest: ScreenMode) -> String {
+        guard let current = center.currentMode(for: screen),
+              let panel = center.panelPixelSize(for: screen)
+        else { return "" }
+        let factor = Double(current.pixelWidth) / Double(panel.width)
+        return String(
+            format: "Arka tampon %@ px, panel %d × %d px. %.2f× küsuratlı küçültme yapılıyor; metin bu yüzden yumuşak.",
+            current.pixelLabel, panel.width, panel.height, factor
+        )
+    }
+
     // MARK: Refresh rate
 
     private var refreshRow: some View {
@@ -58,30 +121,24 @@ struct ScaleToggleView: View {
             value: center.currentMode(for: screen)?.refreshLabel,
             isOn: Binding(
                 get: { isAtPeakRefresh },
-                set: { wantsFast in apply(refreshTarget(fastest: wantsFast)) }
+                set: { wantsFast in apply(center.refreshSibling(for: screen, fastest: wantsFast)) }
             ),
-            isEnabled: refreshTarget(fastest: !isAtPeakRefresh) != nil && !center.isApplying,
+            isEnabled: center.refreshSibling(for: screen, fastest: !isAtPeakRefresh) != nil
+                && !center.isApplying,
             help: refreshHelp
         )
     }
 
     private var isAtPeakRefresh: Bool {
-        guard let current = center.currentMode(for: screen) else { return false }
-        let peak = ModeService.peakRefreshRate(for: current, on: screen.displayID)
+        guard let current = center.currentMode(for: screen),
+              let peak = center.peakRefreshRate(for: screen)
+        else { return false }
         return Int(current.refreshRate.rounded()) >= Int(peak.rounded())
     }
 
-    private func refreshTarget(fastest: Bool) -> ScreenMode? {
-        guard let current = center.currentMode(for: screen) else { return nil }
-        return ModeService.refreshSibling(of: current, fastest: fastest, on: screen.displayID)
-    }
-
     private var refreshHelp: String {
-        guard let current = center.currentMode(for: screen) else { return "" }
-        let peak = ModeService.peakRefreshRate(for: current, on: screen.displayID)
-        return isAtPeakRefresh
-            ? "Kapat: 60 Hz'e düşer"
-            : "Aç: \(Int(peak.rounded())) Hz"
+        guard let peak = center.peakRefreshRate(for: screen) else { return "" }
+        return isAtPeakRefresh ? "Kapat: 60 Hz'e düşer" : "Aç: \(Int(peak.rounded())) Hz"
     }
 
     // MARK: -

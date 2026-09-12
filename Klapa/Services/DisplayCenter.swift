@@ -94,6 +94,51 @@ final class DisplayCenter {
         currentModeByUUID[screen.uuid]
     }
 
+    // MARK: Derived queries
+    //
+    // These read the cached mode list rather than re-enumerating. SwiftUI
+    // evaluates a view body far more often than displays change, and enumerating
+    // SkyLight's 300-odd modes on every pass is not free.
+
+    func scaleSibling(for screen: ScreenInfo, hiDPI: Bool) -> ScreenMode? {
+        guard let current = currentMode(for: screen) else { return nil }
+        return ModeService.scaleSibling(of: current, hiDPI: hiDPI, among: modes(for: screen))
+    }
+
+    func refreshSibling(for screen: ScreenInfo, fastest: Bool) -> ScreenMode? {
+        guard let current = currentMode(for: screen) else { return nil }
+        return ModeService.refreshSibling(of: current, fastest: fastest, among: modes(for: screen))
+    }
+
+    func peakRefreshRate(for screen: ScreenInfo) -> Double? {
+        guard let current = currentMode(for: screen) else { return nil }
+        return ModeService.peakRefreshRate(for: current, among: modes(for: screen))
+    }
+
+    func panelPixelSize(for screen: ScreenInfo) -> (width: Int, height: Int)? {
+        ModeService.panelPixelSize(among: modes(for: screen))
+    }
+
+    /// How a mode's backing store lands on this panel's pixel grid.
+    func rendering(of mode: ScreenMode, on screen: ScreenInfo) -> ModeService.Rendering? {
+        guard let panel = panelPixelSize(for: screen) else { return nil }
+        return ModeService.rendering(of: mode, panel: panel)
+    }
+
+    /// The best-looking mode at this display's native pixel grid: a 2× backing
+    /// store over the panel's own resolution when one exists, otherwise 1:1.
+    func sharpestMode(for screen: ScreenInfo) -> ScreenMode? {
+        guard let panel = panelPixelSize(for: screen) else { return nil }
+        let candidates = modes(for: screen).filter {
+            !ModeService.rendering(of: $0, panel: panel).isSoft
+        }
+        // Prefer HiDPI (proper Retina metrics), then the highest refresh rate.
+        return candidates.max { a, b in
+            if a.isHiDPI != b.isHiDPI { return !a.isHiDPI }
+            return a.refreshRate < b.refreshRate
+        }
+    }
+
     // MARK: Applying modes
 
     func apply(_ mode: ScreenMode, to screen: ScreenInfo) async {
