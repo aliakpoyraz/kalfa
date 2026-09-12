@@ -72,6 +72,81 @@ enum ModeService {
         rawModes(for: displayID).first { $0.ioDisplayModeID == id }
     }
 
+    /// The same resolution and refresh rate at the other backing scale.
+    ///
+    /// This is what a "HiDPI" switch actually does: the logical desktop size does
+    /// not change, only whether it is drawn into a 1× or 2× backing store.
+    static func scaleSibling(
+        of mode: ScreenMode,
+        hiDPI: Bool,
+        on displayID: CGDirectDisplayID
+    ) -> ScreenMode? {
+        let wantedRate = Int(mode.refreshRate.rounded())
+
+        let candidates = modes(for: displayID).filter {
+            $0.width == mode.width
+                && $0.height == mode.height
+                && $0.isHiDPI == hiDPI
+                && $0.id != mode.id
+        }
+        guard !candidates.isEmpty else { return nil }
+
+        // Same refresh rate if it exists, otherwise the fastest available; a
+        // publicly-listed mode beats a SkyLight-only one at equal footing.
+        return candidates.min { a, b in
+            let da = abs(Int(a.refreshRate.rounded()) - wantedRate)
+            let db = abs(Int(b.refreshRate.rounded()) - wantedRate)
+            if da != db { return da < db }
+            if a.isExtended != b.isExtended { return !a.isExtended }
+            if a.isNativeTiming != b.isNativeTiming { return a.isNativeTiming }
+            return a.refreshRate > b.refreshRate
+        }
+    }
+
+    /// The fastest, or the most conservative, refresh rate available at the
+    /// current resolution and backing scale.
+    ///
+    /// Backs the "high refresh rate" switch: off means 60 Hz, on means whatever
+    /// this panel's ceiling is.
+    static func refreshSibling(
+        of mode: ScreenMode,
+        fastest: Bool,
+        on displayID: CGDirectDisplayID
+    ) -> ScreenMode? {
+        let candidates = modes(for: displayID).filter {
+            $0.width == mode.width
+                && $0.height == mode.height
+                && $0.isHiDPI == mode.isHiDPI
+        }
+        guard !candidates.isEmpty else { return nil }
+
+        let target: ScreenMode? = fastest
+            ? candidates.max(by: isWorseChoice)
+            // "Off" is 60 Hz when the panel has it, otherwise its slowest mode.
+            : candidates.first { Int($0.refreshRate.rounded()) == 60 }
+                ?? candidates.min { $0.refreshRate < $1.refreshRate }
+
+        guard let target, target.id != mode.id else { return nil }
+        return target
+    }
+
+    /// Ordering used to pick "the best" mode among equals: highest rate first,
+    /// then prefer timings macOS vouches for.
+    private static func isWorseChoice(_ a: ScreenMode, _ b: ScreenMode) -> Bool {
+        if a.refreshRate != b.refreshRate { return a.refreshRate < b.refreshRate }
+        if a.isNativeTiming != b.isNativeTiming { return !a.isNativeTiming }
+        return a.isExtended && !b.isExtended
+    }
+
+    /// The highest refresh rate this display can do at the given mode's
+    /// resolution and scale.
+    static func peakRefreshRate(for mode: ScreenMode, on displayID: CGDirectDisplayID) -> Double {
+        modes(for: displayID)
+            .filter { $0.width == mode.width && $0.height == mode.height && $0.isHiDPI == mode.isHiDPI }
+            .map(\.refreshRate)
+            .max() ?? mode.refreshRate
+    }
+
     /// Finds the closest live mode to a stored fingerprint. Used when restoring a
     /// profile, because IODisplayModeIDs are reshuffled on reconnect.
     static func match(

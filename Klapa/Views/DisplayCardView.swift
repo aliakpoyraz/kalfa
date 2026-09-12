@@ -12,6 +12,7 @@ struct DisplayCardView: View {
             title
             currentModeLine
             ModePickerView(screen: screen)
+            ScaleToggleView(screen: screen)
 
             if screen.supportsDDC && DDCService.shared.isSupported {
                 DDCControlsView(screen: screen)

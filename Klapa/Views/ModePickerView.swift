@@ -10,18 +10,15 @@ struct ModePickerView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Menu {
-                ForEach(groups) { group in
-                    groupItem(group)
-                }
-            } label: {
-                Label(menuLabel, systemImage: "rectangle.on.rectangle")
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Çözünürlük")
+                    .font(.caption)
+                Text(center.currentMode(for: screen)?.resolutionLabel ?? "—")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
             }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-            .disabled(center.isApplying || groups.isEmpty)
 
-            Spacer()
+            Spacer(minLength: 8)
 
             if let native = nativeMode, native.id != center.currentMode(for: screen)?.id {
                 Button("Yerel") { apply(native) }
@@ -30,6 +27,18 @@ struct ModePickerView: View {
                     .help("Monitörün EDID'de bildirdiği en iyi zamanlama: \(native.summary)")
                     .disabled(center.isApplying)
             }
+
+            Menu {
+                ForEach(groups) { group in
+                    groupItem(group)
+                }
+            } label: {
+                Text("Değiştir")
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .font(.caption)
+            .disabled(center.isApplying || groups.isEmpty)
         }
     }
 
@@ -61,10 +70,6 @@ struct ModePickerView: View {
         else if !mode.isNativeTiming { text += " ·türetilmiş" }
         if mode.isHidden { text += " ·gösterilmez" }
         return text
-    }
-
-    private var menuLabel: String {
-        center.currentMode(for: screen)?.resolutionLabel ?? "Çözünürlük"
     }
 
     private func apply(_ mode: ScreenMode) {

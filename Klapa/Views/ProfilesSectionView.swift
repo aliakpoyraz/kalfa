@@ -21,6 +21,13 @@ struct ProfilesSectionView: View {
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
+                // Labels the switch column; without it the toggle on each row has
+                // no visible meaning.
+                if !matching.isEmpty {
+                    Text("otomatik")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
             }
 
             if matching.isEmpty {
@@ -45,20 +52,7 @@ struct ProfilesSectionView: View {
     }
 
     private func row(_ profile: Profile) -> some View {
-        HStack(spacing: 6) {
-            Button {
-                var copy = profile
-                copy.autoApply.toggle()
-                center.profiles.update(copy)
-            } label: {
-                Image(systemName: profile.autoApply ? "bolt.fill" : "bolt")
-                    .foregroundStyle(profile.autoApply ? Color.accentColor : .secondary)
-            }
-            .buttonStyle(.borderless)
-            .help(profile.autoApply
-                  ? "Bu dizilim bağlandığında kendiliğinden uygulanır"
-                  : "Kendiliğinden uygulanmaz")
-
+        HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(profile.name)
                     .font(.caption.weight(.medium))
@@ -69,7 +63,7 @@ struct ProfilesSectionView: View {
                     .lineLimit(1)
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
             Button("Uygula") {
                 Task { await center.apply(profile) }
@@ -85,6 +79,19 @@ struct ProfilesSectionView: View {
             }
             .buttonStyle(.borderless)
             .help("Profili sil")
+
+            Toggle("", isOn: Binding(
+                get: { profile.autoApply },
+                set: { newValue in
+                    var copy = profile
+                    copy.autoApply = newValue
+                    center.profiles.update(copy)
+                }
+            ))
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .help("Bu dizilim bağlandığında kendiliğinden uygula")
         }
         .padding(.vertical, 2)
     }
