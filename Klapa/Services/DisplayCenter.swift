@@ -1,0 +1,359 @@
+import AppKit
+import CoreGraphics
+import Foundation
+import Observation
+
+/// The single source of truth about what is plugged in right now.
+///
+/// It listens to window server reconfiguration events, rebuilds its snapshot, and
+/// re-applies a saved profile when the new arrangement has one. The debounce is
+/// not cosmetic: unplugging a display emits a burst of callbacks (begin, mode
+/// change, desktop moved, end) and reading modes mid-burst returns garbage.
+@MainActor
+@Observable
+final class DisplayCenter {
+
+    // MARK: Observable state
+
+    private(set) var screens: [ScreenInfo] = []
+    private(set) var modesByUUID: [String: [ScreenMode]] = [:]
+    private(set) var currentModeByUUID: [String: ScreenMode] = [:]
+    /// Set while a reconfiguration is in flight, so the UI can disable controls.
+    private(set) var isApplying = false
+    /// Non-nil while an unproven mode is on screen awaiting confirmation.
+    private(set) var pendingRevert: PendingRevert?
+    /// Last thing that happened, shown at the bottom of the menu.
+    private(set) var statusMessage: String?
+
+    var settings = AppSettings()
+    let profiles: ProfileStore
+
+    /// Identifies the current arrangement — the key macOS itself keys settings on.
+    var setKey: DisplaySetKey { DisplaySetKey(screens) }
+
+    /// The lid is shut: an external display is driving the desktop and the
+    /// built-in panel has dropped off the online list entirely.
+    var isClamshell: Bool {
+        !screens.isEmpty && !screens.contains(where: \.isBuiltIn)
+    }
+
+    // MARK: Internals
+
+    /// A mode macOS does not vouch for is applied on approval: if the picture is
+    /// unreadable the countdown puts the old one back without the user having to
+    /// see anything to click it.
+    struct PendingRevert: Identifiable {
+        let id = UUID()
+        let screenUUID: String
+        let screenName: String
+        let previous: ScreenMode
+        let applied: ScreenMode
+        var secondsLeft: Int
+    }
+
+    private var refreshTask: Task<Void, Never>?
+    private var revertTask: Task<Void, Never>?
+    /// Reconfigurations we caused ourselves must not retrigger auto-apply.
+    private var suppressAutoApplyUntil = Date.distantPast
+    private var callbackRegistered = false
+
+    init(profiles: ProfileStore = ProfileStore()) {
+        self.profiles = profiles
+        refreshNow()
+        registerForReconfiguration()
+    }
+
+    deinit {
+        // Deliberately not unregistering: the app lives for the whole login
+        // session, and the callback holds an unretained pointer that only the
+        // shared instance ever uses.
+    }
+
+    // MARK: Snapshot
+
+    /// Rebuilds the snapshot immediately. Cheap enough to call from the UI.
+    func refreshNow() {
+        let online = ScreenInfo.online()
+        screens = online
+
+        var modes: [String: [ScreenMode]] = [:]
+        var current: [String: ScreenMode] = [:]
+        for screen in online {
+            modes[screen.uuid] = ModeService.modes(for: screen.displayID)
+            current[screen.uuid] = ModeService.current(for: screen.displayID)
+        }
+        modesByUUID = modes
+        currentModeByUUID = current
+    }
+
+    func modes(for screen: ScreenInfo) -> [ScreenMode] {
+        modesByUUID[screen.uuid] ?? []
+    }
+
+    func currentMode(for screen: ScreenInfo) -> ScreenMode? {
+        currentModeByUUID[screen.uuid]
+    }
+
+    // MARK: Applying modes
+
+    func apply(_ mode: ScreenMode, to screen: ScreenInfo) async {
+        isApplying = true
+        defer { isApplying = false }
+
+        cancelPendingRevert()
+        let previous = currentMode(for: screen)
+
+        suppressAutoApply(for: 6)
+        let ok = await ModeService.apply(
+            mode,
+            to: screen.displayID,
+            persistence: settings.persistModeChanges ? .permanent : .session
+        )
+        DDCService.shared.invalidate()
+        refreshNow()
+
+        guard ok else {
+            status("\(screen.name): mod uygulanamadı")
+            return
+        }
+        status("\(screen.name): \(mode.summary)")
+
+        // Modes CoreGraphics withheld carry no safety guarantee from macOS. Arm
+        // the countdown so a black or scrambled picture undoes itself.
+        if needsConfirmation(mode), let previous, previous.id != mode.id {
+            armRevert(screen: screen, previous: previous, applied: mode)
+        }
+    }
+
+    private func needsConfirmation(_ mode: ScreenMode) -> Bool {
+        mode.isExtended || !mode.isSafe
+    }
+
+    // MARK: Confirm or revert
+
+    /// Keeps the new mode and disarms the countdown.
+    func confirmPendingMode() {
+        revertTask?.cancel()
+        revertTask = nil
+        if let pending = pendingRevert {
+            status("\(pending.screenName): \(pending.applied.summary) korundu")
+        }
+        pendingRevert = nil
+    }
+
+    /// Puts the previous mode back immediately.
+    func revertPendingMode() async {
+        guard let pending = pendingRevert else { return }
+        revertTask?.cancel()
+        revertTask = nil
+        pendingRevert = nil
+
+        guard let displayID = ScreenInfo.displayID(forUUID: pending.screenUUID) else { return }
+        suppressAutoApply(for: 6)
+        await ModeService.apply(
+            pending.previous,
+            to: displayID,
+            persistence: settings.persistModeChanges ? .permanent : .session
+        )
+        refreshNow()
+        status("\(pending.screenName): eski moda dönüldü")
+    }
+
+    private func armRevert(screen: ScreenInfo, previous: ScreenMode, applied: ScreenMode) {
+        pendingRevert = PendingRevert(
+            screenUUID: screen.uuid,
+            screenName: screen.name,
+            previous: previous,
+            applied: applied,
+            secondsLeft: 15
+        )
+
+        revertTask = Task { @MainActor [weak self] in
+            while let self, var pending = self.pendingRevert, pending.secondsLeft > 0 {
+                try? await Task.sleep(for: .seconds(1))
+                if Task.isCancelled { return }
+                guard self.pendingRevert?.id == pending.id else { return }
+                pending.secondsLeft -= 1
+                self.pendingRevert = pending
+            }
+            guard let self, self.pendingRevert != nil, !Task.isCancelled else { return }
+            await self.revertPendingMode()
+        }
+    }
+
+    private func cancelPendingRevert() {
+        revertTask?.cancel()
+        revertTask = nil
+        pendingRevert = nil
+    }
+
+    // MARK: Profiles
+
+    /// Captures the current arrangement, optionally including DDC values.
+    func captureProfile(named name: String, includeBrightness: Bool) async -> Profile {
+        var entries: [Profile.Entry] = []
+
+        for screen in screens {
+            guard let mode = currentMode(for: screen) else { continue }
+            var entry = Profile.Entry(
+                displayUUID: screen.uuid,
+                displayName: screen.name,
+                mode: mode.fingerprint
+            )
+            if includeBrightness, screen.supportsDDC {
+                entry.brightness = await DDCService.shared
+                    .read(.brightness, from: screen.displayID)?.percent
+                entry.contrast = await DDCService.shared
+                    .read(.contrast, from: screen.displayID)?.percent
+            }
+            entries.append(entry)
+        }
+
+        let profile = Profile(
+            name: name,
+            setKey: setKey,
+            entries: entries,
+            restoresBrightness: includeBrightness
+        )
+        profiles.add(profile)
+        status("Profil kaydedildi: \(name)")
+        return profile
+    }
+
+    /// Default name for a new profile, based on what is connected.
+    func suggestedProfileName() -> String {
+        if isClamshell { return "Kapak kapalı" }
+        if screens.count == 1 { return screens.first?.name ?? "Tek ekran" }
+        return "\(screens.count) ekran"
+    }
+
+    @discardableResult
+    func apply(_ profile: Profile) async -> Bool {
+        isApplying = true
+        defer { isApplying = false }
+
+        suppressAutoApply(for: 8)
+
+        var requests: [ModeService.Request] = []
+        var missing: [String] = []
+
+        for entry in profile.entries {
+            guard let displayID = ScreenInfo.displayID(forUUID: entry.displayUUID) else {
+                missing.append(entry.displayName)
+                continue
+            }
+            guard let mode = ModeService.match(entry.mode, on: displayID) else {
+                missing.append(entry.displayName)
+                continue
+            }
+            requests.append(ModeService.Request(displayID: displayID, mode: mode))
+        }
+
+        let ok = await ModeService.apply(
+            requests,
+            persistence: settings.persistModeChanges ? .permanent : .session
+        )
+
+        DDCService.shared.invalidate()
+
+        if ok, profile.restoresBrightness {
+            for entry in profile.entries {
+                guard let displayID = ScreenInfo.displayID(forUUID: entry.displayUUID) else { continue }
+                if let brightness = entry.brightness {
+                    await DDCService.shared.write(.brightness, percent: brightness, to: displayID)
+                }
+                if let contrast = entry.contrast {
+                    await DDCService.shared.write(.contrast, percent: contrast, to: displayID)
+                }
+            }
+        }
+
+        refreshNow()
+
+        if !missing.isEmpty {
+            status("\(profile.name): \(missing.joined(separator: ", ")) için mod bulunamadı")
+        } else {
+            status(ok ? "Profil uygulandı: \(profile.name)" : "Profil uygulanamadı: \(profile.name)")
+        }
+        return ok && missing.isEmpty
+    }
+
+    // MARK: Reconfiguration handling
+
+    private func registerForReconfiguration() {
+        guard !callbackRegistered else { return }
+        callbackRegistered = true
+
+        let context = Unmanaged.passUnretained(self).toOpaque()
+        CGDisplayRegisterReconfigurationCallback({ _, flags, userInfo in
+            guard let userInfo else { return }
+            // Only the settled half of the event pair carries a usable state.
+            guard flags.contains(.setModeFlag)
+                    || flags.contains(.addFlag)
+                    || flags.contains(.removeFlag)
+                    || flags.contains(.enabledFlag)
+                    || flags.contains(.disabledFlag)
+                    || flags.contains(.desktopShapeChangedFlag)
+            else { return }
+
+            let center = Unmanaged<DisplayCenter>.fromOpaque(userInfo).takeUnretainedValue()
+            Task { @MainActor in center.displaysDidChange() }
+        }, context)
+    }
+
+    private func displaysDidChange() {
+        refreshTask?.cancel()
+        refreshTask = Task { @MainActor [weak self] in
+            // Ride out the callback burst before reading anything.
+            try? await Task.sleep(for: .milliseconds(1200))
+            guard !Task.isCancelled, let self else { return }
+
+            DDCService.shared.invalidate()
+            self.refreshNow()
+            await self.autoApplyIfNeeded()
+        }
+    }
+
+    private func autoApplyIfNeeded() async {
+        guard settings.autoApplyProfiles else { return }
+        guard Date() >= suppressAutoApplyUntil else {
+            Log.profile.debug("auto-apply suppressed: change was self-inflicted")
+            return
+        }
+        guard !screens.isEmpty else { return }
+        guard let profile = profiles.autoApplyProfile(for: setKey) else { return }
+
+        // Already in the wanted state — applying would flash the desktop for nothing.
+        guard !matchesCurrentState(profile) else {
+            Log.profile.debug("auto-apply skipped: already matching")
+            return
+        }
+
+        Log.profile.info("auto-applying profile \(profile.name, privacy: .public)")
+        await apply(profile)
+    }
+
+    private func matchesCurrentState(_ profile: Profile) -> Bool {
+        for entry in profile.entries {
+            guard let screen = screens.first(where: { $0.uuid == entry.displayUUID }),
+                  let mode = currentMode(for: screen),
+                  mode.fingerprint == entry.mode
+            else { return false }
+        }
+        return true
+    }
+
+    private func suppressAutoApply(for seconds: TimeInterval) {
+        suppressAutoApplyUntil = Date().addingTimeInterval(seconds)
+    }
+
+    // MARK: Status line
+
+    private func status(_ message: String) {
+        statusMessage = message
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(6))
+            if self?.statusMessage == message { self?.statusMessage = nil }
+        }
+    }
+}
