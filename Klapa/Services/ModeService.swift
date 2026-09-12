@@ -197,13 +197,13 @@ enum ModeService {
         await apply([Request(displayID: displayID, mode: mode)], persistence: persistence)
     }
 
-    /// Applies several mode changes at once.
+    /// Applies several mode changes as one atomic reconfiguration.
     ///
-    /// When every mode is one CoreGraphics listed, they go through a single
-    /// `CGDisplayConfiguration` transaction — restoring a profile display by
-    /// display makes the desktop relayout repeatedly and can strand windows
-    /// off-screen. A mode only SkyLight knows about cannot join that transaction,
-    /// so those are set individually.
+    /// Modes from either list go into the same `CGDisplayConfiguration`
+    /// transaction — a CoreGraphics one through the public setter, a
+    /// SkyLight-only one through `CGSConfigureDisplayMode`. Restoring a profile
+    /// display by display makes the desktop relayout repeatedly and can strand
+    /// windows off-screen, so the transaction is worth keeping intact.
     @discardableResult
     static func apply(
         _ requests: [Request],
@@ -211,19 +211,7 @@ enum ModeService {
     ) async -> Bool {
         guard !requests.isEmpty else { return true }
 
-        if requests.allSatisfy({ $0.mode.source == .coreGraphics }),
-           await applyTransaction(requests, persistence: persistence) {
-            return true
-        }
-
-        return await applyIndividually(requests)
-    }
-
-    private static func applyTransaction(
-        _ requests: [Request],
-        persistence: Persistence
-    ) async -> Bool {
-        await Watchdog.run(seconds: 12, fallback: false) {
+        return await Watchdog.run(seconds: 12, fallback: false) {
             var config: CGDisplayConfigRef?
             guard CGBeginDisplayConfiguration(&config) == .success, let config else {
                 Log.display.error("CGBeginDisplayConfiguration failed")
@@ -231,18 +219,7 @@ enum ModeService {
             }
 
             for request in requests {
-                guard let raw = rawMode(id: request.mode.id, on: request.displayID) else {
-                    Log.display.error(
-                        "mode \(request.mode.id) not present on display \(request.displayID)"
-                    )
-                    CGCancelDisplayConfiguration(config)
-                    return false
-                }
-                let result = CGConfigureDisplayWithDisplayMode(config, request.displayID, raw, nil)
-                guard result == .success else {
-                    Log.display.error(
-                        "CGConfigureDisplayWithDisplayMode failed (\(result.rawValue)) for \(request.displayID)"
-                    )
+                guard stage(request, in: config) else {
                     CGCancelDisplayConfiguration(config)
                     return false
                 }
@@ -257,17 +234,27 @@ enum ModeService {
         }
     }
 
-    /// SkyLight path. Note it always writes the window server's saved state — it
-    /// has no session-only option — so `Persistence` does not apply here.
-    private static func applyIndividually(_ requests: [Request]) async -> Bool {
-        await Watchdog.run(seconds: 10, fallback: false) {
-            var allSucceeded = true
-            for request in requests {
-                if !SkyLightModes.apply(modeNumber: request.mode.id, to: request.displayID) {
-                    allSucceeded = false
-                }
+    private static func stage(_ request: Request, in config: CGDisplayConfigRef) -> Bool {
+        switch request.mode.source {
+        case .skyLight:
+            return SkyLightModes.stage(
+                modeNumber: request.mode.id, for: request.displayID, in: config
+            )
+
+        case .coreGraphics:
+            guard let raw = rawMode(id: request.mode.id, on: request.displayID) else {
+                Log.display.error(
+                    "mode \(request.mode.id) not present on display \(request.displayID)"
+                )
+                return false
             }
-            return allSucceeded
+            let result = CGConfigureDisplayWithDisplayMode(config, request.displayID, raw, nil)
+            if result != .success {
+                Log.display.error(
+                    "CGConfigureDisplayWithDisplayMode failed (\(result.rawValue)) for \(request.displayID)"
+                )
+            }
+            return result == .success
         }
     }
 }

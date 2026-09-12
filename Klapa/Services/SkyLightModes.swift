@@ -96,13 +96,20 @@ enum SkyLightModes {
         return result
     }
 
-    /// Selects a mode by number. The only path that can reach a mode CoreGraphics
-    /// never listed, so it cannot go through a `CGDisplayConfiguration` transaction.
+    /// Stages a mode inside an open display-configuration transaction.
+    ///
+    /// Must be called between `CGBeginDisplayConfiguration` and
+    /// `CGCompleteDisplayConfiguration`; the config object is what SkyLight
+    /// records the change into. Because it takes part in the normal transaction,
+    /// a SkyLight-only mode can be applied atomically alongside ordinary ones and
+    /// honours the same persistence option.
     @discardableResult
-    static func apply(modeNumber: Int32, to displayID: CGDirectDisplayID) -> Bool {
-        let error = CGSConfigureDisplayMode(
-            CGSMainConnectionID(), displayID, UInt32(bitPattern: modeNumber)
-        )
+    static func stage(
+        modeNumber: Int32,
+        for displayID: CGDirectDisplayID,
+        in config: CGDisplayConfigRef
+    ) -> Bool {
+        let error = CGSConfigureDisplayMode(config, displayID, modeNumber)
         if error != .success {
             Log.display.error("CGSConfigureDisplayMode failed (\(error.rawValue)) for \(displayID)")
         }

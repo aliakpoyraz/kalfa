@@ -41,15 +41,15 @@ extern IOReturn IOAVServiceWriteI2C(IOAVServiceRef service,
 
 #pragma mark - SkyLight display modes
 
-typedef int KlapaCGSConnectionID;
-
-extern KlapaCGSConnectionID CGSMainConnectionID(void);
-
-/// Sets a display mode by raw IODisplayModeID, bypassing the CGDisplayConfiguration
-/// transaction. This is the only way to select a mode CoreGraphics refuses to list.
-extern CGError CGSConfigureDisplayMode(KlapaCGSConnectionID connection,
+/// Sets a display mode by raw IODisplayModeID — the only way to select a mode
+/// CoreGraphics refuses to list.
+///
+/// The first parameter is a live `CGDisplayConfigRef` from
+/// `CGBeginDisplayConfiguration`, NOT a CGS connection ID. Passing a connection
+/// ID here segfaults inside SkyLight, which dereferences it as the config object.
+extern CGError CGSConfigureDisplayMode(CGDisplayConfigRef config,
                                        CGDirectDisplayID display,
-                                       uint32_t modeID);
+                                       int32_t modeNumber);
 
 /// Number of modes in SkyLight's own list, which is a superset of the one
 /// CGDisplayCopyAllDisplayModes returns. On a clamshell MacBook the difference

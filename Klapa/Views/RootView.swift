@@ -21,15 +21,16 @@ struct RootView: View {
             if center.screens.isEmpty {
                 emptyState
             } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        ForEach(center.screens) { screen in
-                            DisplayCardView(screen: screen)
-                        }
+                // Laid out directly rather than in a ScrollView: inside a
+                // MenuBarExtra window a ScrollView resolves to zero ideal height
+                // and silently swallows its content. Nobody has enough displays
+                // for the panel to need scrolling anyway.
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(center.screens) { screen in
+                        DisplayCardView(screen: screen)
                     }
-                    .padding(14)
                 }
-                .frame(maxHeight: 460)
+                .padding(14)
             }
 
             Divider()

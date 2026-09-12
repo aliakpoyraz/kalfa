@@ -20,7 +20,7 @@ struct ModePickerView: View {
 
             Spacer(minLength: 8)
 
-            if let native = nativeMode, native.id != center.currentMode(for: screen)?.id {
+            if let native = nativeMode, shouldOfferNative(native) {
                 Button("Yerel") { apply(native) }
                     .buttonStyle(.borderless)
                     .font(.caption)
@@ -82,6 +82,18 @@ struct ModePickerView: View {
         let id: String
         let label: String
         let modes: [ScreenMode]
+    }
+
+    /// The shortcut is only worth showing when the display is actually off its
+    /// native timing. Comparing mode IDs is not enough — a panel commonly lists
+    /// the same timing twice under different IDs, which made the button appear
+    /// while nothing was wrong.
+    private func shouldOfferNative(_ native: ScreenMode) -> Bool {
+        guard let current = center.currentMode(for: screen) else { return false }
+        if current.fingerprint == native.fingerprint { return false }
+        return !current.isNativeTiming
+            || current.pixelWidth < native.pixelWidth
+            || current.refreshRate < native.refreshRate
     }
 
     private var nativeMode: ScreenMode? {
