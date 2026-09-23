@@ -228,22 +228,33 @@ Kalfa/
                DisplayCenter   state, reconfiguration callback, auto-apply
                ProfileStore · DDCService · AppSettings · LaunchAtLogin
                ScrollService   the wheel event tap and its pixel playback
-  Views/       RootView · DisplayCardView · ModePickerView · ScaleToggleView
-               LinkRow · DDCControlsView · ProfilesSectionView · SaveProfileView
-               SettingsView · ScrollSettingsView · AboutView · SwitchRow
+  Views/       RootView (the panel) · KalfaWindowView (the one window)
+               DisplayCardView · ModePickerView · ScaleToggleView · LinkRow
+               DDCControlsView · ProfilesSectionView · SaveProfileView
+               SettingsView · ScrollSettingsView · AboutView · HealthView
   Bridging/    IOAVService and CGS declarations
 
+Packages/KalfaUI/    the shared visual language and the string lookup
+Packages/UpkeepKit/  the upkeep half: sampling, disk scan, cleaning, uninstalling
 Packages/EzDPIKit/   the DPI half, as its own module
-  Core/        Supervisor · Engine · SystemProxyController · TOMLGenerator
+  Core/        Supervisor · Engine (NativeEngine) · SystemProxyController
+  Proxy/       ProxyServer · ProxySession · UpstreamSocket · Fragmenter
+               TLSClientHello · DoHResolver
   Watchers/    AppWatcher · NetworkWatcher · ScheduleWatcher
-  UI/          MenuPanel (the DPI tab) · SettingsView (the DPI window)
+  UI/          MenuPanel (the DPI card) · SettingsView (the DPI page)
   Facade.swift what the app target may touch: start, shutdown, URLs, two views
 ```
+
+There are three surfaces, and a thing lives in exactly one of them: the **panel**
+for daily switches, the **window** for work you sit down to do, the **command
+palette** for reaching anything by name.
 
 Both halves arrived as separate menu bar apps, and both define a `Log`, a
 `Diagnostics`, a `SettingsView` and an `L10n`. The module boundary settles that
 without renaming a type on either side; `Facade.swift` is the only public
-surface.
+surface. `KalfaUI` exists so the DPI module can use the same cards and the same
+strings as the rest of the app — before it, the two halves looked like two apps
+stapled together, because structurally they were.
 
 Every window server call goes through `Watchdog`.
 `CGCompleteDisplayConfiguration` can block indefinitely during a
