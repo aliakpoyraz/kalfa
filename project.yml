@@ -1,40 +1,75 @@
-name: Klapa
+name: Kalfa
 options:
   bundleIdPrefix: com.aliakpoyraz
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
 
+packages:
+  # The DPI half, vendored in this repo. A local package rather than more files
+  # in the app target: both halves arrived with their own Log, Diagnostics,
+  # SettingsView and L10n, and a module boundary settles that without renaming
+  # anything on either side.
+  EzDPIKit:
+    path: Packages/EzDPIKit
+  # Bakım yarısı: canlı ölçüm, disk analizi, temizlik, kaldırma. Kendi modeli
+  # ve güvenlik kuralları olan bir bütün; app hedefine dağıtmak onu görünmez kılardı.
+  UpkeepKit:
+    path: Packages/UpkeepKit
+
 targets:
-  Klapa:
+  Kalfa:
     type: application
     platform: macOS
     deploymentTarget: "14.0"
     sources:
-      - path: Klapa
+      - path: Kalfa
         excludes:
           - "**/*.md"
+    dependencies:
+      - package: EzDPIKit
+      - package: UpkeepKit
+    info:
+      # Outside the sources directory: a plist in there would also be copied in
+      # as a stray resource.
+      path: Supporting/Info.plist
+      properties:
+        CFBundleName: Kalfa
+        CFBundleDisplayName: Kalfa
+        LSMinimumSystemVersion: "14.0"
+        # Menu bar only: no Dock tile, no app switcher entry.
+        LSUIElement: true
+        NSHumanReadableCopyright: "Kalfa"
+        # Kept from ezDPI so the Shortcuts and Raycast entries people already
+        # made keep working: ezdpi://on | off | auto | relaunch?bundle=<id>
+        CFBundleURLTypes:
+          - CFBundleURLName: com.aliakpoyraz.kalfa
+            CFBundleURLSchemes: [ezdpi, kalfa]
+        # Reading the Wi-Fi network name is a location permission on macOS; it is
+        # only asked for when a rule is keyed to an SSID.
+        NSLocationUsageDescription: "Bağlı olduğun Wi-Fi ağına göre kural çalıştırabilmek için ağ adı okunur."
+        NSLocationWhenInUseUsageDescription: "Bağlı olduğun Wi-Fi ağına göre kural çalıştırabilmek için ağ adı okunur."
+        NSAudioCaptureUsageDescription: "Uygulamaların ses düzeyini ayrı ayrı ayarlayabilmek için sistem sesi Kalfa üzerinden yönlendirilir."
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.aliakpoyraz.klapa
-        PRODUCT_NAME: Klapa
+        PRODUCT_BUNDLE_IDENTIFIER: com.aliakpoyraz.kalfa
+        PRODUCT_NAME: Kalfa
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: minimal
-        SWIFT_OBJC_BRIDGING_HEADER: Klapa/Bridging/Klapa-Bridging-Header.h
-        CODE_SIGN_ENTITLEMENTS: Klapa/Resources/Klapa.entitlements
-        # Ad-hoc signed. Klapa needs no entitlements — DDC/IOKit and the display
-        # configuration API are open to any process — so a developer identity buys
-        # nothing locally and only ties the build to a provisioning profile.
+        SWIFT_OBJC_BRIDGING_HEADER: Kalfa/Bridging/Kalfa-Bridging-Header.h
+        CODE_SIGN_ENTITLEMENTS: Kalfa/Resources/Kalfa.entitlements
+        # Ad-hoc signed. Kalfa needs no entitlements — DDC/IOKit, the display
+        # configuration API and networksetup are open to any process — so a
+        # developer identity buys nothing locally and only ties the build to a
+        # provisioning profile. Smooth scrolling asks for Accessibility at
+        # runtime, which is a TCC grant rather than an entitlement.
         ENABLE_HARDENED_RUNTIME: NO
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGNING_REQUIRED: YES
         CODE_SIGNING_ALLOWED: YES
         DEVELOPMENT_TEAM: ""
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_LSUIElement: true
-        INFOPLIST_KEY_NSHumanReadableCopyright: "Klapa"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

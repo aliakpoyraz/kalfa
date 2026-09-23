@@ -1,14 +1,18 @@
-# Klapa
+# Kalfa
 
-**macOS menü çubuğu ekran yöneticisi.** Çözünürlük ve HiDPI seçimi, ekran düzenine
-göre profiller, DDC/CI ile donanım parlaklığı.
+**İki yarısı olan bir macOS menü çubuğu uygulaması.** Ekran tarafı: çözünürlük ve
+HiDPI seçimi, ekran düzenine göre profiller, DDC/CI ile donanım parlaklığı,
+kesintisiz fare kaydırması. DPI tarafı: gömülü motorla engelli siteleri açmak ve
+bunu kendi kendine açılıp kapanan kurallarla yönetmek.
 
 *[English README](README.md)*
 
-Klapa tek bir arıza yüzünden yazıldı: MacBook'un kapağını kapatıp harici
-monitörden çalışmaya geçince masaüstü Retina olmaktan çıkıyor. macOS bir dakika
-önce kullandığı HiDPI modunu sunmayı bırakıyor ve Sistem Ayarları'nda onu geri
-getirmenin bir yolu yok.
+Kalfa, Klapa olarak tek bir arıza yüzünden yazılmıştı: MacBook'un kapağını
+kapatıp harici monitörden çalışmaya geçince masaüstü Retina olmaktan çıkıyor.
+macOS bir dakika önce kullandığı HiDPI modunu sunmayı bırakıyor ve Sistem
+Ayarları'nda onu geri getirmenin bir yolu yok. DPI tarafı
+[ezDPI](https://github.com/aliakpoyraz/ezdpi) uygulamasından geldi; o depo artık
+emekli — iki menü çubuğu uygulaması yerine tek uygulama.
 
 ---
 
@@ -26,9 +30,33 @@ getirmenin bir yolu yok.
 | **DDC/CI parlaklık + kontrast** | Apple Silicon'da `IOAVService` üzerinden |
 | **Onayla ya da geri al** | Doğrulanmamış modlar 15 saniye içinde korunmazsa geri alınır |
 | **Türkçe / English** | Uygulama içinden değiştirilir, sistem dilinden bağımsız |
+| **Kesintisiz fare kaydırması** | Her tekerlek çentiğini trackpad gibi piksel kaydırmasına çevirir (isteğe bağlı) |
+| **Engelli siteler** | Gömülü spoofdpi motoru + sistem proxy'si, yalnız listelediğin alan adları için |
+| **Kurallar** | DPI tarafı uygulamaya, ağa ya da saate göre kendi açılır, işi bitince kapanır |
 | **Girişte başlat** | `SMAppService` |
 
-Hiçbir izin gerekmez. Ağ kullanmaz.
+Ağ kullanmaz. Ekran yönetimi için izin gerekmez; tek istisna kesintisiz
+kaydırmadır — kaydırma tekerleğini okumak Erişilebilirlik izni ister ve bu izin
+yalnızca o anahtar açıldığında istenir.
+
+---
+
+## Kesintisiz kaydırma
+
+Varsayılan olarak kapalı ve izin isteyen tek özellik: kaydırma tekerleğini
+okumak olay yakalayıcı (event tap) gerektirir, o da Erişilebilirlik izni ister.
+
+Yaptığı iş, bir çentiğin tek sıçramasını aynı mesafeyi sonraki karelere yayarak
+ve ekranın kendi dikey eşitlemesine kilitleyerek oynatmaktır. Davranış
+[Mos](https://github.com/Caldis/Mos) örnek alınarak yazıldı — tek çentiğin
+gideceği mesafeye alt sınır, tek sönümleme yerine iki aşamalı süzgeç, hareketin
+kendi olayının imlecin altındaki sürece yeniden gönderilmesi ve kaydırma fazı
+gönderilmemesi (fazlar uygulamaların üstüne ikinci bir eylemsizlik katması
+demek). Mos CC BY-NC lisanslı, bu yüzden kodundan hiçbir şey burada yok; bu,
+yaptığı işin ayrı bir uygulaması.
+
+Trackpad ve Magic Mouse doğrudan geçer — onlar zaten piksel kaydırır, yeniden
+canlandırmak sürücünün kendi eylemsizliğiyle çakışır.
 
 ---
 
@@ -45,7 +73,7 @@ CoreGraphics :  139 mod — en büyük HiDPI 1280 × 720 (2560 × 1440 px)
 SkyLight     :  304 mod — içinde 2560 × 1440 HiDPI (5120 × 2880 px), 180 Hz
 ```
 
-Eksik olan o mod sorunun tamamı. Klapa onu SkyLight'ın listesinde bulur ve
+Eksik olan o mod sorunun tamamı. Kalfa onu SkyLight'ın listesinde bulur ve
 `CGSConfigureDisplayMode` ile uygular; çağrı normal bir
 `CGDisplayConfiguration` işleminin içine yerleştirilir, böylece atomik olur ve
 diğer mod değişiklikleriyle aynı kalıcılık kurallarına uyar.
@@ -68,7 +96,7 @@ değiştirir. Hangi bileşimde olduğun sonucun keskinliğini belirler:
 | 1920 × 1080 | 3840 × 2160 | 1,5× küsuratlı küçültme | **küsuratlı · yumuşak** |
 
 Üçüncü satır yanlışlıkla seçilmesi çok kolay olan ve "HiDPI bulanık görünüyor"un
-asıl sebebi olan durumdur. Klapa her modu etiketler ve küsuratlı bir moddaysan
+asıl sebebi olan durumdur. Kalfa her modu etiketler ve küsuratlı bir moddaysan
 en keskin seçeneğe tek tıkla geçiş sunar.
 
 ---
@@ -99,7 +127,7 @@ açıkken 8-bit YCbCr 4:4:4, kapalıyken 10-bit YCbCr 4:2:2 çalışıyor — ay
   işlevi yok.
 - DDC/CI'da bağlantı renk biçimi için standart bir VCP kodu yok.
 
-Bu yüzden Klapa değeri denetliyormuş gibi yapmak yerine gösteriyor. Seninki alt
+Bu yüzden Kalfa değeri denetliyormuş gibi yapmak yerine gösteriyor. Seninki alt
 örneklenmişse gerçekten işe yarayabilecekler: monitörün kendi menüsü
 (DisplayPort sürümü / giriş renk biçimi), başka bir kablo, başka bir port.
 
@@ -108,12 +136,17 @@ Bu yüzden Klapa değeri denetliyormuş gibi yapmak yerine gösteriyor. Seninki 
 ## Kurulum
 
 ```bash
-brew install xcodegen
+brew install xcodegen spoofdpi
 git clone https://github.com/aliakpoyraz/klapa.git
 cd klapa
 ./build.sh
-cp -R dist/Klapa.app /Applications/
+cp -R dist/Kalfa.app /Applications/
 ```
+
+`spoofdpi` DPI motorudur. Bu depoda durmaz — başkasının Apache-2.0 ikilisidir —
+derleme onu Homebrew'dan alıp paketin içine gömer; Kalfa'yı *kullanan* kimsenin
+Homebrew'a ihtiyacı olmaz. Motor yoksa ekran tarafı yine çalışır, DPI sekmesi
+motorun bulunamadığını söyler.
 
 Uygulama ad-hoc imzalıdır. İlk açılışta sağ tık → **Aç**.
 
@@ -129,7 +162,7 @@ kalan her şey Intel'de de çalışır.
 ## Teşhis
 
 ```bash
-/Applications/Klapa.app/Contents/MacOS/Klapa --dump
+/Applications/Kalfa.app/Contents/MacOS/Kalfa --dump
 ```
 
 Bağlı tüm ekranları, kullanılan modu, kablo sinyalini, DDC okumasını ve IOKit
@@ -150,7 +183,10 @@ MAG 274QF
 
 ## Profiller
 
-`~/Library/Application Support/Klapa/profiles.json` içinde düz JSON olarak durur.
+`~/Library/Application Support/Klapa/profiles.json` içinde düz JSON olarak durur
+— klasör eski adını koruyor ki Kalfa'ya geçiş kimsenin profillerini yetim
+bırakmasın. DPI yarısı da aynı sebeple kurallarını
+`~/Library/Application Support/ezDPI/` altında tutmaya devam ediyor.
 
 Bir profil **ekran düzenine** göre anahtarlanır: bağlı panellerin sıralı UUID
 kümesi. Bu, macOS'un kendi düzen başına ekran ayarları için kullandığı
@@ -166,22 +202,33 @@ kimlik geçersizleşir.
 ## Mimari
 
 ```
-Klapa/
+Kalfa/
   Core/        ScreenMode · ScreenInfo · DisplaySetKey · L10n · Watchdog · Diagnostics
   Services/    ModeService     CoreGraphics tarafı sayım ve uygulama
                SkyLightModes   özel mod listesi
                LinkInfo        kablo sinyali ve çerçeve tamponu okumaları
                DisplayCenter   durum, yeniden yapılandırma geri çağrısı, otomatik uygulama
                ProfileStore · DDCService · AppSettings · LaunchAtLogin
+               ScrollService   tekerlek olay yakalayıcısı ve piksel oynatımı
   Views/       RootView · DisplayCardView · ModePickerView · ScaleToggleView
                LinkRow · DDCControlsView · ProfilesSectionView · SaveProfileView
-               SettingsView · AboutView · SwitchRow
+               SettingsView · ScrollSettingsView · AboutView · SwitchRow
   Bridging/    IOAVService ve CGS bildirimleri
+
+Packages/EzDPIKit/   DPI yarısı, kendi modülü olarak
+  Core/        Supervisor · Engine · SystemProxyController · TOMLGenerator
+  Watchers/    AppWatcher · NetworkWatcher · ScheduleWatcher
+  UI/          MenuPanel (DPI sekmesi) · SettingsView (DPI penceresi)
+  Facade.swift uygulama hedefinin dokunabildiği her şey: başlat, kapat, bağlantı, iki görünüm
 ```
+
+İki yarı da ayrı birer menü çubuğu uygulaması olarak doğdu ve ikisinde de `Log`,
+`Diagnostics`, `SettingsView` ve `L10n` var. Modül sınırı bunu iki tarafta da tek
+bir tip adı değiştirmeden çözüyor; dışarı açık tek yüzey `Facade.swift`.
 
 Pencere sunucusuna giden her çağrı `Watchdog` içinden geçer.
 `CGCompleteDisplayConfiguration` yeniden yapılandırma sırasında süresiz bloke
-olabilir — ki Klapa tam o anda çalışır — ve menü çubuğunun donmaması gerekir.
+olabilir — ki Kalfa tam o anda çalışır — ve menü çubuğunun donmaması gerekir.
 
 ### Özel API notları
 

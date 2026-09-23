@@ -1,14 +1,18 @@
-# Klapa
+# Kalfa
 
-**A macOS menu bar app for display management.** Resolution and HiDPI switching,
-per-layout profiles, hardware brightness over DDC/CI.
+**A macOS menu bar app with two halves.** Displays — resolution and HiDPI
+switching, per-layout profiles, hardware brightness over DDC/CI, smooth mouse
+scrolling. And DPI — opening blocked sites through a bundled engine, driven by
+rules that turn themselves on and off.
 
 *[Türkçe README](README.tr.md)*
 
-Klapa exists because of one specific failure: close a MacBook's lid to drive an
-external monitor, and the desktop stops being Retina. macOS quietly stops
-offering the HiDPI mode it was using a moment earlier, and System Settings has
-no way to get it back.
+Kalfa started as Klapa, written for one specific failure: close a MacBook's lid
+to drive an external monitor, and the desktop stops being Retina. macOS quietly
+stops offering the HiDPI mode it was using a moment earlier, and System Settings
+has no way to get it back. The DPI half arrived from
+[ezDPI](https://github.com/aliakpoyraz/ezdpi), which is now retired — one menu
+bar app instead of two.
 
 ---
 
@@ -26,9 +30,32 @@ no way to get it back.
 | **DDC/CI brightness + contrast** | Apple Silicon, via `IOAVService` |
 | **Confirm-or-revert** | Unverified modes roll back after 15 seconds unless kept |
 | **Turkish / English** | Switchable in-app, independent of the system language |
+| **Smooth mouse scrolling** | Replays each wheel detent as pixel scrolling, trackpad-style (optional) |
+| **Blocked sites** | A bundled spoofdpi engine plus the system proxy, opened only for the domains you list |
+| **Rules** | The DPI half turns itself on by app, network or time of day, and off again afterwards |
 | **Launch at login** | `SMAppService` |
 
-No permissions required. No network access.
+No network access. Display management needs no permissions; smooth scrolling is
+the one exception — reading the scroll wheel requires Accessibility, and it is
+only asked for when that switch is turned on.
+
+---
+
+## Smooth scrolling
+
+Off by default, and the only feature that asks for a permission: reading the
+scroll wheel means an event tap, and an event tap means Accessibility.
+
+What it does is replace a detent's single jump with the same distance spread
+over the next frames, played back on the display's own vertical sync. Its
+behaviour is modelled on [Mos](https://github.com/Caldis/Mos) — a floor under
+how far one detent travels, a two-stage filter rather than a single decay, the
+gesture's own event reposted to the process under the pointer, and no scroll
+phases (they make apps add a second layer of inertia). Mos is licensed CC BY-NC,
+so none of its code is here; this is a separate implementation of what it does.
+
+Trackpads and the Magic Mouse are passed straight through — they already scroll
+in pixels, and re-animating them would fight the driver's own inertia.
 
 ---
 
@@ -45,7 +72,7 @@ CoreGraphics :  139 modes — largest HiDPI is 1280 × 720 (2560 × 1440 px)
 SkyLight     :  304 modes — including 2560 × 1440 HiDPI (5120 × 2880 px) at 180 Hz
 ```
 
-That missing mode is the entire problem. Klapa finds it in SkyLight's list and
+That missing mode is the entire problem. Kalfa finds it in SkyLight's list and
 applies it with `CGSConfigureDisplayMode`, staged inside a normal
 `CGDisplayConfiguration` transaction so it is atomic and honours the same
 persistence rules as any other mode change.
@@ -68,7 +95,7 @@ store. Which combination you land on decides how sharp the result is:
 | 1920 × 1080 | 3840 × 2160 | 1.5× fractional downscale | **scaled · soft** |
 
 The third row is easy to select by accident and is the usual reason "HiDPI
-looks blurry". Klapa labels every mode and offers a one-click jump to the
+looks blurry". Kalfa labels every mode and offers a one-click jump to the
 sharpest option when you are on a fractional one.
 
 ---
@@ -98,7 +125,7 @@ resolution, same refresh rate.
   `SLSCopyDisplayModePixelEncoding` — getters only. There is no setter.
 - DDC/CI has no standard VCP code for link pixel encoding.
 
-So Klapa reports the value instead of pretending to control it. If yours is
+So Kalfa reports the value instead of pretending to control it. If yours is
 subsampled, the things that can actually help are the monitor's own OSD (DisplayPort
 version / input colour format), a different cable, or a different port.
 
@@ -107,12 +134,17 @@ version / input colour format), a different cable, or a different port.
 ## Install
 
 ```bash
-brew install xcodegen
+brew install xcodegen spoofdpi
 git clone https://github.com/aliakpoyraz/klapa.git
 cd klapa
 ./build.sh
-cp -R dist/Klapa.app /Applications/
+cp -R dist/Kalfa.app /Applications/
 ```
+
+`spoofdpi` is the DPI engine. It is not in this repository — it is someone
+else's Apache-2.0 binary — so the build copies it out of Homebrew and embeds it
+in the bundle; nobody *running* Kalfa needs Homebrew. Without it the display
+half still works and the DPI tab reports the engine missing.
 
 The app is ad-hoc signed. On first launch, right-click → **Open**.
 
@@ -128,7 +160,7 @@ else works on Intel too.
 ## Diagnostics
 
 ```bash
-/Applications/Klapa.app/Contents/MacOS/Klapa --dump
+/Applications/Kalfa.app/Contents/MacOS/Kalfa --dump
 ```
 
 Prints every connected display, its active mode, the cable signal, the DDC
@@ -149,7 +181,10 @@ MAG 274QF
 
 ## Profiles
 
-Stored as plain JSON at `~/Library/Application Support/Klapa/profiles.json`.
+Stored as plain JSON at `~/Library/Application Support/Klapa/profiles.json` —
+the folder keeps its old name so the rename to Kalfa orphans nobody's profiles.
+The DPI half keeps its own rules in `~/Library/Application Support/ezDPI/` for
+the same reason.
 
 A profile is keyed by **layout**: the sorted set of connected panel UUIDs. This
 is the same key macOS uses for its own per-arrangement display settings, which
@@ -164,22 +199,34 @@ renumbers those after a reconfiguration, so a stored ID goes stale.
 ## Architecture
 
 ```
-Klapa/
+Kalfa/
   Core/        ScreenMode · ScreenInfo · DisplaySetKey · L10n · Watchdog · Diagnostics
   Services/    ModeService     CoreGraphics enumeration and application
                SkyLightModes   the private mode list
                LinkInfo        cable signal and framebuffer readings
                DisplayCenter   state, reconfiguration callback, auto-apply
                ProfileStore · DDCService · AppSettings · LaunchAtLogin
+               ScrollService   the wheel event tap and its pixel playback
   Views/       RootView · DisplayCardView · ModePickerView · ScaleToggleView
                LinkRow · DDCControlsView · ProfilesSectionView · SaveProfileView
-               SettingsView · AboutView · SwitchRow
+               SettingsView · ScrollSettingsView · AboutView · SwitchRow
   Bridging/    IOAVService and CGS declarations
+
+Packages/EzDPIKit/   the DPI half, as its own module
+  Core/        Supervisor · Engine · SystemProxyController · TOMLGenerator
+  Watchers/    AppWatcher · NetworkWatcher · ScheduleWatcher
+  UI/          MenuPanel (the DPI tab) · SettingsView (the DPI window)
+  Facade.swift what the app target may touch: start, shutdown, URLs, two views
 ```
+
+Both halves arrived as separate menu bar apps, and both define a `Log`, a
+`Diagnostics`, a `SettingsView` and an `L10n`. The module boundary settles that
+without renaming a type on either side; `Facade.swift` is the only public
+surface.
 
 Every window server call goes through `Watchdog`.
 `CGCompleteDisplayConfiguration` can block indefinitely during a
-reconfiguration, which is exactly when Klapa is doing its work, and the menu bar
+reconfiguration, which is exactly when Kalfa is doing its work, and the menu bar
 must not freeze.
 
 ### Private API notes

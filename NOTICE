@@ -1,0 +1,15 @@
+ezDPI
+Copyright (c) 2026 Ali Akpoyraz
+
+Bu ürün, uygulama paketine gömülü olarak SpoofDPI'yi kullanır.
+
+  SpoofDPI — https://github.com/xvzc/SpoofDPI
+  Copyright the SpoofDPI authors
+  Apache License, Version 2.0 — http://www.apache.org/licenses/LICENSE-2.0
+
+SpoofDPI ikilisi değiştirilmeden dağıtılır. Apache-2.0 lisansının tam metni
+motorun kendi deposunda bulunur.
+
+---
+
+This product bundles SpoofDPI (Apache-2.0) as an unmodified binary.

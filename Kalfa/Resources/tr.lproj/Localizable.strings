@@ -1,0 +1,469 @@
+/* Dil seçimi */
+"language" = "Dil";
+"language.system" = "Sistem";
+
+/* Başlık */
+"app.name" = "Kalfa";
+"header.clamshell" = "Kapak kapalı";
+"tab.display" = "Ekran";
+"tab.home" = "Kalfa";
+"tab.audio" = "Ses";
+"tab.system" = "Sistem";
+"tab.dpi" = "DPI";
+"header.displayCount.one" = "1 ekran";
+"header.displayCount.many" = "%d ekran";
+"header.noDisplays" = "Ekran bulunamadı";
+"header.rescan" = "Ekranları yeniden tara";
+"header.settings" = "Ayarlar";
+"header.about" = "Hakkında";
+"footer.quit" = "Çık";
+"empty.displays" = "Bağlı ekran okunamadı.";
+
+/* Ekran kartı */
+"display.builtIn" = "Dahili Ekran";
+"display.unnamed" = "Ekran %u";
+"display.badge.main" = "ana";
+"display.badge.mirrored" = "yansıtma";
+"display.badge.derived" = "üretilmiş";
+"display.badge.derived.help" = "Bu sinyal monitörün EDID'sinden gelmiyor, macOS kendisi üretti.";
+"display.currentUnknown" = "Kullanılan mod okunamadı.";
+
+/* Çözünürlük */
+"resolution" = "Çözünürlük";
+"resolution.change" = "Değiştir";
+"resolution.monitorMode" = "Monitörün modu";
+"resolution.monitorMode.help" = "Monitörün EDID'sinde bildirdiği en iyi mod: %@";
+"mode.suffix.soft" = " · yumuşak";
+"mode.suffix.hiddenHiDPI" = " · gizli HiDPI";
+"mode.suffix.derived" = " · üretilmiş";
+"mode.suffix.neverShown" = " · gizli";
+
+/* HiDPI + yenileme hızı */
+"hidpi" = "HiDPI (Retina)";
+"hidpi.badge.hidden" = "gizli mod";
+"hidpi.badge.hidden.help" = "macOS bu modu listelemiyor; Klapa onu pencere sunucusunun kendi listesinden buluyor.";
+"hidpi.noCounterpart" = "Bu ekranda %@ için karşıt ölçek yok.";
+"hidpi.turnOn" = "Aç: %@ px çizim çözünürlüğü, %@";
+"hidpi.turnOff" = "Kapat: %@ px çizim çözünürlüğü, %@";
+"refresh" = "Yüksek yenileme hızı";
+"refresh.on" = "Açık: %d Hz";
+"refresh.off" = "Kapalı: 60 Hz'e düşer";
+
+/* Piksel eşleşmesi */
+"grid.exact" = "birebir";
+"grid.supersampled" = "tam %d×";
+"grid.fractional" = "küsuratlı · yumuşak";
+"grid.warning" = "Çizim çözünürlüğü %@ px, panel ise %d × %d px. Araya %.2f× küsuratlı küçültme giriyor; metnin yumuşak görünmesinin sebebi bu.";
+"grid.switchTo" = "%@ HiDPI'ye geç";
+
+/* Bağlantı */
+"link" = "Kablo sinyali";
+"link.unknown" = "bilinmiyor";
+"link.help" = "Kablodaki renk biçimi ve çerçeve tamponundaki kanal başına bit sayısı. Salt okunur: macOS bunları seçmek için desteklenen bir yol sunmuyor.";
+"link.subsampled.help" = "%@ yatay renk çözünürlüğünü yarıya indirir. Metin kenarları yumuşar, renk taşması olabilir. macOS bunu kendisi seçiyor ve ayarı yok.";
+"link.framebuffer" = "%d-bit çerçeve tamponu";
+
+/* DDC */
+"ddc.probing" = "DDC sorgulanıyor…";
+"ddc.noResponse" = "Bu ekran DDC/CI ile yanıt vermiyor.";
+"ddc.brightness" = "Parlaklık";
+"ddc.contrast" = "Kontrast";
+
+/* Onay ve geri alma */
+"revert.title" = "Görüntü düzgün mü?";
+"revert.body" = "%1$@ · %2$@\n%3$d saniye içinde eski moda dönülecek.";
+"revert.keep" = "Bu modu koru";
+"revert.undo" = "Geri al";
+
+/* Profiller */
+"profiles" = "Profiller";
+"profiles.none" = "Bu ekran düzeni için kayıtlı profil yok.";
+"profiles.otherLayouts" = "%d tanesi başka düzen için";
+"profiles.autoColumn" = "kendiliğinden";
+"profiles.apply" = "Uygula";
+"profiles.delete" = "Profili sil";
+"profiles.autoApply.help" = "Bu ekran düzeni bağlandığında kendiliğinden uygula";
+"profiles.saveCurrent" = "Şu anki ayarları kaydet";
+"profiles.summary.brightness" = " · parlaklık";
+
+/* Kaydetme penceresi */
+"save.title" = "Profili kaydet";
+"save.name" = "Profil adı";
+"save.autoApply" = "Bu ekran düzeni bağlandığında kendiliğinden uygula";
+"save.includeBrightness" = "Parlaklık ve kontrastı da kaydet";
+"save.includeBrightness.help" = "Kaydetme sırasında her monitöre DDC sorgusu gider, birkaç saniye sürebilir.";
+"save.cancel" = "Vazgeç";
+"save.confirm" = "Kaydet";
+"save.defaultName.clamshell" = "Kapak kapalı";
+"save.defaultName.count" = "%d ekran";
+
+/* Ayarlar */
+"settings.title" = "Ayarlar";
+"settings.autoApply" = "Ekran düzeni değişince profili uygula";
+"settings.persist" = "Değişiklikleri kalıcı yap";
+"settings.persist.help" = "Kapalıyken değişiklik yalnızca bu oturum boyunca geçerli olur. Açıkken pencere sunucusunun kayıtlı düzen ayarının üzerine yazılır — kapak kapalıyken hatırlanan bozuk ayarı düzeltmenin yolu budur.";
+"settings.showLowRes" = "Her çözünürlüğün HiDPI olmayan eşini de göster";
+"settings.showHidden" = "Gizli modları göster";
+"settings.showHidden.help" = "Gizli modlar macOS'un \"asla gösterme\" diye işaretlediği modlardır; ekran kararabilir.";
+"settings.launchAtLogin" = "Girişte başlat";
+
+/* Hakkında */
+"about.title" = "Kalfa Hakkında";
+"about.tagline" = "Menü çubuğundan ekran, kaydırma ve engelli siteler.";
+"about.version" = "Sürüm %@ (%@)";
+"about.repository" = "Kaynak kodu";
+"about.license" = "MIT Lisansı";
+"about.credits" = "BetterDisplay ve FreeDisplay referans alınarak yazıldı. CoreGraphics'in listelemediği ekran modlarına ulaşmak için belgelenmemiş SkyLight çağrıları kullanır. Kesintisiz kaydırma Mos örnek alınarak yazıldı; DPI tarafı spoofdpi (Apache-2.0) motorunu sürer.";
+"about.copyright" = "© 2026 Ali Akpoyraz";
+
+/* Durum satırı */
+"status.applied" = "%1$@: %2$@";
+"status.applyFailed" = "%@: mod uygulanamadı";
+"status.applying" = "Ayarlar uygulanıyor";
+
+/* Kalfa ana ekranı */
+"home.command.placeholder" = "Ne yapalım?";
+"home.command.clear" = "Aramayı temizle";
+"home.title" = "Bugün ne yapalım?";
+"home.subtitle" = "Bir iş yaz veya hızlı eylemlerden birini seç.";
+"home.results" = "EYLEMLER";
+"home.noResults" = "Buna uygun bir eylem henüz yok.";
+"home.action.awake" = "Uyanık tut";
+"home.action.microphone" = "Mikrofon";
+"home.state.off" = "kapalı";
+"home.state.muted" = "susturuldu";
+"home.state.ready" = "hazır";
+"home.command.displays" = "Ekranları yönet";
+"home.command.displays.detail" = "Çözünürlük, yenileme hızı ve parlaklık";
+"home.command.sound" = "Sesi yönet";
+"home.command.sound.detail" = "Çıkış, giriş, ses seviyesi ve mikrofon";
+"home.command.system" = "Sistem araçlarını aç";
+"home.command.system.detail" = "Uyku, pencereler, DNS, diskler ve zamanlayıcı";
+"home.command.dpi" = "DPI ayarlarını aç";
+"home.command.dpi.detail" = "Siteler, çalışma modu ve kurallar";
+"home.command.toggleAwake" = "Uyanık tutmayı aç veya kapat";
+"home.command.toggleMic" = "Mikrofonu aç veya sustur";
+"home.command.refresh.detail" = "Bağlı ekranları yeniden algıla";
+"home.feedback.awakeOn" = "Mac uyanık tutuluyor.";
+"home.feedback.awakeOff" = "Uyanık tutma kapatıldı.";
+"home.feedback.micOff" = "Mikrofon susturuldu.";
+"home.feedback.micOn" = "Mikrofon açıldı.";
+"home.feedback.refreshed" = "Ekranlar yeniden tarandı.";
+
+/* Yerel araçlar */
+"tools.title" = "ÜZERİNDE ÇALIŞ";
+"tools.window.title" = "Kalfa Çalışma Alanı";
+"tools.window.subtitle" = "Dosyayı bu pencereye bırak; Finder'a geçsen de açık kalır.";
+"tools.window.open" = "Çalışma alanını aç";
+"tools.window.open.detail" = "Görsel, video, metin veya bağlantı bırak";
+"tools.drop" = "Bir şey bırak";
+"tools.drop.detail" = "Görsel, video, metin veya bağlantı";
+"tools.choose" = "Dosya seç";
+"tools.paste" = "Panodan al";
+"tools.clear" = "Temizle";
+"tools.text" = "Panodaki metin";
+"tools.image.resize" = "%50 küçült";
+"tools.image.png" = "PNG'ye çevir";
+"tools.image.background" = "Arka planı kaldır";
+"tools.video.compress" = "Sıkıştır";
+"tools.video.audio" = "Sesi çıkar";
+"tools.text.correct" = "Yazımı düzelt";
+"tools.text.summary" = "Özetle";
+"tools.text.translate" = "Çevir";
+"tools.link.save" = "Bağlantıyı kaydet";
+"tools.link.download" = "İndir";
+"tools.link.summary" = "Özetle";
+"tools.result.copied" = "Sonuç panoya kopyalandı.";
+"tools.result.saved" = "Kaydedildi: %@";
+"tools.error.unreadable" = "Dosya okunamadı.";
+"tools.error.unsupported" = "Bu öğe henüz desteklenmiyor.";
+"tools.error.export" = "Dışa aktarma tamamlanamadı.";
+"tools.error.clipboard" = "Panoda kullanılabilir bir öğe yok.";
+"status.kept" = "%1$@: %2$@ korundu";
+"status.reverted" = "%@: eski moda dönüldü";
+"status.revertFailed" = "%@: eski mod geri getirilemedi";
+"status.displayGone" = "%@: ekran artık bağlı değil";
+"status.profileSaved" = "Profil kaydedildi: %@";
+"status.profileApplied" = "Profil uygulandı: %@";
+"status.profileFailed" = "Profil uygulanamadı: %@";
+"status.profileMissingModes" = "%1$@: %2$@ için eşleşen mod yok";
+
+/* Kesintisiz kaydırma */
+"scroll.enable" = "Kesintisiz fare kaydırması";
+"scroll.enable.help" = "Fare tekerleği satır satır kaydırır, her çentikte bir sıçrar. Klapa her çentiği trackpad'in zaten yaptığı gibi piksel piksel harekete çevirir. Trackpad ve Magic Mouse'a dokunulmaz.";
+"scroll.permission.title" = "Erişilebilirlik izni gerekiyor";
+"scroll.permission.body" = "macOS kaydırma tekerleğini yalnızca onaylı uygulamalara okutur. Klapa'ya izin verin, sonra bu paneli yeniden açın. Onay uygulamanın imzasına bağlıdır; kendiniz derlediğiniz Klapa her yeniden derlemede tekrar onay ister.";
+"scroll.permission.grant" = "İzin iste";
+"scroll.permission.open" = "Sistem Ayarları'nı aç";
+
+/* Ses */
+"audio" = "Ses";
+"audio.output" = "Çıkış";
+"audio.input" = "Giriş";
+"audio.none.short" = "yok";
+"audio.none" = "Çıkış cihazı bulunamadı.";
+"audio.memory.help" = "Her cihaz kendi seviyesini saklar: kulaklığa geri döndüğünde bıraktığın sesle açılır. Giriş kaydırıcısı soluksa o mikrofon seviyesini bildiriyor ama değiştirtmiyor demektir.";
+
+/* Uyanık tut */
+"on" = "açık";
+"caffeine" = "Uyanık tut";
+"caffeine.now" = "Şimdi uyanık tut";
+"caffeine.help" = "caffeinate komutunun yaptığı gibi boşta uykuyu engeller. Ekran ve ekran koruyucu ayrı sayaçlardır; onlar için alttaki kutuyu işaretleyin. Kalfa kapanınca kendiliğinden bırakılır.";
+"caffeine.indefinite" = "Kapatana dek";
+"caffeine.minutes" = "%d dk";
+"caffeine.remaining" = "%d dk kaldı";
+"caffeine.untilOff" = "kapatana dek";
+"caffeine.display" = "Ekran açık kalsın, ekran koruyucu gelmesin";
+
+/* Senaryo ekleri */
+"dpi.mode.auto" = "otomatik";
+"dpi.mode.on" = "sürekli açık";
+"dpi.mode.off" = "kapalı";
+"save.includeAudio" = "Ses çıkışını da %@ yap";
+"save.includeDPI" = "DPI'yı da %@ yap";
+"save.includeCaffeine" = "Uyanık tut anahtarını da taşı";
+"profiles.summary.caffeine" = " · uyanık";
+
+/* Mikrofon */
+"audio.mute" = "Mikrofon kapalı";
+"audio.mute.help" = "Gerçek sistem geneli susturma: cihazın kendi susturması varsa o, yoksa seviyesi sıfıra çekilir. Önde hangi toplantı uygulaması olursa olsun çalışır.";
+"mixer.title" = "Ses Karıştırıcısı";
+"mixer.subtitle" = "Ses çalan uygulamaları ayrı ayrı yönet";
+"mixer.open" = "Ses karıştırıcısını aç";
+"mixer.open.help" = "Uygulama bazında ses seviyesi ve susturma";
+"mixer.empty.title" = "Ses çalan uygulama yok";
+"mixer.empty.detail" = "Bir uygulamada ses başlatınca burada görünecek.";
+"mixer.reset" = "Tümünü sıfırla";
+"mixer.refresh" = "Listeyi yenile";
+"mixer.mute" = "Sustur";
+"mixer.unmute" = "Sesi aç";
+"mixer.unsupported" = "Ses karıştırıcısı macOS 14.2 veya üzerini gerektirir.";
+"mixer.error" = "%@ için ses yönlendirmesi başlatılamadı. Sistem Ses Kaydı iznini kontrol et.";
+"mixer.error.detail" = "Ses yönlendirmesi başlatılamadı (%@).";
+
+/* Uyanık tutma kuralı */
+"caffeine.rule" = "Şunlar açıkken de uyanık kal";
+"caffeine.rule.add" = "Uygulama ekle…";
+"caffeine.rule.help" = "Bunlardan biri açıkken uyku engellenir, sonuncusu kapanınca kendiliğinden bırakılır.";
+"caffeine.byRule" = "kural tutuyor";
+
+/* Sunum */
+"presentation" = "Sunum";
+"presentation.on" = "Sunum modu";
+"presentation.blackout" = "Diğer ekranları karart";
+"presentation.help" = "Dock'u ve masaüstü simgelerini gizler, makineyi uyanık tutar. Kapatınca ya da çıkınca hepsi eski haline döner.";
+
+/* Zamanlayıcı */
+"timer" = "Zamanlayıcı";
+"timer.sleep" = "Uyut";
+"timer.displayOff" = "Ekranı kapat";
+"timer.shutdown" = "Kapat";
+"timer.minutes" = "%d dakika sonra";
+"timer.remaining" = "%1$d dk → %2$@";
+"timer.arm" = "Kur";
+"timer.cancel" = "İptal";
+
+/* Pencereler */
+"windows" = "Pencere yerleştirme";
+"windows.left" = "Sol yarı";
+"windows.right" = "Sağ yarı";
+"windows.top" = "Üst yarı";
+"windows.bottom" = "Alt yarı";
+"windows.center" = "Ortala";
+"windows.full" = "Ekranı doldur";
+"windows.help" = "Öndeki pencereyi taşır. Kesintisiz kaydırmanın istediği Erişilebilirlik iznini kullanır, ek izin istemez.";
+
+/* DNS */
+"dns" = "DNS";
+"dns.automatic" = "Otomatik";
+"dns.fromRouter" = "modemden";
+"dns.help" = "Bağlı olan her ağ servisine uygulanır, Wi-Fi'dan kabloya geçince seninle gelir. Otomatik, kararı modeme geri verir.";
+
+/* Diskler */
+"disks" = "Harici diskler";
+"disks.none" = "Bağlı harici disk yok.";
+"disks.ejectAll" = "Hepsini çıkar";
+"disks.ejected" = "Çıkarıldı.";
+"disks.busy" = "Hâlâ kullanımda: %@";
+
+/* Gizli anahtarlar */
+"tweaks" = "Gizli anahtarlar";
+"tweaks.hiddenFiles" = "Finder'da gizli dosyaları göster";
+"tweaks.extensions" = "Tüm dosya uzantılarını göster";
+"tweaks.screenshotShadow" = "Pencere ekran görüntülerinde gölge kalsın";
+"tweaks.instantDock" = "Dock anında açılsın";
+"tweaks.screenshotFormat" = "Ekran görüntüsü biçimi";
+"tweaks.screenshotFolder" = "Ekran görüntüsü klasörü";
+"tweaks.help" = "Bunlar insanların bir not dosyasında sakladığı defaults komutlarının aynısı. Biri değişince Finder ve Dock yeniden başlar, bir saniye sürer.";
+
+/* Kısayollar */
+"hotkeys" = "Klavye kısayolları";
+"hotkey.commandPalette" = "Komut kutusu";
+"hotkey.muteInput" = "Mikrofonu sustur";
+"hotkey.tileLeft" = "Pencere: sol yarı";
+"hotkey.tileRight" = "Pencere: sağ yarı";
+"hotkey.tileTop" = "Pencere: üst yarı";
+"hotkey.tileBottom" = "Pencere: alt yarı";
+"hotkey.tileCenter" = "Pencere: ortala";
+"hotkey.tileFull" = "Pencere: ekranı doldur";
+"hotkey.help" = "Kutuya tıklayıp yeni kısayolu tuşla. Esc vazgeçer, ✕ kısayolu kapatır, ok işareti varsayılana döndürür.";
+"hotkey.recording" = "Tuşla…";
+"hotkey.record.help" = "Yeni kısayolu kaydet";
+"hotkey.disable" = "Kısayolu kapat";
+"hotkey.reset" = "Varsayılana dön";
+"hotkey.problem.taken" = "Başka bir uygulama bu kombinasyonu tutuyor.";
+"hotkey.problem.duplicate" = "Aynı kombinasyon “%@” ile çakışıyor.";
+
+/* Komut kutusu */
+"palette.placeholder" = "Kalfa'ya ne yaptırayım?";
+"home.command.output" = "Ses çıkışı: %@";
+"home.feedback.output" = "Ses çıkışı %@ oldu.";
+"home.command.dpiMode" = "DPI: %@";
+"home.feedback.dpiMode" = "DPI %@ moduna alındı.";
+"home.command.scene" = "Senaryo: %@";
+"home.command.scene.detail" = "Kayıtlı ekran düzenini uygular.";
+"home.feedback.sceneApplied" = "“%@” uygulandı.";
+"home.feedback.sceneFailed" = "“%@” uygulanamadı.";
+"home.feedback.presentationOn" = "Sunum modu açık.";
+"home.feedback.presentationOff" = "Sunum modu kapalı.";
+"home.feedback.windowPlaced" = "Pencere yerleştirildi.";
+"home.feedback.windowFailed" = "Pencere yerleştirilemedi — Erişilebilirlik izni gerekiyor.";
+
+/* Sistem sağlığı */
+"health.title" = "Sistem sağlığı";
+"health.subtitle" = "Hangi özellik neden çalışmıyor, tek sayfada.";
+"health.open.settings" = "Ayarları aç";
+"health.accessibility" = "Erişilebilirlik izni";
+"health.accessibility.ok" = "Verildi — pencere yerleştirme ve kesintisiz kaydırma çalışır.";
+"health.accessibility.missing" = "Yok. Pencere kısayolları ve kesintisiz kaydırma sessizce çalışmaz.";
+"health.audioCapture" = "Ses yakalama izni";
+"health.audioCapture.ok" = "Verildi — uygulama başına ses karıştırıcı çalışır.";
+"health.audioCapture.denied" = "macOS ses yakalamayı reddetti (durum %@). Karıştırıcı sessiz kalır.";
+"health.audioCapture.unknown" = "Şu an ses çalan uygulama yok, izin sınanamadı.";
+"health.hotkeys" = "Klavye kısayolları";
+"health.hotkeys.ok" = "%d kısayol kayıtlı, çakışma yok.";
+"health.ddc" = "DDC (monitör parlaklığı)";
+"health.ddc.unsupported" = "Bu makinede DDC arayüzü bulunamadı.";
+"health.ddc.noExternal" = "Bağlı harici monitör yok.";
+"health.ddc.ok" = "%d harici monitörde kullanılabilir.";
+"health.dpi" = "DPI motoru";
+"health.dpi.missing" = "spoofdpi ikilisi pakette yok — DPI yarısı çalışmaz.";
+"health.dpi.running" = "Çalışıyor.";
+"health.dpi.idle" = "Hazır, mod: %@.";
+"health.scroll" = "Kesintisiz kaydırma";
+"health.scroll.running" = "Açık ve çalışıyor.";
+"health.scroll.blocked" = "Açık ama Erişilebilirlik izni olmadan olay dinleyicisi kurulamıyor.";
+"health.scroll.off" = "Kapalı.";
+"health.install" = "Kurulum yeri";
+"health.install.elsewhere" = "%@ — /Applications dışından çalışıyor. Ad-hoc imza her yeniden derlemede izinleri düşürür.";
+
+/* Karıştırıcı */
+"mixer.device.system" = "Sistem çıkışı";
+
+/* v2 arayüz */
+"tools" = "Araçlar";
+"tools.state" = "DNS, disk, zamanlayıcı…";
+"tools.subtitle" = "Seyrek kullanılan sistem ayarları. Günlük anahtarlar panelde duruyor.";
+"scroll" = "Kesintisiz kaydırma";
+"home.feedback.scrollOn" = "Kesintisiz kaydırma açık.";
+"home.feedback.scrollOff" = "Kesintisiz kaydırma kapalı.";
+"home.more" = "+%d sonuç daha";
+"profiles.none.short" = "kayıt yok";
+"profiles.count" = "%d senaryo";
+"a11y.expand" = "Aç";
+"a11y.collapse" = "Kapat";
+
+/* Canlı izleme */
+"monitor" = "İzleme";
+"monitor.summary" = "CPU %%%d · Bellek %%%d";
+"monitor.summary.idle" = "CPU, bellek ve süreçler";
+"monitor.cpu" = "CPU";
+"monitor.memory" = "Bellek";
+"monitor.gpu" = "GPU";
+"monitor.disk" = "Disk";
+"monitor.disk.free" = "%@ boş";
+"monitor.perSecond" = "sn";
+"monitor.measuring" = "Ölçülüyor…";
+"monitor.pressure.warning" = "Bellek baskısı yükseldi.";
+"monitor.pressure.critical" = "Bellek baskısı kritik. Bir şeyler kapat.";
+
+/* Bakım */
+"upkeep.title" = "Bakım";
+"upkeep.subtitle" = "Diskte ne yer kaplıyor, ne temizlenebilir.";
+"upkeep.open" = "Disk analizi…";
+"upkeep.disk.scan" = "Ev klasörünü tara";
+"upkeep.disk.scanning" = "Taranıyor…";
+"upkeep.disk.hint" = "Taramayı başlat: ev klasörün dizin dizin ölçülür, en çok yer kaplayanlar üste çıkar. Sistem birimine dokunulmaz.";
+"upkeep.disk.progress" = "%d dosya · %@";
+"upkeep.disk.total" = "Toplam %@ · %d dosya";
+"upkeep.reveal" = "Finder'da göster";
+"upkeep.trash.action" = "Çöp kutusuna taşı";
+"upkeep.trash.confirm" = "\"%@\" çöp kutusuna taşınsın mı?";
+"upkeep.trash.explain" = "Silinmez, çöp kutusuna taşınır. Fikrini değiştirirsen Finder'dan geri koyabilirsin.";
+"cancel" = "Vazgeç";
+
+/* Bakım — sekmeler */
+"upkeep.tab.disk" = "Disk";
+"upkeep.tab.clean" = "Temizlik";
+"upkeep.tab.uninstall" = "Kaldır";
+
+/* Temizlik */
+"upkeep.clean.scan" = "Temizlenebilirleri tara";
+"upkeep.clean.scanning" = "Taranıyor…";
+"upkeep.clean.hint" = "Taramayı başlat: önbellek, günlük, derleme çıktısı ve kurulum dosyaları bulunur. Yalnızca makinenin kendi yeniden ürettiği şeyler baştan işaretli gelir.";
+"upkeep.clean.selected" = "%d seçili · %@";
+"upkeep.clean.action" = "Seçilenleri temizle";
+"upkeep.clean.confirm" = "%d öğe (%@) çöp kutusuna taşınsın mı?";
+"upkeep.clean.explain.trash" = "Seçimde çöp kutusu var: onun içindekiler KALICI olarak silinir, gerisi çöp kutusuna taşınır.";
+"upkeep.cat.caches" = "Önbellek";
+"upkeep.cat.logs" = "Günlükler";
+"upkeep.cat.savedState" = "Kaydedilmiş pencere durumu";
+"upkeep.cat.crashReports" = "Çökme raporları";
+"upkeep.cat.derivedData" = "Xcode türetilmiş veri";
+"upkeep.cat.deviceSupport" = "iOS cihaz destek dosyaları";
+"upkeep.cat.simulator" = "Simülatör önbelleği";
+"upkeep.cat.installers" = "Kurulum dosyaları";
+"upkeep.cat.projectArtifacts" = "Proje derleme çıktıları";
+"upkeep.cat.trash" = "Çöp kutusu";
+
+/* Kaldırma */
+"upkeep.uninstall.search" = "Uygulama ara";
+"upkeep.uninstall.hint" = "Soldan bir uygulama seç.\nNe bırakacağı listelenir, sen onaylamadan hiçbir şey taşınmaz.";
+"upkeep.uninstall.running" = "Açık";
+"upkeep.uninstall.selected" = "%d seçili · %@";
+"upkeep.uninstall.action" = "Kaldır";
+"upkeep.uninstall.confirm" = "%@ kaldırılsın mı?";
+"upkeep.uninstall.explain" = "%d öğe (%@) çöp kutusuna taşınır. Silinmez; Finder'dan geri koyabilirsin.";
+"upkeep.kind.bundle" = "Uygulama";
+"upkeep.kind.support" = "Uygulama verisi";
+"upkeep.kind.caches" = "Önbellek";
+"upkeep.kind.preferences" = "Ayarlar";
+"upkeep.kind.container" = "Kap";
+"upkeep.kind.savedState" = "Pencere durumu";
+"upkeep.kind.logs" = "Günlük";
+"upkeep.kind.launchAgent" = "Açılış görevi";
+"upkeep.kind.webData" = "Web verisi";
+"upkeep.kind.scripts" = "Betikler";
+
+/* Bakım — panel */
+"upkeep.summary" = "Disk, temizlik, kaldırma, onarım";
+"upkeep.mode.disk" = "Disk";
+"upkeep.mode.clean" = "Temizlik";
+"upkeep.mode.uninstall" = "Kaldır";
+"upkeep.mode.repairs" = "Onarım";
+"upkeep.inWindow" = "Pencerede aç";
+"upkeep.more" = "+%d tane daha";
+
+/* Onarım */
+"repair.run" = "Çalıştır";
+"repair.admin" = "yönetici";
+"repair.flushDNS" = "DNS önbelleğini temizle";
+"repair.flushDNS.detail" = "Bir alan adı yeni sunucuya taşındıysa makine eskisini tutmayı sürdürür. Önbellek boşaltılır ve çözümleyici yeniden yüklenir.";
+"repair.rebuildLaunchServices" = "Birlikte Aç listesini onar";
+"repair.rebuildLaunchServices.detail" = "Kaldırılmış uygulamalar menüde kalıyorsa ya da dosya ikonları yanlışsa: uygulama kayıt veritabanı sıfırdan kurulur.";
+"repair.resetQuickLook" = "Önizlemeyi sıfırla";
+"repair.resetQuickLook.detail" = "Boşluk tuşuyla açılan önizleme dosyanın eski hâlini gösteriyorsa.";
+"repair.restartFinderDock" = "Finder ve Dock'u yeniden başlat";
+"repair.restartFinderDock.detail" = "Takılı pencereler ve güncellenmeyen ikonlar için. Masaüstü bir saniye kararır.";
+"repair.reindexSpotlight" = "Spotlight dizinini yeniden kur";
+"repair.reindexSpotlight.detail" = "Arama sonuç vermiyorsa. PAHALI: yeniden dizinleme saatler sürer ve o süre boyunca makine yavaşlar.";

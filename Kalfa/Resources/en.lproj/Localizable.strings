@@ -1,0 +1,469 @@
+/* Language picker */
+"language" = "Language";
+"language.system" = "System";
+
+/* Header */
+"app.name" = "Kalfa";
+"header.clamshell" = "Lid closed";
+"tab.display" = "Display";
+"tab.home" = "Kalfa";
+"tab.audio" = "Sound";
+"tab.system" = "System";
+"tab.dpi" = "DPI";
+"header.displayCount.one" = "1 display";
+"header.displayCount.many" = "%d displays";
+"header.noDisplays" = "No displays found";
+"header.rescan" = "Rescan displays";
+"header.settings" = "Settings";
+"header.about" = "About";
+"footer.quit" = "Quit";
+"empty.displays" = "No connected display could be read.";
+
+/* Display card */
+"display.builtIn" = "Built-in Display";
+"display.unnamed" = "Display %u";
+"display.badge.main" = "main";
+"display.badge.mirrored" = "mirrored";
+"display.badge.derived" = "synthesized";
+"display.badge.derived.help" = "This timing does not come from the monitor's EDID — macOS synthesized it.";
+"display.currentUnknown" = "Could not read the active mode.";
+
+/* Resolution */
+"resolution" = "Resolution";
+"resolution.change" = "Change";
+"resolution.monitorMode" = "Monitor's own";
+"resolution.monitorMode.help" = "The best timing the monitor reports in its EDID: %@";
+"mode.suffix.soft" = " · soft";
+"mode.suffix.hiddenHiDPI" = " · hidden HiDPI";
+"mode.suffix.derived" = " · synthesized";
+"mode.suffix.neverShown" = " · hidden";
+
+/* HiDPI + refresh */
+"hidpi" = "HiDPI (Retina)";
+"hidpi.badge.hidden" = "hidden mode";
+"hidpi.badge.hidden.help" = "macOS does not list this mode; Klapa finds it in the window server's own list.";
+"hidpi.noCounterpart" = "This display has no opposite scale at %@.";
+"hidpi.turnOn" = "Turn on: %@ px drawing resolution, %@";
+"hidpi.turnOff" = "Turn off: %@ px drawing resolution, %@";
+"refresh" = "High refresh rate";
+"refresh.on" = "On: %d Hz";
+"refresh.off" = "Off: drops to 60 Hz";
+
+/* Pixel grid */
+"grid.exact" = "pixel for pixel";
+"grid.supersampled" = "clean %dx";
+"grid.fractional" = "scaled · soft";
+"grid.warning" = "Drawing resolution is %@ px, the panel is %d × %d px. It is being shrunk by a fractional %.2f×, which is why text looks soft.";
+"grid.switchTo" = "Switch to %@ HiDPI";
+
+/* Link */
+"link" = "Cable signal";
+"link.unknown" = "unknown";
+"link.help" = "Colour format on the cable and bits per channel in the framebuffer. Read-only: macOS provides no supported way to choose these.";
+"link.subsampled.help" = "%@ halves horizontal colour resolution. Text edges soften and can fringe. macOS negotiates this itself and offers no setting for it.";
+"link.framebuffer" = "%d-bit framebuffer";
+
+/* DDC */
+"ddc.probing" = "Querying DDC…";
+"ddc.noResponse" = "This display does not answer DDC/CI.";
+"ddc.brightness" = "Brightness";
+"ddc.contrast" = "Contrast";
+
+/* Confirm or revert */
+"revert.title" = "Does the picture look right?";
+"revert.body" = "%1$@ · %2$@\nReverting to the previous mode in %3$d seconds.";
+"revert.keep" = "Keep this mode";
+"revert.undo" = "Undo";
+
+/* Profiles */
+"profiles" = "Profiles";
+"profiles.none" = "No profile saved for this display layout.";
+"profiles.otherLayouts" = "%d for other layouts";
+"profiles.autoColumn" = "auto";
+"profiles.apply" = "Apply";
+"profiles.delete" = "Delete profile";
+"profiles.autoApply.help" = "Apply automatically when this layout is connected";
+"profiles.saveCurrent" = "Save current setup";
+"profiles.summary.brightness" = " · brightness";
+
+/* Save sheet */
+"save.title" = "Save profile";
+"save.name" = "Profile name";
+"save.autoApply" = "Apply automatically when this layout is connected";
+"save.includeBrightness" = "Also save brightness and contrast";
+"save.includeBrightness.help" = "Saving queries each monitor over DDC, which can take a few seconds.";
+"save.cancel" = "Cancel";
+"save.confirm" = "Save";
+"save.defaultName.clamshell" = "Lid closed";
+"save.defaultName.count" = "%d displays";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.autoApply" = "Apply profile when the layout changes";
+"settings.persist" = "Make changes permanent";
+"settings.persist.help" = "When off, a change lasts only for this login session. When on, it overwrites the window server's saved layout settings — that is how a bad remembered lid-closed setup gets fixed.";
+"settings.showLowRes" = "Show the non-HiDPI twin of each resolution";
+"settings.showHidden" = "Show hidden modes";
+"settings.showHidden.help" = "Hidden modes are timings macOS marks \"never show\". The display may go dark.";
+"settings.launchAtLogin" = "Launch at login";
+
+/* About */
+"about.title" = "About Kalfa";
+"about.tagline" = "Displays, scrolling and blocked sites, from the menu bar.";
+"about.version" = "Version %@ (%@)";
+"about.repository" = "Source code";
+"about.license" = "MIT License";
+"about.credits" = "Written with BetterDisplay and FreeDisplay as references. Uses undocumented SkyLight calls to reach display modes CoreGraphics does not list. Smooth scrolling follows what Mos does; the DPI half drives spoofdpi (Apache-2.0).";
+"about.copyright" = "© 2026 Ali Akpoyraz";
+
+/* Status line */
+"status.applied" = "%1$@: %2$@";
+"status.applyFailed" = "%@: could not apply mode";
+"status.applying" = "Applying settings";
+
+/* Kalfa home */
+"home.command.placeholder" = "What shall we do?";
+"home.command.clear" = "Clear search";
+"home.title" = "What shall we do today?";
+"home.subtitle" = "Describe a task or choose a quick action.";
+"home.results" = "ACTIONS";
+"home.noResults" = "There is no matching action yet.";
+"home.action.awake" = "Keep awake";
+"home.action.microphone" = "Microphone";
+"home.state.off" = "off";
+"home.state.muted" = "muted";
+"home.state.ready" = "ready";
+"home.command.displays" = "Manage displays";
+"home.command.displays.detail" = "Resolution, refresh rate and brightness";
+"home.command.sound" = "Manage sound";
+"home.command.sound.detail" = "Output, input, volume and microphone";
+"home.command.system" = "Open system tools";
+"home.command.system.detail" = "Sleep, windows, DNS, disks and timer";
+"home.command.dpi" = "Open DPI settings";
+"home.command.dpi.detail" = "Sites, running mode and rules";
+"home.command.toggleAwake" = "Toggle keep awake";
+"home.command.toggleMic" = "Mute or unmute the microphone";
+"home.command.refresh.detail" = "Detect connected displays again";
+"home.feedback.awakeOn" = "The Mac will stay awake.";
+"home.feedback.awakeOff" = "Keep awake is off.";
+"home.feedback.micOff" = "Microphone muted.";
+"home.feedback.micOn" = "Microphone unmuted.";
+"home.feedback.refreshed" = "Displays rescanned.";
+
+/* Local tools */
+"tools.title" = "WORK ON SOMETHING";
+"tools.window.title" = "Kalfa Workspace";
+"tools.window.subtitle" = "Drop a file here; this window stays open when you switch to Finder.";
+"tools.window.open" = "Open workspace";
+"tools.window.open.detail" = "Drop an image, video, text or link";
+"tools.drop" = "Drop something here";
+"tools.drop.detail" = "Image, video, text or link";
+"tools.choose" = "Choose file";
+"tools.paste" = "Use clipboard";
+"tools.clear" = "Clear";
+"tools.text" = "Clipboard text";
+"tools.image.resize" = "Resize to 50%";
+"tools.image.png" = "Convert to PNG";
+"tools.image.background" = "Remove background";
+"tools.video.compress" = "Compress";
+"tools.video.audio" = "Extract audio";
+"tools.text.correct" = "Correct spelling";
+"tools.text.summary" = "Summarize";
+"tools.text.translate" = "Translate";
+"tools.link.save" = "Save link";
+"tools.link.download" = "Download";
+"tools.link.summary" = "Summarize";
+"tools.result.copied" = "Result copied to the clipboard.";
+"tools.result.saved" = "Saved: %@";
+"tools.error.unreadable" = "The file could not be read.";
+"tools.error.unsupported" = "This item is not supported yet.";
+"tools.error.export" = "Export could not be completed.";
+"tools.error.clipboard" = "There is no usable item on the clipboard.";
+"status.kept" = "%1$@: kept %2$@";
+"status.reverted" = "%@: went back to the previous mode";
+"status.revertFailed" = "%@: could not restore the previous mode";
+"status.displayGone" = "%@: display is no longer connected";
+"status.profileSaved" = "Profile saved: %@";
+"status.profileApplied" = "Profile applied: %@";
+"status.profileFailed" = "Could not apply profile: %@";
+"status.profileMissingModes" = "%1$@: no matching mode for %2$@";
+
+/* Smooth scrolling */
+"scroll.enable" = "Smooth mouse scrolling";
+"scroll.enable.help" = "A mouse wheel scrolls in whole lines, one jump per detent. Klapa replays each detent as pixel-by-pixel movement, the way a trackpad already scrolls. Trackpads and the Magic Mouse are left untouched.";
+"scroll.permission.title" = "Accessibility permission needed";
+"scroll.permission.body" = "macOS only lets an approved app read the scroll wheel. Grant Klapa access, then reopen this panel. Approval is tied to the app's signature, so a self-built Klapa has to be approved again after every rebuild.";
+"scroll.permission.grant" = "Ask for permission";
+"scroll.permission.open" = "Open System Settings";
+
+/* Sound */
+"audio" = "Sound";
+"audio.output" = "Output";
+"audio.input" = "Input";
+"audio.none.short" = "none";
+"audio.none" = "No output device found.";
+"audio.memory.help" = "Each device keeps its own level: switch back to headphones and they come back at the volume you left them. A greyed-out input slider means that microphone reports its level but will not take a new one.";
+
+/* Stay awake */
+"on" = "on";
+"caffeine" = "Keep awake";
+"caffeine.now" = "Keep awake now";
+"caffeine.help" = "Holds off idle sleep, the way the caffeinate command does. The screen and the screen saver run on their own timers — tick the box below for those. Released when Kalfa quits.";
+"caffeine.indefinite" = "Until off";
+"caffeine.minutes" = "%d min";
+"caffeine.remaining" = "%d min left";
+"caffeine.untilOff" = "until turned off";
+"caffeine.display" = "Keep the screen on and the screen saver away";
+
+/* Scene extras */
+"dpi.mode.auto" = "automatic";
+"dpi.mode.on" = "always on";
+"dpi.mode.off" = "off";
+"save.includeAudio" = "Also set sound output to %@";
+"save.includeDPI" = "Also set DPI to %@";
+"save.includeCaffeine" = "Also carry the keep-awake switch";
+"profiles.summary.caffeine" = " · awake";
+
+/* Microphone */
+"audio.mute" = "Microphone muted";
+"audio.mute.help" = "A real system-wide mute: the device's own mute where it has one, its level driven to zero where it does not. Works whatever meeting app is in front.";
+"mixer.title" = "Volume Mixer";
+"mixer.subtitle" = "Control every app that is playing sound";
+"mixer.open" = "Open volume mixer";
+"mixer.open.help" = "Per-app volume and mute controls";
+"mixer.empty.title" = "No apps are playing audio";
+"mixer.empty.detail" = "Start audio in an app and it will appear here.";
+"mixer.reset" = "Reset all";
+"mixer.refresh" = "Refresh the list";
+"mixer.mute" = "Mute";
+"mixer.unmute" = "Unmute";
+"mixer.unsupported" = "The volume mixer requires macOS 14.2 or later.";
+"mixer.error" = "Audio routing could not start for %@. Check the System Audio Recording permission.";
+"mixer.error.detail" = "Audio routing could not start (%@).";
+
+/* Keep awake rule */
+"caffeine.rule" = "Also stay awake while these are running";
+"caffeine.rule.add" = "Add an app…";
+"caffeine.rule.help" = "Sleep is held off while any of them is open and released the moment the last one quits.";
+"caffeine.byRule" = "held by a rule";
+
+/* Presentation */
+"presentation" = "Presentation";
+"presentation.on" = "Presentation mode";
+"presentation.blackout" = "Black out the other screens";
+"presentation.help" = "Hides the Dock and the desktop icons and keeps the Mac awake. Everything is put back when you turn it off or quit.";
+
+/* Timer */
+"timer" = "Timer";
+"timer.sleep" = "Sleep";
+"timer.displayOff" = "Screen off";
+"timer.shutdown" = "Shut down";
+"timer.minutes" = "In %d minutes";
+"timer.remaining" = "%1$d min → %2$@";
+"timer.arm" = "Start";
+"timer.cancel" = "Cancel";
+
+/* Windows */
+"windows" = "Window placement";
+"windows.left" = "Left half";
+"windows.right" = "Right half";
+"windows.top" = "Top half";
+"windows.bottom" = "Bottom half";
+"windows.center" = "Centre";
+"windows.full" = "Fill the screen";
+"windows.help" = "Moves the frontmost window. Uses the same accessibility permission smooth scrolling asks for.";
+
+/* DNS */
+"dns" = "DNS";
+"dns.automatic" = "Automatic";
+"dns.fromRouter" = "from the router";
+"dns.help" = "Applied to every connected service, so it follows you from Wi-Fi to cable. Automatic hands the choice back to the router.";
+
+/* Disks */
+"disks" = "External disks";
+"disks.none" = "No external disk mounted.";
+"disks.ejectAll" = "Eject all";
+"disks.ejected" = "Ejected.";
+"disks.busy" = "Still in use: %@";
+
+/* defaults flags */
+"tweaks" = "Hidden switches";
+"tweaks.hiddenFiles" = "Show hidden files in Finder";
+"tweaks.extensions" = "Show all filename extensions";
+"tweaks.screenshotShadow" = "Keep the shadow on window screenshots";
+"tweaks.instantDock" = "Dock appears instantly";
+"tweaks.screenshotFormat" = "Screenshot format";
+"tweaks.screenshotFolder" = "Screenshot folder";
+"tweaks.help" = "These are the same settings as the defaults commands people keep in a notes file. Finder and the Dock restart when one changes, which takes a second.";
+
+/* Shortcuts */
+"hotkeys" = "Keyboard shortcuts";
+"hotkey.commandPalette" = "Command box";
+"hotkey.muteInput" = "Mute microphone";
+"hotkey.tileLeft" = "Window: left half";
+"hotkey.tileRight" = "Window: right half";
+"hotkey.tileTop" = "Window: top half";
+"hotkey.tileBottom" = "Window: bottom half";
+"hotkey.tileCenter" = "Window: centre";
+"hotkey.tileFull" = "Window: fill screen";
+"hotkey.help" = "Click a key box and press the new combination. Esc cancels, ✕ switches the shortcut off, the arrow restores the default.";
+"hotkey.recording" = "Press…";
+"hotkey.record.help" = "Record a new shortcut";
+"hotkey.disable" = "Switch this shortcut off";
+"hotkey.reset" = "Restore the default";
+"hotkey.problem.taken" = "Another application already owns this combination.";
+"hotkey.problem.duplicate" = "Same combination as “%@”.";
+
+/* Command box */
+"palette.placeholder" = "What should Kalfa do?";
+"home.command.output" = "Sound output: %@";
+"home.feedback.output" = "Sound output is now %@.";
+"home.command.dpiMode" = "DPI: %@";
+"home.feedback.dpiMode" = "DPI set to %@.";
+"home.command.scene" = "Scene: %@";
+"home.command.scene.detail" = "Applies a saved display arrangement.";
+"home.feedback.sceneApplied" = "“%@” applied.";
+"home.feedback.sceneFailed" = "“%@” could not be applied.";
+"home.feedback.presentationOn" = "Presentation mode on.";
+"home.feedback.presentationOff" = "Presentation mode off.";
+"home.feedback.windowPlaced" = "Window placed.";
+"home.feedback.windowFailed" = "Could not place the window — accessibility permission is required.";
+
+/* System health */
+"health.title" = "System health";
+"health.subtitle" = "Which feature is not working, and why, on one page.";
+"health.open.settings" = "Open Settings";
+"health.accessibility" = "Accessibility permission";
+"health.accessibility.ok" = "Granted — window placement and smooth scrolling work.";
+"health.accessibility.missing" = "Missing. Window shortcuts and smooth scrolling silently do nothing.";
+"health.audioCapture" = "Audio capture permission";
+"health.audioCapture.ok" = "Granted — the per-app mixer works.";
+"health.audioCapture.denied" = "macOS refused audio capture (status %@). The mixer stays silent.";
+"health.audioCapture.unknown" = "Nothing is playing, so the permission could not be tested.";
+"health.hotkeys" = "Keyboard shortcuts";
+"health.hotkeys.ok" = "%d shortcuts registered, no conflicts.";
+"health.ddc" = "DDC (monitor brightness)";
+"health.ddc.unsupported" = "No DDC interface on this machine.";
+"health.ddc.noExternal" = "No external monitor connected.";
+"health.ddc.ok" = "Available on %d external monitors.";
+"health.dpi" = "DPI engine";
+"health.dpi.missing" = "The spoofdpi binary is not in the bundle — the DPI half cannot run.";
+"health.dpi.running" = "Running.";
+"health.dpi.idle" = "Ready, mode: %@.";
+"health.scroll" = "Smooth scrolling";
+"health.scroll.running" = "On and running.";
+"health.scroll.blocked" = "On, but the event tap cannot be installed without accessibility permission.";
+"health.scroll.off" = "Off.";
+"health.install" = "Install location";
+"health.install.elsewhere" = "%@ — running from outside /Applications. An ad-hoc signature loses permissions on every rebuild.";
+
+/* Mixer */
+"mixer.device.system" = "System output";
+
+/* v2 interface */
+"tools" = "Tools";
+"tools.state" = "DNS, disks, timer…";
+"tools.subtitle" = "The system settings nobody needs daily. The everyday switches stay in the panel.";
+"scroll" = "Smooth scrolling";
+"home.feedback.scrollOn" = "Smooth scrolling on.";
+"home.feedback.scrollOff" = "Smooth scrolling off.";
+"home.more" = "+%d more";
+"profiles.none.short" = "none saved";
+"profiles.count" = "%d scenes";
+"a11y.expand" = "Expand";
+"a11y.collapse" = "Collapse";
+
+/* Live monitoring */
+"monitor" = "Monitor";
+"monitor.summary" = "CPU %%%d · Memory %%%d";
+"monitor.summary.idle" = "CPU, memory and processes";
+"monitor.cpu" = "CPU";
+"monitor.memory" = "Memory";
+"monitor.gpu" = "GPU";
+"monitor.disk" = "Disk";
+"monitor.disk.free" = "%@ free";
+"monitor.perSecond" = "s";
+"monitor.measuring" = "Measuring…";
+"monitor.pressure.warning" = "Memory pressure is elevated.";
+"monitor.pressure.critical" = "Memory pressure is critical. Close something.";
+
+/* Upkeep */
+"upkeep.title" = "Upkeep";
+"upkeep.subtitle" = "What is taking up space, and what can go.";
+"upkeep.open" = "Disk analysis…";
+"upkeep.disk.scan" = "Scan home folder";
+"upkeep.disk.scanning" = "Scanning…";
+"upkeep.disk.hint" = "Start a scan: your home folder is measured directory by directory, largest first. The system volume is left alone.";
+"upkeep.disk.progress" = "%d files · %@";
+"upkeep.disk.total" = "%@ total · %d files";
+"upkeep.reveal" = "Show in Finder";
+"upkeep.trash.action" = "Move to Trash";
+"upkeep.trash.confirm" = "Move \"%@\" to the Trash?";
+"upkeep.trash.explain" = "Nothing is deleted — it goes to the Trash, and you can put it back from Finder.";
+"cancel" = "Cancel";
+
+/* Upkeep — tabs */
+"upkeep.tab.disk" = "Disk";
+"upkeep.tab.clean" = "Clean";
+"upkeep.tab.uninstall" = "Uninstall";
+
+/* Clean */
+"upkeep.clean.scan" = "Scan for cleanable files";
+"upkeep.clean.scanning" = "Scanning…";
+"upkeep.clean.hint" = "Start a scan: caches, logs, build output and installers are found. Only things the machine rebuilds on its own arrive pre-ticked.";
+"upkeep.clean.selected" = "%d selected · %@";
+"upkeep.clean.action" = "Clean selected";
+"upkeep.clean.confirm" = "Move %d items (%@) to the Trash?";
+"upkeep.clean.explain.trash" = "Your selection includes the Trash: its contents are deleted PERMANENTLY, everything else is moved to the Trash.";
+"upkeep.cat.caches" = "Caches";
+"upkeep.cat.logs" = "Logs";
+"upkeep.cat.savedState" = "Saved window state";
+"upkeep.cat.crashReports" = "Crash reports";
+"upkeep.cat.derivedData" = "Xcode derived data";
+"upkeep.cat.deviceSupport" = "iOS device support";
+"upkeep.cat.simulator" = "Simulator caches";
+"upkeep.cat.installers" = "Installers";
+"upkeep.cat.projectArtifacts" = "Project build output";
+"upkeep.cat.trash" = "Trash";
+
+/* Uninstall */
+"upkeep.uninstall.search" = "Search apps";
+"upkeep.uninstall.hint" = "Pick an app on the left.\nEverything it leaves behind is listed, and nothing moves until you confirm.";
+"upkeep.uninstall.running" = "Running";
+"upkeep.uninstall.selected" = "%d selected · %@";
+"upkeep.uninstall.action" = "Uninstall";
+"upkeep.uninstall.confirm" = "Uninstall %@?";
+"upkeep.uninstall.explain" = "%d items (%@) go to the Trash. Nothing is deleted; you can put it back from Finder.";
+"upkeep.kind.bundle" = "Application";
+"upkeep.kind.support" = "App data";
+"upkeep.kind.caches" = "Caches";
+"upkeep.kind.preferences" = "Preferences";
+"upkeep.kind.container" = "Container";
+"upkeep.kind.savedState" = "Window state";
+"upkeep.kind.logs" = "Logs";
+"upkeep.kind.launchAgent" = "Launch item";
+"upkeep.kind.webData" = "Web data";
+"upkeep.kind.scripts" = "Scripts";
+
+/* Upkeep — panel */
+"upkeep.summary" = "Disk, cleaning, uninstalling, repairs";
+"upkeep.mode.disk" = "Disk";
+"upkeep.mode.clean" = "Clean";
+"upkeep.mode.uninstall" = "Uninstall";
+"upkeep.mode.repairs" = "Repairs";
+"upkeep.inWindow" = "Open in window";
+"upkeep.more" = "+%d more";
+
+/* Repairs */
+"repair.run" = "Run";
+"repair.admin" = "admin";
+"repair.flushDNS" = "Flush the DNS cache";
+"repair.flushDNS.detail" = "When a domain has moved to a new server, the Mac keeps answering with the old one. Clears the cache and reloads the resolver.";
+"repair.rebuildLaunchServices" = "Repair the Open With list";
+"repair.rebuildLaunchServices.detail" = "For apps you removed that still appear in the menu, or files showing the wrong icon: the app registration database is rebuilt.";
+"repair.resetQuickLook" = "Reset Quick Look";
+"repair.resetQuickLook.detail" = "When the space-bar preview keeps showing an older version of a file.";
+"repair.restartFinderDock" = "Restart Finder and Dock";
+"repair.restartFinderDock.detail" = "For stuck windows and icons that will not refresh. The desktop blanks for a second.";
+"repair.reindexSpotlight" = "Rebuild the Spotlight index";
+"repair.reindexSpotlight.detail" = "When search returns nothing. EXPENSIVE: reindexing takes hours and the Mac is slower throughout.";
