@@ -55,6 +55,11 @@ final class ScrollService {
     private var trustPoll: Task<Void, Never>?
     private var screenObserver: (any NSObjectProtocol)?
 
+    /// Shared for the same reason as `DisplayCenter.shared`: the scrolling
+    /// switch shows up in the panel and in the window's preferences, and two
+    /// instances would mean two event taps fighting over the same wheel.
+    @MainActor static let shared = ScrollService()
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         DefaultsMigration.runOnce(defaults: defaults)

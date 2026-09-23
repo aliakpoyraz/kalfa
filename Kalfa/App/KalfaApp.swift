@@ -5,14 +5,17 @@ import SwiftUI
 struct KalfaApp: App {
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @State private var center = DisplayCenter()
-    @State private var scroll = ScrollService()
+    @State private var center = DisplayCenter.shared
+    @State private var scroll = ScrollService.shared
     /// Mirrors the DPI engine's running state so the menu bar icon can show it.
     @StateObject private var dpi = EzDPIStatus()
     /// Read here so a mute from the keyboard shows up in the menu bar at once.
     private let audio = AudioService.shared
 
     var body: some Scene {
+        // One scene. The window is AppKit-owned (`KalfaWindow`) because it is
+        // opened from the palette, a hotkey and a `kalfa://` URL — none of which
+        // have a SwiftUI environment to call `openWindow` from.
         MenuBarExtra {
             RootView()
                 .environment(center)
@@ -37,25 +40,5 @@ struct KalfaApp: App {
             .accessibilityLabel("Kalfa")
         }
         .menuBarExtraStyle(.window)
-
-        Window(L10n.t("tools"), id: "tools") {
-            ToolsWindowView()
-        }
-        .defaultSize(width: 500, height: 560)
-        .windowResizability(.contentMinSize)
-
-        Window(L10n.t("tools.window.title"), id: "workbench") {
-            WorkbenchWindowView()
-        }
-        .defaultSize(width: 520, height: 360)
-        .windowResizability(.contentMinSize)
-
-        // The DPI half's own window: sites, rules, test, log, about. Reached from
-        // the DPI tab; the display preferences stay in their popover, where they
-        // are two clicks from the thing they change.
-        Settings {
-            EzDPISettings()
-                .frame(width: 660, height: 500)
-        }
     }
 }

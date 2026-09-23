@@ -37,24 +37,23 @@ enum KalfaDesign {
     static let motion = Animation.easeOut(duration: 0.18)
 }
 
-/// What a control is about. The tint is the only colour decision in the app, and
-/// it is made once per subject rather than per view.
+/// What a control is about.
+///
+/// Five roles, not eleven. Colour names the *subject* — screens are blue, sound
+/// is purple, the protection half is green, something wanting attention is
+/// orange, everything else is neutral. Whether a control is on is carried by the
+/// tint being filled in at all, so an eleventh hue bought nothing except a panel
+/// that looked like a box of highlighters.
 enum KalfaRole {
-    case display, audio, microphone, awake, presentation, dpi, scroll, tools, health, scene, monitor
+    case neutral, display, audio, dpi, alert
 
     var tint: Color {
         switch self {
+        case .neutral: return .secondary
         case .display: return .blue
         case .audio: return .purple
-        case .microphone: return .red
-        case .awake: return .orange
-        case .presentation: return .indigo
         case .dpi: return .green
-        case .scroll: return .teal
-        case .tools: return .gray
-        case .health: return .pink
-        case .scene: return .cyan
-        case .monitor: return .mint
+        case .alert: return .orange
         }
     }
 }

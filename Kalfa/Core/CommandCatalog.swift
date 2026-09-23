@@ -116,12 +116,27 @@ enum CommandCatalog {
             title: L10n.t("health.title"),
             detail: L10n.t("health.subtitle"),
             icon: "stethoscope",
-            tint: .pink,
+            tint: .orange,
             keywords: ["sağlık", "health", "izin", "permission", "durum", "status", "tanılama", "diagnostics"]
         ) {
-            HealthWindow.show()
+            KalfaWindow.show(.health)
             finish(L10n.t("health.title"))
         })
+
+        // The window's sections, so the palette reaches every page by name —
+        // it is the only search surface now that the panel has none.
+        for section in KalfaWindow.Section.allCases {
+            items.append(CommandItem(
+                id: "window-section-\(section.rawValue)",
+                title: section.title,
+                detail: L10n.t("window.subtitle.\(section.rawValue)"),
+                icon: section.symbol,
+                tint: section.role.tint,
+                keywords: [section.rawValue, "pencere", "window", "aç", "open"]
+            ) {
+                KalfaWindow.show(section)
+            })
+        }
 
         items.append(CommandItem(
             id: "eject",

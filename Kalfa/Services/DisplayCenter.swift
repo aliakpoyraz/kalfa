@@ -58,6 +58,11 @@ final class DisplayCenter {
     private var suppressAutoApplyUntil = Date.distantPast
     private var callbackRegistered = false
 
+    /// The one instance. The panel, the window and the palette all drive the
+    /// same display state, and the window is built by AppKit — there is no
+    /// SwiftUI environment to hand it down through.
+    @MainActor static let shared = DisplayCenter()
+
     init(profiles: ProfileStore = ProfileStore()) {
         self.profiles = profiles
         refreshNow()

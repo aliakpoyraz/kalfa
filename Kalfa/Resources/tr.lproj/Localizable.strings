@@ -151,34 +151,6 @@
 "home.feedback.refreshed" = "Ekranlar yeniden tarandı.";
 
 /* Yerel araçlar */
-"tools.title" = "ÜZERİNDE ÇALIŞ";
-"tools.window.title" = "Kalfa Çalışma Alanı";
-"tools.window.subtitle" = "Dosyayı bu pencereye bırak; Finder'a geçsen de açık kalır.";
-"tools.window.open" = "Çalışma alanını aç";
-"tools.window.open.detail" = "Görsel, video, metin veya bağlantı bırak";
-"tools.drop" = "Bir şey bırak";
-"tools.drop.detail" = "Görsel, video, metin veya bağlantı";
-"tools.choose" = "Dosya seç";
-"tools.paste" = "Panodan al";
-"tools.clear" = "Temizle";
-"tools.text" = "Panodaki metin";
-"tools.image.resize" = "%50 küçült";
-"tools.image.png" = "PNG'ye çevir";
-"tools.image.background" = "Arka planı kaldır";
-"tools.video.compress" = "Sıkıştır";
-"tools.video.audio" = "Sesi çıkar";
-"tools.text.correct" = "Yazımı düzelt";
-"tools.text.summary" = "Özetle";
-"tools.text.translate" = "Çevir";
-"tools.link.save" = "Bağlantıyı kaydet";
-"tools.link.download" = "İndir";
-"tools.link.summary" = "Özetle";
-"tools.result.copied" = "Sonuç panoya kopyalandı.";
-"tools.result.saved" = "Kaydedildi: %@";
-"tools.error.unreadable" = "Dosya okunamadı.";
-"tools.error.unsupported" = "Bu öğe henüz desteklenmiyor.";
-"tools.error.export" = "Dışa aktarma tamamlanamadı.";
-"tools.error.clipboard" = "Panoda kullanılabilir bir öğe yok.";
 "status.kept" = "%1$@: %2$@ korundu";
 "status.reverted" = "%@: eski moda dönüldü";
 "status.revertFailed" = "%@: eski mod geri getirilemedi";
@@ -362,8 +334,6 @@
 
 /* v2 arayüz */
 "tools" = "Araçlar";
-"tools.state" = "DNS, disk, zamanlayıcı…";
-"tools.subtitle" = "Seyrek kullanılan sistem ayarları. Günlük anahtarlar panelde duruyor.";
 "scroll" = "Kesintisiz kaydırma";
 "home.feedback.scrollOn" = "Kesintisiz kaydırma açık.";
 "home.feedback.scrollOff" = "Kesintisiz kaydırma kapalı.";
@@ -447,10 +417,6 @@
 
 /* Bakım — panel */
 "upkeep.summary" = "Disk, temizlik, kaldırma, onarım";
-"upkeep.mode.disk" = "Disk";
-"upkeep.mode.clean" = "Temizlik";
-"upkeep.mode.uninstall" = "Kaldır";
-"upkeep.mode.repairs" = "Onarım";
 "upkeep.inWindow" = "Pencerede aç";
 "upkeep.more" = "+%d tane daha";
 
@@ -467,3 +433,28 @@
 "repair.restartFinderDock.detail" = "Takılı pencereler ve güncellenmeyen ikonlar için. Masaüstü bir saniye kararır.";
 "repair.reindexSpotlight" = "Spotlight dizinini yeniden kur";
 "repair.reindexSpotlight.detail" = "Arama sonuç vermiyorsa. PAHALI: yeniden dizinleme saatler sürer ve o süre boyunca makine yavaşlar.";
+
+/* Kalfa penceresi */
+"window.open" = "Kalfa penceresi";
+"window.group.mac" = "Mac";
+"window.group.care" = "Bakım";
+"window.group.kalfa" = "Kalfa";
+"window.section.displays" = "Ekran";
+"window.section.audio" = "Ses";
+"window.section.system" = "Sistem";
+"window.section.upkeep" = "Bakım";
+"window.section.dpi" = "DPI";
+"window.section.health" = "Sağlık";
+"window.section.settings" = "Ayarlar";
+"window.section.about" = "Hakkında";
+"window.subtitle.displays" = "Bağlı ekranlar, çözünürlük ve senaryolar.";
+"window.subtitle.audio" = "Çıkış ve giriş cihazı, seviyeler, uygulama sesleri.";
+"window.subtitle.system" = "Seyrek dokunulan ayarlar: uyanık tut, sunum, zamanlayıcı, pencere, DNS.";
+"window.subtitle.upkeep" = "Disk analizi, temizlik, uygulama kaldırma ve onarımlar.";
+"window.subtitle.dpi" = "Engellenen siteler, kurallar ve kayıtlar.";
+"window.subtitle.health" = "Bir özellik neden çalışmıyor?";
+"window.subtitle.settings" = "Dil, kaydırma, girişte başlat ve ekran tercihleri.";
+"window.subtitle.about" = "Sürüm, kaynak kod ve kullanılan bileşenler.";
+"upkeep.tab.repair" = "Onarım";
+"upkeep.state" = "Disk, temizlik, kaldır";
+"palette.title" = "Komut paleti";

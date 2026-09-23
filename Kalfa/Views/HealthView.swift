@@ -1,40 +1,11 @@
 import AppKit
 import SwiftUI
 
-/// A window rather than a panel section: this is the page someone opens when
-/// something is wrong, and it is read top to bottom instead of poked at.
-@MainActor
-enum HealthWindow {
-
-    private static var window: NSWindow?
-
-    static func show() {
-        HealthService.shared.refresh()
-
-        if let window {
-            NSApp.activate(ignoringOtherApps: true)
-            window.makeKeyAndOrderFront(nil)
-            return
-        }
-
-        let created = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 520, height: 560),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-        created.title = L10n.t("health.title")
-        created.titlebarAppearsTransparent = true
-        created.isReleasedWhenClosed = false
-        created.center()
-        created.contentView = NSHostingView(rootView: HealthView())
-        window = created
-
-        NSApp.activate(ignoringOtherApps: true)
-        created.makeKeyAndOrderFront(nil)
-    }
-}
-
+/// The page someone opens when something is wrong: every row maps to a Kalfa
+/// feature that can fail silently — a permission never granted, a monitor link
+/// that quietly dropped to 4:2:2, a shortcut another app took — and carries the
+/// button that fixes it. Read top to bottom rather than poked at, which is why
+/// it is a section of the window and not a card in the panel.
 struct HealthView: View {
 
     private let health = HealthService.shared
@@ -53,8 +24,7 @@ struct HealthView: View {
                 .padding(16)
             }
         }
-        .frame(minWidth: 460, minHeight: 420)
-        .background(.regularMaterial)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
             health.refresh()
             // Permissions are granted in another app; without a poll the page

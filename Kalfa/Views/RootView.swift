@@ -2,30 +2,27 @@ import EzDPIKit
 import SwiftUI
 import UpkeepKit
 
-/// The whole menu bar panel.
+/// The menu bar panel: what the machine is doing, and the switches worth
+/// flicking on the way past.
 ///
-/// One surface instead of five tabs. Reading down: what the machine is doing
-/// right now (chips), a search box for anything by name, the switches people
-/// touch daily as tiles that carry their own state, and then the four subjects —
-/// displays, sound, scenes, DPI — as cards that open one at a time. Everything
-/// rare moved out to the tools window, where there is room for it.
+/// Reading down: the state line, the toggles as tiles that carry their own
+/// state, then the subjects that are worth a look without sitting down —
+/// displays, sound, scenes, live load, DPI. Everything that is *work* rather
+/// than a flick lives in the window; everything searchable lives in the
+/// palette. The panel used to carry a second copy of both and was longer than
+/// the screen for it.
 struct RootView: View {
 
     private enum Card: String {
-        case displays, audio, scenes, dpi, monitor, upkeep
+        case displays, audio, scenes, dpi, monitor
     }
 
     @Environment(DisplayCenter.self) private var center
     @Environment(ScrollService.self) private var scroll
-    @Environment(\.openWindow) private var openWindow
 
     @State private var openCard: Card?
-    @State private var query = ""
     @State private var feedback: String?
-    @State private var showingSettings = false
-    @State private var showingAbout = false
     @State private var showingSaveSheet = false
-    @FocusState private var searchFocused: Bool
 
     private let audio = AudioService.shared
     private let caffeine = CaffeineService.shared
@@ -42,22 +39,11 @@ struct RootView: View {
             header
 
             VStack(alignment: .leading, spacing: KalfaDesign.s) {
-                PanelSearchField(
-                    query: $query,
-                    focus: $searchFocused,
-                    shortcutLabel: HotkeyService.shared.label(for: .commandPalette),
-                    onSubmit: { matches.first.map(run) }
-                )
-
-                if isSearching {
-                    PanelSearchResults(items: matches, run: run)
-                } else {
-                    if let pending = center.pendingRevert {
-                        revertBanner(pending)
-                    }
-                    tiles
-                    cards
+                if let pending = center.pendingRevert {
+                    revertBanner(pending)
                 }
+                tiles
+                cards
 
                 if let feedback {
                     Label(feedback, systemImage: "checkmark.circle.fill")
@@ -78,14 +64,6 @@ struct RootView: View {
         .id(center.settings.language.rawValue)
         .animation(KalfaDesign.motion, value: feedback)
         .onAppear { CommandPalette.shared.center = center }
-        .popover(isPresented: $showingSettings, arrowEdge: .bottom) {
-            SettingsView()
-                .environment(center)
-                .environment(scroll)
-        }
-        .popover(isPresented: $showingAbout, arrowEdge: .bottom) {
-            AboutView()
-        }
         .sheet(isPresented: $showingSaveSheet) {
             SaveProfileView()
                 .environment(center)
@@ -113,14 +91,14 @@ struct RootView: View {
                         .accessibilityLabel(L10n.t("status.applying"))
                 }
 
+                KalfaToolbarButton(systemName: "magnifyingglass", help: searchHelp) {
+                    CommandPalette.shared.show()
+                }
                 KalfaToolbarButton(systemName: "stethoscope", help: L10n.t("health.title")) {
-                    HealthWindow.show()
+                    KalfaWindow.show(.health)
                 }
-                KalfaToolbarButton(systemName: "gearshape", help: L10n.t("header.settings")) {
-                    showingSettings.toggle()
-                }
-                KalfaToolbarButton(systemName: "info.circle", help: L10n.t("header.about")) {
-                    showingAbout.toggle()
+                KalfaToolbarButton(systemName: "macwindow", help: L10n.t("window.open")) {
+                    KalfaWindow.show()
                 }
             }
 
@@ -145,6 +123,10 @@ struct RootView: View {
         .padding(.bottom, KalfaDesign.m)
     }
 
+    private var searchHelp: String {
+        "\(L10n.t("palette.title")) · \(HotkeyService.shared.label(for: .commandPalette))"
+    }
+
     // MARK: Tiles
 
     private var tiles: some View {
@@ -156,7 +138,7 @@ struct RootView: View {
                 title: L10n.t("home.action.microphone"),
                 state: audio.isInputMuted ? L10n.t("home.state.muted") : L10n.t("home.state.ready"),
                 symbol: audio.isInputMuted ? "mic.slash.fill" : "mic.fill",
-                role: .microphone,
+                role: .audio,
                 isOn: audio.isInputMuted
             ) {
                 audio.setInputMuted(!audio.isInputMuted)
@@ -167,7 +149,7 @@ struct RootView: View {
                 title: L10n.t("home.action.awake"),
                 state: caffeine.isActive ? L10n.t("on") : L10n.t("home.state.off"),
                 symbol: caffeine.isActive ? "cup.and.saucer.fill" : "cup.and.saucer",
-                role: .awake,
+                role: .neutral,
                 isOn: caffeine.isActive
             ) {
                 caffeine.toggle()
@@ -178,7 +160,7 @@ struct RootView: View {
                 title: L10n.t("presentation"),
                 state: presentation.isOn ? L10n.t("on") : L10n.t("home.state.off"),
                 symbol: "rectangle.on.rectangle",
-                role: .presentation,
+                role: .neutral,
                 isOn: presentation.isOn
             ) {
                 presentation.toggle()
@@ -189,7 +171,7 @@ struct RootView: View {
                 title: L10n.t("scroll"),
                 state: scroll.isEnabled ? L10n.t("on") : L10n.t("home.state.off"),
                 symbol: "computermouse",
-                role: .scroll,
+                role: .neutral,
                 isOn: scroll.isEnabled
             ) {
                 scroll.isEnabled.toggle()
@@ -212,14 +194,13 @@ struct RootView: View {
             }
 
             KalfaTile(
-                title: L10n.t("tools"),
-                state: L10n.t("tools.state"),
-                symbol: "wrench.and.screwdriver",
-                role: .tools,
+                title: L10n.t("upkeep.title"),
+                state: L10n.t("upkeep.state"),
+                symbol: "wrench.adjustable",
+                role: .neutral,
                 isOn: false
             ) {
-                openWindow(id: "tools")
-                NSApp.activate(ignoringOtherApps: true)
+                KalfaWindow.show(.upkeep)
             }
         }
     }
@@ -278,7 +259,7 @@ struct RootView: View {
                 title: L10n.t("profiles"),
                 summary: sceneSummary,
                 symbol: "sparkles.rectangle.stack",
-                role: .scene,
+                role: .display,
                 isExpanded: binding(for: .scenes)
             ) {
                 ProfilesSectionView(showingSaveSheet: $showingSaveSheet)
@@ -288,7 +269,7 @@ struct RootView: View {
                 title: L10n.t("monitor"),
                 summary: monitorSummary,
                 symbol: "gauge.with.dots.needle.33percent",
-                role: .monitor,
+                role: .neutral,
                 isExpanded: binding(for: .monitor)
             ) {
                 MonitorCardView()
@@ -302,16 +283,6 @@ struct RootView: View {
                 isExpanded: binding(for: .dpi)
             ) {
                 EzDPIPanel()
-            }
-
-            KalfaCard(
-                title: L10n.t("upkeep.title"),
-                summary: L10n.t("upkeep.summary"),
-                symbol: "wrench.adjustable",
-                role: .tools,
-                isExpanded: binding(for: .upkeep)
-            ) {
-                UpkeepCardView()
             }
         }
     }
@@ -333,12 +304,9 @@ struct RootView: View {
                 .font(KalfaDesign.captionFont)
                 .foregroundStyle(.tertiary)
             Spacer()
-            Button(L10n.t("tools.window.open")) {
-                openWindow(id: "workbench")
-                NSApp.activate(ignoringOtherApps: true)
-            }
-            .buttonStyle(.borderless)
-            .font(KalfaDesign.captionFont)
+            Button(L10n.t("window.open")) { KalfaWindow.show() }
+                .buttonStyle(.borderless)
+                .font(KalfaDesign.captionFont)
             Button(L10n.t("footer.quit")) { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.borderless)
                 .font(KalfaDesign.captionFont)
@@ -372,21 +340,6 @@ struct RootView: View {
         .padding(KalfaDesign.m)
         .frame(maxWidth: .infinity, alignment: .leading)
         .kalfaSurface(tint: .orange, isActive: true)
-    }
-
-    // MARK: Search plumbing
-
-    private var isSearching: Bool {
-        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private var matches: [CommandItem] {
-        CommandCatalog.match(query, in: CommandCatalog.items(center: center, finish: say))
-    }
-
-    private func run(_ item: CommandItem) {
-        item.run()
-        query = ""
     }
 
     private func say(_ message: String) {

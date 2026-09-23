@@ -151,34 +151,6 @@
 "home.feedback.refreshed" = "Displays rescanned.";
 
 /* Local tools */
-"tools.title" = "WORK ON SOMETHING";
-"tools.window.title" = "Kalfa Workspace";
-"tools.window.subtitle" = "Drop a file here; this window stays open when you switch to Finder.";
-"tools.window.open" = "Open workspace";
-"tools.window.open.detail" = "Drop an image, video, text or link";
-"tools.drop" = "Drop something here";
-"tools.drop.detail" = "Image, video, text or link";
-"tools.choose" = "Choose file";
-"tools.paste" = "Use clipboard";
-"tools.clear" = "Clear";
-"tools.text" = "Clipboard text";
-"tools.image.resize" = "Resize to 50%";
-"tools.image.png" = "Convert to PNG";
-"tools.image.background" = "Remove background";
-"tools.video.compress" = "Compress";
-"tools.video.audio" = "Extract audio";
-"tools.text.correct" = "Correct spelling";
-"tools.text.summary" = "Summarize";
-"tools.text.translate" = "Translate";
-"tools.link.save" = "Save link";
-"tools.link.download" = "Download";
-"tools.link.summary" = "Summarize";
-"tools.result.copied" = "Result copied to the clipboard.";
-"tools.result.saved" = "Saved: %@";
-"tools.error.unreadable" = "The file could not be read.";
-"tools.error.unsupported" = "This item is not supported yet.";
-"tools.error.export" = "Export could not be completed.";
-"tools.error.clipboard" = "There is no usable item on the clipboard.";
 "status.kept" = "%1$@: kept %2$@";
 "status.reverted" = "%@: went back to the previous mode";
 "status.revertFailed" = "%@: could not restore the previous mode";
@@ -362,8 +334,6 @@
 
 /* v2 interface */
 "tools" = "Tools";
-"tools.state" = "DNS, disks, timer…";
-"tools.subtitle" = "The system settings nobody needs daily. The everyday switches stay in the panel.";
 "scroll" = "Smooth scrolling";
 "home.feedback.scrollOn" = "Smooth scrolling on.";
 "home.feedback.scrollOff" = "Smooth scrolling off.";
@@ -447,10 +417,6 @@
 
 /* Upkeep — panel */
 "upkeep.summary" = "Disk, cleaning, uninstalling, repairs";
-"upkeep.mode.disk" = "Disk";
-"upkeep.mode.clean" = "Clean";
-"upkeep.mode.uninstall" = "Uninstall";
-"upkeep.mode.repairs" = "Repairs";
 "upkeep.inWindow" = "Open in window";
 "upkeep.more" = "+%d more";
 
@@ -467,3 +433,28 @@
 "repair.restartFinderDock.detail" = "For stuck windows and icons that will not refresh. The desktop blanks for a second.";
 "repair.reindexSpotlight" = "Rebuild the Spotlight index";
 "repair.reindexSpotlight.detail" = "When search returns nothing. EXPENSIVE: reindexing takes hours and the Mac is slower throughout.";
+
+/* The Kalfa window */
+"window.open" = "Kalfa window";
+"window.group.mac" = "Mac";
+"window.group.care" = "Care";
+"window.group.kalfa" = "Kalfa";
+"window.section.displays" = "Displays";
+"window.section.audio" = "Sound";
+"window.section.system" = "System";
+"window.section.upkeep" = "Upkeep";
+"window.section.dpi" = "DPI";
+"window.section.health" = "Health";
+"window.section.settings" = "Settings";
+"window.section.about" = "About";
+"window.subtitle.displays" = "Connected displays, resolution and scenes.";
+"window.subtitle.audio" = "Output and input device, levels, per-app sound.";
+"window.subtitle.system" = "Settings you touch rarely: stay awake, presentation, timer, windows, DNS.";
+"window.subtitle.upkeep" = "Disk analysis, cleaning, uninstalling and repairs.";
+"window.subtitle.dpi" = "Blocked sites, rules and logs.";
+"window.subtitle.health" = "Why is a feature not working?";
+"window.subtitle.settings" = "Language, scrolling, launch at login and display preferences.";
+"window.subtitle.about" = "Version, source code and bundled components.";
+"upkeep.tab.repair" = "Repairs";
+"upkeep.state" = "Disk, cleaning, uninstall";
+"palette.title" = "Command palette";

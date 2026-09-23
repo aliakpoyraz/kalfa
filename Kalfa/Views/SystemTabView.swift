@@ -38,26 +38,6 @@ struct SystemTabView: View {
             section(.shortcuts, L10n.t("hotkeys"), nil) { HotkeysView() }
             section(.tweaks, L10n.t("tweaks"), nil) { tweaks }
 
-            Divider().padding(.vertical, 2)
-
-            Button {
-                HealthWindow.show()
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "stethoscope")
-                        .font(.caption)
-                        .foregroundStyle(.pink)
-                    Text(L10n.t("health.title"))
-                        .font(.caption.weight(.medium))
-                    Spacer(minLength: 8)
-                    Image(systemName: "arrow.up.forward.app")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help(L10n.t("health.subtitle"))
         }
         .padding(14)
         .onAppear(perform: refreshTweakState)

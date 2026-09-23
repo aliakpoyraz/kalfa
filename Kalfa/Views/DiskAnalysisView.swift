@@ -2,69 +2,6 @@ import AppKit
 import SwiftUI
 import UpkeepKit
 
-/// The upkeep window: disk analysis today, cleaning and uninstalling next.
-///
-/// A window rather than a card in the panel. A 392-point column cannot hold a
-/// size tree you navigate, and this is work someone sits down to do rather than
-/// something they flick on their way past the menu bar.
-@MainActor
-enum UpkeepWindow {
-
-    private static var window: NSWindow?
-
-    static func show() {
-        if let window {
-            NSApp.activate(ignoringOtherApps: true)
-            window.makeKeyAndOrderFront(nil)
-            return
-        }
-
-        let created = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 620, height: 560),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-        created.title = L10n.t("upkeep.title")
-        created.titlebarAppearsTransparent = true
-        created.isReleasedWhenClosed = false
-        created.center()
-        created.contentView = NSHostingView(rootView: UpkeepWindowView())
-        window = created
-
-        NSApp.activate(ignoringOtherApps: true)
-        created.makeKeyAndOrderFront(nil)
-    }
-}
-
-struct UpkeepWindowView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: KalfaDesign.m) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(L10n.t("upkeep.title"))
-                    .font(.title3.weight(.semibold))
-                Text(L10n.t("upkeep.subtitle"))
-                    .font(KalfaDesign.captionFont)
-                    .foregroundStyle(.secondary)
-            }
-            TabView {
-                DiskAnalysisView()
-                    .padding(.top, KalfaDesign.s)
-                    .tabItem { Label(L10n.t("upkeep.tab.disk"), systemImage: "internaldrive") }
-                CleanupView()
-                    .padding(.top, KalfaDesign.s)
-                    .tabItem { Label(L10n.t("upkeep.tab.clean"), systemImage: "sparkles") }
-                UninstallView()
-                    .padding(.top, KalfaDesign.s)
-                    .tabItem { Label(L10n.t("upkeep.tab.uninstall"), systemImage: "trash") }
-            }
-        }
-        .padding(18)
-        .frame(minWidth: 680, minHeight: 520)
-        .background(.regularMaterial)
-    }
-}
-
 /// The size tree, one directory at a time.
 ///
 /// Not a treemap. A treemap looks impressive and is hard to act on: the reader
