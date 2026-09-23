@@ -1,11 +1,11 @@
-// Renders Klapa's app icon at every size the macOS asset catalog wants.
+// Renders Kalfa's app icon at every size the macOS asset catalog wants.
 // Run: swift scripts/generate-icon.swift
 import AppKit
 import CoreGraphics
 import Foundation
 
 let sizes = [16, 32, 64, 128, 256, 512, 1024]
-let outputDirectory = URL(fileURLWithPath: "Klapa/Resources/Assets.xcassets/AppIcon.appiconset")
+let outputDirectory = URL(fileURLWithPath: "Kalfa/Resources/Assets.xcassets/AppIcon.appiconset")
 
 try FileManager.default.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
 
