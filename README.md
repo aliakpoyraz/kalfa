@@ -145,6 +145,30 @@ The engine is Kalfa's own code (`Packages/EzDPIKit/Sources/EzDPIKit/Proxy`): a l
 
 The app is ad-hoc signed. On first launch, right-click → **Open**.
 
+Ad-hoc signing has a cost: the Accessibility grant is tied to the signature, so
+every rebuild loses it and smooth scrolling stops until it is granted again. A
+real certificate ends that.
+
+### Building a release
+
+```bash
+./release.sh 1.0
+```
+
+Signs, notarises, staples and produces `dist/Kalfa-1.0.zip`. Two things are
+needed first, once: a **Developer ID Application** certificate and a notarisation
+credential stored with `xcrun notarytool store-credentials`. The steps are at the
+top of `release.sh`.
+
+It uses `ditto` rather than `zip`, which breaks the signature.
+
+**Not on the Mac App Store, and cannot be.** Sandboxing is mandatory there and
+most of what Kalfa does is forbidden inside it: the window server's private mode
+list (`CGSConfigureDisplayMode` — private API use is a rejection on its own),
+`CGEventTap`, the system proxy, scanning and trashing across the home directory,
+DDC, AppleScript with administrator rights. None of the apps in this category
+are there.
+
 Xcode is required; the Command Line Tools alone cannot build an app bundle.
 `build.sh` sets `DEVELOPER_DIR` itself, so `xcode-select` pointing at the
 Command Line Tools is not a problem.
