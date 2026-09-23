@@ -3,9 +3,9 @@
 Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/),
 sürümleme [SemVer](https://semver.org/lang/tr/).
 
-## [Yayınlanmadı]
+## [1.0.0] — 2026-09-24
 
-İlk herkese açık sürüm hazırlanıyor. Aşağıdakiler `v1.0.0` ile yayınlanacak.
+İlk herkese açık sürüm.
 
 ### Eklendi
 - Menü çubuğu paneli: durum çipleri, altı anahtar, beş açılır kart.

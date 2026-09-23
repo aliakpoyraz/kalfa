@@ -7,6 +7,8 @@ rules that turn themselves on and off.
 
 *[Türkçe README](README.md)*
 
+[![derleme ve testler](https://github.com/aliakpoyraz/kalfa/actions/workflows/ci.yml/badge.svg)](https://github.com/aliakpoyraz/kalfa/actions/workflows/ci.yml)
+
 Kalfa started as Klapa, written for one specific failure: close a MacBook's lid
 to drive an external monitor, and the desktop stops being Retina. macOS quietly
 stops offering the HiDPI mode it was using a moment earlier, and System Settings

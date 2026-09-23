@@ -9,6 +9,8 @@ engellenen sitelere erişim — hepsi aynı panelde.
 
 [English](README.en.md) · macOS 14+ · Swift 6 · MIT
 
+[![derleme ve testler](https://github.com/aliakpoyraz/kalfa/actions/workflows/ci.yml/badge.svg)](https://github.com/aliakpoyraz/kalfa/actions/workflows/ci.yml)
+
 <p align="center">
   <img src="docs/gorseller/panel.png" width="420" alt="Kalfa menü çubuğu paneli">
 </p>
