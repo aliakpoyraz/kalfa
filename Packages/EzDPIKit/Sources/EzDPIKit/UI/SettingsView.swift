@@ -87,7 +87,7 @@ struct GeneralTab: View {
                     Text(L10n.t("dpi.settings.no-active-network-found"))
                         .font(.caption).foregroundStyle(.orange)
                 } else {
-                    Text(L10n.t("dpi.settings.connected-via") + supervisor.activeServices.joined(separator: ", "))
+                    Text(L10n.t("dpi.settings.connected-via", supervisor.activeServices.joined(separator: ", ")))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Text(L10n.t("dpi.settings.settings-follow-when-switch"))

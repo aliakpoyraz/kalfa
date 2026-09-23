@@ -41,7 +41,7 @@
 /* HiDPI + refresh */
 "hidpi" = "HiDPI (Retina)";
 "hidpi.badge.hidden" = "hidden mode";
-"hidpi.badge.hidden.help" = "macOS does not list this mode; Klapa finds it in the window server's own list.";
+"hidpi.badge.hidden.help" = "macOS does not list this mode; Kalfa finds it in the window server's own list.";
 "hidpi.noCounterpart" = "This display has no opposite scale at %@.";
 "hidpi.turnOn" = "Turn on: %@ px drawing resolution, %@";
 "hidpi.turnOff" = "Turn off: %@ px drawing resolution, %@";
@@ -109,7 +109,7 @@
 
 /* About */
 "about.title" = "About Kalfa";
-"about.tagline" = "Displays, scrolling and blocked sites, from the menu bar.";
+"about.tagline" = "Displays, sound, upkeep and blocked sites, from the menu bar.";
 "about.version" = "Version %@ (%@)";
 "about.repository" = "Source code";
 "about.license" = "MIT License";
@@ -122,21 +122,13 @@
 "status.applying" = "Applying settings";
 
 /* Kalfa home */
-"home.command.placeholder" = "What shall we do?";
 "home.command.clear" = "Clear search";
-"home.title" = "What shall we do today?";
-"home.subtitle" = "Describe a task or choose a quick action.";
-"home.results" = "ACTIONS";
 "home.noResults" = "There is no matching action yet.";
 "home.action.awake" = "Keep awake";
 "home.action.microphone" = "Microphone";
 "home.state.off" = "off";
 "home.state.muted" = "muted";
 "home.state.ready" = "ready";
-"home.command.displays" = "Manage displays";
-"home.command.sound" = "Manage sound";
-"home.command.system" = "Open system tools";
-"home.command.dpi" = "Open DPI settings";
 "home.command.dpi.detail" = "Sites, running mode and rules";
 "home.command.toggleAwake" = "Toggle keep awake";
 "home.command.toggleMic" = "Mute or unmute the microphone";
@@ -159,9 +151,9 @@
 
 /* Smooth scrolling */
 "scroll.enable" = "Smooth mouse scrolling";
-"scroll.enable.help" = "A mouse wheel scrolls in whole lines, one jump per detent. Klapa replays each detent as pixel-by-pixel movement, the way a trackpad already scrolls. Trackpads and the Magic Mouse are left untouched.";
+"scroll.enable.help" = "A mouse wheel scrolls in whole lines, one jump per detent. Kalfa replays each detent as pixel-by-pixel movement, the way a trackpad already scrolls. Trackpads and the Magic Mouse are left untouched.";
 "scroll.permission.title" = "Accessibility permission needed";
-"scroll.permission.body" = "macOS only lets an approved app read the scroll wheel. Grant Klapa access, then reopen this panel. Approval is tied to the app's signature, so a self-built Klapa has to be approved again after every rebuild.";
+"scroll.permission.body" = "macOS only lets an approved app read the scroll wheel. Grant Kalfa access, then reopen this panel. Approval is tied to the app's signature, so a self-built Kalfa has to be approved again after every rebuild.";
 "scroll.permission.grant" = "Ask for permission";
 "scroll.permission.open" = "Open System Settings";
 
@@ -188,9 +180,9 @@
 "dpi.mode.auto" = "automatic";
 "dpi.mode.on" = "always on";
 "dpi.mode.off" = "off";
-"save.includeAudio" = "Also set sound output to %@";
-"save.includeDPI" = "Also set DPI to %@";
-"save.includeCaffeine" = "Also carry the keep-awake switch";
+"save.includeAudio" = "Also save the sound output (%@)";
+"save.includeDPI" = "Also save the DPI mode (%@)";
+"save.includeCaffeine" = "Also save the stay-awake switch";
 "profiles.summary.caffeine" = " · awake";
 
 /* Microphone */
@@ -362,7 +354,7 @@
 "upkeep.disk.total" = "%@ total · %d files";
 "upkeep.reveal" = "Show in Finder";
 "upkeep.trash.action" = "Move to Trash";
-"upkeep.trash.confirm" = "Move \"%@\" to the Trash?";
+"upkeep.trash.confirm" = "Move “%@” to the Trash?";
 "upkeep.trash.explain" = "Nothing is deleted — it goes to the Trash, and you can put it back from Finder.";
 "cancel" = "Cancel";
 
@@ -484,11 +476,10 @@
 "dpi.panel.my-sites" = "My sites";
 "dpi.panel.nothing-needs-right-now" = "Nothing needs it right now.";
 "dpi.panel.off" = "Off";
-"dpi.panel.off-2" = "Off";
 "dpi.panel.on" = "On";
 "dpi.panel.relaunch-with-kalfa" = "Relaunch with Kalfa";
 "dpi.panel.running" = "Running.";
-"dpi.panel.running-because" = "Running because of %@.";
+"dpi.panel.running-because" = "Rule in effect: %@";
 "dpi.panel.sites" = "Sites";
 "dpi.panel.some-apps-read-network" = "Some apps read network settings only at launch. This restarts the app inside Kalfa's environment.";
 "dpi.panel.turn-off-now" = "Turn off now";
@@ -497,7 +488,7 @@
 "dpi.settings.advanced" = "Advanced";
 "dpi.settings.apply" = "Apply";
 "dpi.settings.compatibility" = "Compatibility";
-"dpi.settings.connected-via" = "Connected via: ";
+"dpi.settings.connected-via" = "Connected via: %@";
 "dpi.settings.default-18080-common-ports" = "Default is 18080. Common ports like 8080 clash with other programs.";
 "dpi.settings.extra-support-some-apps" = "Extra support for some apps";
 "dpi.settings.few-apps-like-discord" = "A few apps, like the Discord updater, ignore the system network settings. This option tells them separately. Leave it off unless you have trouble.";
@@ -514,13 +505,13 @@
 "dpi.settings.when" = "When";
 "dpi.sites.add" = "Add";
 "dpi.sites.addresses" = "%@ addresses";
-"dpi.sites.addresses-2" = "Addresses";
+"dpi.sites.addresses.header" = "Addresses";
 "dpi.sites.apply" = "Apply";
 "dpi.sites.blocked-site-com" = "blocked-site.com";
 "dpi.sites.chunk-size" = "Chunk size: %@";
 "dpi.sites.fragmentation" = "Fragmentation";
 "dpi.sites.how-unblock" = "How to unblock";
-"dpi.sites.if-site-still-will" = "If the site still will not open, try the other methods in order, then check the Test tab.";
+"dpi.sites.if-site-still-will" = "If the site still will not open, work through the other methods, then check from the Test section.";
 "dpi.sites.list-name" = "List name";
 "dpi.sites.method" = "Method";
 "dpi.sites.name-resolution" = "Name resolution";
@@ -534,11 +525,10 @@
 "dpi.test.each-address-tried-normally" = "Each address is tried normally first, then through Kalfa.";
 "dpi.test.kalfa-off-only-normal" = "Kalfa is off, only the normal connection will be tested.";
 "dpi.test.no-test-yet" = "No test yet";
-"dpi.test.still-blocked-with-kalfa" = "Still blocked with Kalfa (%@). Try another method in the Sites tab.";
+"dpi.test.still-blocked-with-kalfa" = "Still blocked with Kalfa (%@). Try another method from the Sites section.";
 "dpi.test.test-sites" = "Test sites";
 "dpi.test.testing" = "Testing…";
 "dpi.test.waiting" = "Waiting…";
-"dpi.test.waiting-2" = "Waiting…";
 "dpi.test.works-either-way" = "Works either way.";
 "dpi.when.add-current-network" = "Add current network (%@)";
 "dpi.when.app-s" = "%@ app(s)";
@@ -554,7 +544,6 @@
 "dpi.when.name" = "Name";
 "dpi.when.network-s" = "%@ network(s)";
 "dpi.when.new-rule" = "New rule";
-"dpi.when.new-rule-2" = "New rule";
 "dpi.when.no-app-chosen" = "No app chosen";
 "dpi.when.no-network-chosen" = "No network chosen";
 "dpi.when.on-certain-network" = "On a certain network";

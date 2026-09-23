@@ -71,7 +71,7 @@ struct TestTab: View {
         if !direct.ok && proxied == nil {
             return L10n.t("dpi.test.blocked-turn-kalfa-on", "\(direct.detail)")
         }
-        guard let proxied else { return L10n.t("dpi.test.waiting-2") }
+        guard let proxied else { return L10n.t("dpi.test.waiting") }
 
         if proxied.ok && !direct.ok {
             return L10n.t("dpi.test.blocked-but-kalfa-opens")

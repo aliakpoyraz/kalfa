@@ -73,7 +73,7 @@ struct MenuPanel: View {
         )) {
             Text(L10n.t("dpi.panel.automatic")).tag(RunMode.auto)
             Text(L10n.t("dpi.panel.always-on")).tag(RunMode.forceOn)
-            Text(L10n.t("dpi.panel.off-2")).tag(RunMode.forceOff)
+            Text(L10n.t("dpi.panel.off")).tag(RunMode.forceOff)
         }
         .pickerStyle(.segmented)
         .labelsHidden()

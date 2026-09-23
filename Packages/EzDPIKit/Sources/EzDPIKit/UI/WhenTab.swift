@@ -240,7 +240,7 @@ struct WhenTab: View {
               !ids.contains(bundleID) else { return }
         store.config.rules[index].trigger = .app(bundleIDs: ids + [bundleID])
         let appTitle = url.deletingPathExtension().lastPathComponent
-        if store.config.rules[index].name == L10n.t("dpi.when.new-rule-2") {
+        if store.config.rules[index].name == L10n.t("dpi.when.new-rule") {
             store.config.rules[index].name = L10n.t("dpi.when.while-open", "\(appTitle)")
         }
     }

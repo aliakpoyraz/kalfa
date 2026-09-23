@@ -82,7 +82,7 @@ struct SitesTab: View {
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 } header: {
-                    Text(L10n.t("dpi.sites.addresses-2"))
+                    Text(L10n.t("dpi.sites.addresses.header"))
                 }
 
                 Section {

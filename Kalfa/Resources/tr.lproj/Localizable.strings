@@ -41,7 +41,7 @@
 /* HiDPI + yenileme hızı */
 "hidpi" = "HiDPI (Retina)";
 "hidpi.badge.hidden" = "gizli mod";
-"hidpi.badge.hidden.help" = "macOS bu modu listelemiyor; Klapa onu pencere sunucusunun kendi listesinden buluyor.";
+"hidpi.badge.hidden.help" = "macOS bu modu listelemiyor; Kalfa onu pencere sunucusunun kendi listesinden buluyor.";
 "hidpi.noCounterpart" = "Bu ekranda %@ için karşıt ölçek yok.";
 "hidpi.turnOn" = "Aç: %@ px çizim çözünürlüğü, %@";
 "hidpi.turnOff" = "Kapat: %@ px çizim çözünürlüğü, %@";
@@ -109,7 +109,7 @@
 
 /* Hakkında */
 "about.title" = "Kalfa Hakkında";
-"about.tagline" = "Menü çubuğundan ekran, kaydırma ve engelli siteler.";
+"about.tagline" = "Menü çubuğundan ekran, ses, bakım ve engelli siteler.";
 "about.version" = "Sürüm %@ (%@)";
 "about.repository" = "Kaynak kodu";
 "about.license" = "MIT Lisansı";
@@ -122,21 +122,13 @@
 "status.applying" = "Ayarlar uygulanıyor";
 
 /* Kalfa ana ekranı */
-"home.command.placeholder" = "Ne yapalım?";
 "home.command.clear" = "Aramayı temizle";
-"home.title" = "Bugün ne yapalım?";
-"home.subtitle" = "Bir iş yaz veya hızlı eylemlerden birini seç.";
-"home.results" = "EYLEMLER";
 "home.noResults" = "Buna uygun bir eylem henüz yok.";
 "home.action.awake" = "Uyanık tut";
 "home.action.microphone" = "Mikrofon";
 "home.state.off" = "kapalı";
 "home.state.muted" = "susturuldu";
 "home.state.ready" = "hazır";
-"home.command.displays" = "Ekranları yönet";
-"home.command.sound" = "Sesi yönet";
-"home.command.system" = "Sistem araçlarını aç";
-"home.command.dpi" = "DPI ayarlarını aç";
 "home.command.dpi.detail" = "Siteler, çalışma modu ve kurallar";
 "home.command.toggleAwake" = "Uyanık tutmayı aç veya kapat";
 "home.command.toggleMic" = "Mikrofonu aç veya sustur";
@@ -159,9 +151,9 @@
 
 /* Kesintisiz kaydırma */
 "scroll.enable" = "Kesintisiz fare kaydırması";
-"scroll.enable.help" = "Fare tekerleği satır satır kaydırır, her çentikte bir sıçrar. Klapa her çentiği trackpad'in zaten yaptığı gibi piksel piksel harekete çevirir. Trackpad ve Magic Mouse'a dokunulmaz.";
+"scroll.enable.help" = "Fare tekerleği satır satır kaydırır, her çentikte bir sıçrar. Kalfa her çentiği trackpad'in zaten yaptığı gibi piksel piksel harekete çevirir. Trackpad ve Magic Mouse'a dokunulmaz.";
 "scroll.permission.title" = "Erişilebilirlik izni gerekiyor";
-"scroll.permission.body" = "macOS kaydırma tekerleğini yalnızca onaylı uygulamalara okutur. Klapa'ya izin verin, sonra bu paneli yeniden açın. Onay uygulamanın imzasına bağlıdır; kendiniz derlediğiniz Klapa her yeniden derlemede tekrar onay ister.";
+"scroll.permission.body" = "macOS kaydırma tekerleğini yalnızca onaylı uygulamalara okutur. Kalfa'ya izin ver, sonra bu paneli yeniden aç. Onay uygulamanın imzasına bağlıdır; kendin derlediğin Kalfa her yeniden derlemede tekrar onay ister.";
 "scroll.permission.grant" = "İzin iste";
 "scroll.permission.open" = "Sistem Ayarları'nı aç";
 
@@ -177,7 +169,7 @@
 "on" = "açık";
 "caffeine" = "Uyanık tut";
 "caffeine.now" = "Şimdi uyanık tut";
-"caffeine.help" = "caffeinate komutunun yaptığı gibi boşta uykuyu engeller. Ekran ve ekran koruyucu ayrı sayaçlardır; onlar için alttaki kutuyu işaretleyin. Kalfa kapanınca kendiliğinden bırakılır.";
+"caffeine.help" = "caffeinate komutunun yaptığı gibi boşta uykuyu engeller. Ekran ve ekran koruyucu ayrı sayaçlardır; onlar için alttaki kutuyu işaretle. Kalfa kapanınca kendiliğinden bırakılır.";
 "caffeine.indefinite" = "Kapatana dek";
 "caffeine.minutes" = "%d dk";
 "caffeine.remaining" = "%d dk kaldı";
@@ -188,9 +180,9 @@
 "dpi.mode.auto" = "otomatik";
 "dpi.mode.on" = "sürekli açık";
 "dpi.mode.off" = "kapalı";
-"save.includeAudio" = "Ses çıkışını da %@ yap";
-"save.includeDPI" = "DPI'yı da %@ yap";
-"save.includeCaffeine" = "Uyanık tut anahtarını da taşı";
+"save.includeAudio" = "Ses çıkışını da kaydet (%@)";
+"save.includeDPI" = "DPI modunu da kaydet (%@)";
+"save.includeCaffeine" = "Uyanık tut durumunu da kaydet";
 "profiles.summary.caffeine" = " · uyanık";
 
 /* Mikrofon */
@@ -213,7 +205,7 @@
 "caffeine.rule" = "Şunlar açıkken de uyanık kal";
 "caffeine.rule.add" = "Uygulama ekle…";
 "caffeine.rule.help" = "Bunlardan biri açıkken uyku engellenir, sonuncusu kapanınca kendiliğinden bırakılır.";
-"caffeine.byRule" = "kural tutuyor";
+"caffeine.byRule" = "kural gereği açık";
 
 /* Sunum */
 "presentation" = "Sunum";
@@ -362,7 +354,7 @@
 "upkeep.disk.total" = "Toplam %@ · %d dosya";
 "upkeep.reveal" = "Finder'da göster";
 "upkeep.trash.action" = "Çöp kutusuna taşı";
-"upkeep.trash.confirm" = "\"%@\" çöp kutusuna taşınsın mı?";
+"upkeep.trash.confirm" = "“%@” çöp kutusuna taşınsın mı?";
 "upkeep.trash.explain" = "Silinmez, çöp kutusuna taşınır. Fikrini değiştirirsen Finder'dan geri koyabilirsin.";
 "cancel" = "Vazgeç";
 
@@ -392,7 +384,8 @@
 
 /* Kaldırma */
 "upkeep.uninstall.search" = "Uygulama ara";
-"upkeep.uninstall.hint" = "Soldan bir uygulama seç.\nNe bırakacağı listelenir, sen onaylamadan hiçbir şey taşınmaz.";
+"upkeep.uninstall.hint" = "Soldan bir uygulama seç.
+Geride bıraktığı dosyalar listelenir, sen onaylamadan hiçbir şey taşınmaz.";
 "upkeep.uninstall.running" = "Açık";
 "upkeep.uninstall.selected" = "%d seçili · %@";
 "upkeep.uninstall.action" = "Kaldır";
@@ -484,20 +477,19 @@
 "dpi.panel.my-sites" = "Benim sitelerim";
 "dpi.panel.nothing-needs-right-now" = "Şu an gereken bir durum yok.";
 "dpi.panel.off" = "Kapalı";
-"dpi.panel.off-2" = "Kapalı";
 "dpi.panel.on" = "Açık";
 "dpi.panel.relaunch-with-kalfa" = "Kalfa ile yeniden başlat";
 "dpi.panel.running" = "Çalışıyor.";
-"dpi.panel.running-because" = "%@ nedeniyle çalışıyor.";
+"dpi.panel.running-because" = "Geçerli kural: %@";
 "dpi.panel.sites" = "Siteler";
-"dpi.panel.some-apps-read-network" = "Bazı uygulamalar ağ ayarını yalnızca açılışta okur. Bu, uygulamayı Kalfa ortamıyla yeniden başlatır.";
+"dpi.panel.some-apps-read-network" = "Bazı uygulamalar ağ ayarını yalnızca açılışta okur. Bu düğme, uygulamayı Kalfa ortamıyla yeniden başlatır.";
 "dpi.panel.turn-off-now" = "Hemen kapat";
 "dpi.panel.turned-off-manually" = "Elle kapattın.";
 "dpi.panel.turned-on-manually" = "Elle açtın.";
 "dpi.settings.advanced" = "Gelişmiş";
 "dpi.settings.apply" = "Uygula";
 "dpi.settings.compatibility" = "Uyumluluk";
-"dpi.settings.connected-via" = "Bağlı ağ: ";
+"dpi.settings.connected-via" = "Bağlı ağ: %@";
 "dpi.settings.default-18080-common-ports" = "Varsayılan 18080. 8080 gibi yaygın portlar başka programlarla çakışır.";
 "dpi.settings.extra-support-some-apps" = "Bazı uygulamalar için ek destek";
 "dpi.settings.few-apps-like-discord" = "Discord güncelleyicisi gibi birkaç uygulama bilgisayarın ağ ayarını okumaz. Bu seçenek onlara ayrıca haber verir. Sorun yaşamıyorsan kapalı bırak.";
@@ -514,31 +506,30 @@
 "dpi.settings.when" = "Ne zaman";
 "dpi.sites.add" = "Ekle";
 "dpi.sites.addresses" = "%@ adres";
-"dpi.sites.addresses-2" = "Adresler";
+"dpi.sites.addresses.header" = "Adresler";
 "dpi.sites.apply" = "Uygula";
 "dpi.sites.blocked-site-com" = "engellenen-site.com";
 "dpi.sites.chunk-size" = "Parça boyutu: %@";
 "dpi.sites.fragmentation" = "Parçalama";
 "dpi.sites.how-unblock" = "Nasıl açılsın";
-"dpi.sites.if-site-still-will" = "Site hâlâ açılmıyorsa sırayla diğer yöntemleri dene, sonra Test sekmesinden kontrol et.";
+"dpi.sites.if-site-still-will" = "Site hâlâ açılmıyorsa sırayla diğer yöntemleri dene, sonra Test bölümünden kontrol et.";
 "dpi.sites.list-name" = "Liste adı";
 "dpi.sites.method" = "Yöntem";
 "dpi.sites.name-resolution" = "Ad çözümleme";
 "dpi.sites.new-list" = "Yeni liste";
-"dpi.sites.no-addresses-yet-type" = "Henüz adres yok. Açılmayan sitenin adresini yaz, alt adresleri de kendiliğinden kapsanır.";
+"dpi.sites.no-addresses-yet-type" = "Henüz adres yok. Açılmayan sitenin adresini yaz, alt adresler de kendiliğinden kapsanır.";
 "dpi.sites.select-list" = "Bir liste seç";
 "dpi.sites.use-this-list" = "Bu liste kullanılsın";
 "dpi.test.already-works-kalfa-not" = "Zaten açılıyor, Kalfa gerekmiyor.";
 "dpi.test.blocked-but-kalfa-opens" = "Engelli ama Kalfa ile açılıyor.";
 "dpi.test.blocked-turn-kalfa-on" = "Açılmıyor (%@). Kalfa'yı açıp tekrar test et.";
-"dpi.test.each-address-tried-normally" = "Listendeki her adres önce normal, sonra Kalfa üzerinden denenir.";
+"dpi.test.each-address-tried-normally" = "Listendeki her adres önce doğrudan, sonra Kalfa üzerinden denenir.";
 "dpi.test.kalfa-off-only-normal" = "Kalfa kapalı, yalnızca normal bağlantı denenecek.";
 "dpi.test.no-test-yet" = "Henüz test yapılmadı";
-"dpi.test.still-blocked-with-kalfa" = "Kalfa ile de açılmadı (%@). Siteler sekmesinden başka bir yöntem dene.";
+"dpi.test.still-blocked-with-kalfa" = "Kalfa ile de açılmadı (%@). Siteler bölümünden başka bir yöntem dene.";
 "dpi.test.test-sites" = "Siteleri test et";
 "dpi.test.testing" = "Test sürüyor…";
 "dpi.test.waiting" = "Bekleniyor…";
-"dpi.test.waiting-2" = "Bekleniyor…";
 "dpi.test.works-either-way" = "Her iki durumda da açılıyor.";
 "dpi.when.add-current-network" = "Şu anki ağı ekle (%@)";
 "dpi.when.app-s" = "%@ uygulama";
@@ -554,7 +545,6 @@
 "dpi.when.name" = "Ad";
 "dpi.when.network-s" = "%@ ağ";
 "dpi.when.new-rule" = "Yeni kural";
-"dpi.when.new-rule-2" = "Yeni kural";
 "dpi.when.no-app-chosen" = "Uygulama seçilmedi";
 "dpi.when.no-network-chosen" = "Ağ seçilmedi";
 "dpi.when.on-certain-network" = "Belirli bir ağdayken";
