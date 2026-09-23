@@ -16,6 +16,15 @@ let package = Package(
             name: "EzDPIKit",
             path: "Sources/EzDPIKit",
             swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+        // The engine is ours now, so it is ours to prove. The parser and the
+        // fragmenter are pure functions over bytes and are tested as such; the
+        // proxy itself is tested by talking to it.
+        .testTarget(
+            name: "EzDPIKitTests",
+            dependencies: ["EzDPIKit"],
+            path: "Tests/EzDPIKitTests",
+            swiftSettings: [.swiftLanguageMode(.v5)]
         )
     ]
 )

@@ -3,16 +3,36 @@ import Foundation
 // MARK: - Alan adı grupları
 
 enum SplitMode: String, Codable, CaseIterable, Identifiable {
-    case chunk, sni, disorder, fake, random, none
+    /// Cut the first write after N bytes.
+    case chunk
+    /// Cut inside the server name itself.
+    case sni
+    /// Re-frame the handshake as several TLS records. Survives a filter that
+    /// reassembles the stream before looking, which byte splitting does not.
+    case record
+    /// Several cuts at unpredictable offsets.
+    case random
+    /// Pass through untouched.
+    case none
+    /// Raw-socket strategies from the days of the bundled engine. Kept so that
+    /// an existing config still decodes; both now run as `record`, which is the
+    /// closest thing a process without root can do.
+    case disorder, fake
+
     var id: String { rawValue }
+
+    /// Offered in the advanced picker. The two legacy values are not.
+    static var selectable: [SplitMode] { [.chunk, .record, .sni, .random, .none] }
+
     var label: String {
         switch self {
         case .chunk: return "chunk (parçala)"
         case .sni: return "sni"
-        case .disorder: return "disorder"
-        case .fake: return "fake"
+        case .record: return "record (TLS kaydı)"
         case .random: return "random"
         case .none: return "none (dokunma)"
+        case .disorder: return "disorder (→ record)"
+        case .fake: return "fake (→ record)"
         }
     }
 }
@@ -53,13 +73,17 @@ enum BypassPreset: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// Test edilmiş eşlemeler: chunk 2 ve random çalışıyordu; sni, fake ve
-    /// none discord.com'da TLS el sıkışmasını düşürüyordu.
+    /// Tested on this machine against the ISP that prompted all this: chunk 2
+    /// and random worked; sni dropped the handshake on discord.com, so it is
+    /// reachable in the advanced picker but never a preset. Alternative 2 is
+    /// now record fragmentation, which the bundled engine could not do — it
+    /// used to be `disorder`, a raw-socket trick that needed root and was
+    /// therefore never really running.
     var settings: (split: SplitMode, chunk: Int, dns: DNSMode)? {
         switch self {
         case .standard: return (.chunk, 2, .https)
         case .alternative1: return (.random, 3, .https)
-        case .alternative2: return (.disorder, 2, .https)
+        case .alternative2: return (.record, 40, .https)
         case .custom: return nil
         }
     }

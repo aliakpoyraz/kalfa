@@ -171,17 +171,10 @@ final class HealthService {
         }
     }
 
+    /// No "is the binary there?" question any more: the engine is compiled into
+    /// the app, so the only thing worth reporting is whether it is running.
     private func dpiCheck() -> Check {
-        let engine = Bundle.main.url(forResource: "spoofdpi", withExtension: nil)
-        guard let engine, FileManager.default.isExecutableFile(atPath: engine.path) else {
-            return Check(
-                id: "dpi",
-                title: L10n.t("health.dpi"),
-                detail: L10n.t("health.dpi.missing"),
-                level: .problem
-            )
-        }
-        return Check(
+        Check(
             id: "dpi",
             title: L10n.t("health.dpi"),
             detail: EzDPI.isActive

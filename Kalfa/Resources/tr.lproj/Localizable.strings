@@ -113,7 +113,7 @@
 "about.version" = "Sürüm %@ (%@)";
 "about.repository" = "Kaynak kodu";
 "about.license" = "MIT Lisansı";
-"about.credits" = "BetterDisplay ve FreeDisplay referans alınarak yazıldı. CoreGraphics'in listelemediği ekran modlarına ulaşmak için belgelenmemiş SkyLight çağrıları kullanır. Kesintisiz kaydırma Mos örnek alınarak yazıldı; DPI tarafı spoofdpi (Apache-2.0) motorunu sürer.";
+"about.credits" = "BetterDisplay ve FreeDisplay referans alınarak yazıldı. CoreGraphics'in listelemediği ekran modlarına ulaşmak için belgelenmemiş SkyLight çağrıları kullanır. Kesintisiz kaydırma Mos örnek alınarak yazıldı. DPI motoru Kalfa'nın kendi kodudur; gömülü ikili yoktur.";
 "about.copyright" = "© 2026 Ali Akpoyraz";
 
 /* Durum satırı */
@@ -458,3 +458,9 @@
 "upkeep.tab.repair" = "Onarım";
 "upkeep.state" = "Disk, temizlik, kaldır";
 "palette.title" = "Komut paleti";
+"about.engine" = "DPI motoru";
+"about.engine.value" = "Kalfa'nın kendi proxy'si";
+"about.engine.listening" = "Dinlenen adres %@";
+"about.files" = "Dosyalar";
+"about.files.config" = "Ayar klasörü";
+"about.files.log" = "Kayıt klasörü";

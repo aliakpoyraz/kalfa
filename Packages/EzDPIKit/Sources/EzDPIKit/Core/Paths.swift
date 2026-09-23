@@ -23,22 +23,10 @@ enum Paths {
     }()
 
     static let config = support.appendingPathComponent("config.json")
-    /// Motora verilen üretilmiş TOML. Elle düzenlenmez, her açılışta yeniden yazılır.
-    static let engineConfig = support.appendingPathComponent("engine.toml")
     /// Proxy açıkken tutulan kirli durum dosyası: uygulama çökerse bir sonraki
     /// açılışta sistem proxy'sini buradan geri koyarız.
     static let dirtyState = support.appendingPathComponent("proxy-state.json")
 
     static let appLog = logs.appendingPathComponent("ezdpi.log")
-    static let engineLog = logs.appendingPathComponent("engine.log")
 
-    /// Paket içine gömülü motor. Geliştirme sırasında paket yoksa Homebrew'a düşer.
-    static var bundledEngine: URL? {
-        if let url = Bundle.main.url(forResource: "spoofdpi", withExtension: nil) { return url }
-        let exec = Bundle.main.bundleURL.appendingPathComponent("Contents/Resources/spoofdpi")
-        if FileManager.default.isExecutableFile(atPath: exec.path) { return exec }
-        let brew = URL(fileURLWithPath: "/opt/homebrew/bin/spoofdpi")
-        if FileManager.default.isExecutableFile(atPath: brew.path) { return brew }
-        return nil
-    }
 }

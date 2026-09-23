@@ -31,7 +31,7 @@ bar app instead of two.
 | **Confirm-or-revert** | Unverified modes roll back after 15 seconds unless kept |
 | **Turkish / English** | Switchable in-app, independent of the system language |
 | **Smooth mouse scrolling** | Replays each wheel detent as pixel scrolling, trackpad-style (optional) |
-| **Blocked sites** | A bundled spoofdpi engine plus the system proxy, opened only for the domains you list |
+| **Blocked sites** | Kalfa's own proxy engine plus the system proxy, opened only for the domains you list |
 | **Rules** | The DPI half turns itself on by app, network or time of day, and off again afterwards |
 | **Launch at login** | `SMAppService` |
 
@@ -134,17 +134,14 @@ version / input colour format), a different cable, or a different port.
 ## Install
 
 ```bash
-brew install xcodegen spoofdpi
+brew install xcodegen
 git clone https://github.com/aliakpoyraz/klapa.git
 cd klapa
 ./build.sh
 cp -R dist/Kalfa.app /Applications/
 ```
 
-`spoofdpi` is the DPI engine. It is not in this repository — it is someone
-else's Apache-2.0 binary — so the build copies it out of Homebrew and embeds it
-in the bundle; nobody *running* Kalfa needs Homebrew. Without it the display
-half still works and the DPI tab reports the engine missing.
+The engine is Kalfa's own code (`Packages/EzDPIKit/Sources/EzDPIKit/Proxy`): a local HTTP proxy that reshapes the TLS ClientHello before sending it. No bundled binary, no child process, no third-party licence.
 
 The app is ad-hoc signed. On first launch, right-click → **Open**.
 

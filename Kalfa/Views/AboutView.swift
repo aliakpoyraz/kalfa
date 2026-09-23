@@ -1,3 +1,4 @@
+import EzDPIKit
 import SwiftUI
 
 struct AboutView: View {
@@ -40,12 +41,35 @@ struct AboutView: View {
                 Spacer()
             }
 
+            Divider()
+
+            // What used to be the DPI half's own About tab. Two screens saying
+            // the version and the licence was one screen too many.
+            HStack(spacing: 6) {
+                Text(L10n.t("about.engine"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(L10n.t("about.engine.value"))
+                    .font(.caption.weight(.medium))
+                Spacer()
+            }
+            Text(L10n.t("about.engine.listening", EzDPI.engineSummary))
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(.tertiary)
+
+            HStack(spacing: 10) {
+                Button(L10n.t("about.files.config")) { EzDPI.revealConfigFolder() }
+                Button(L10n.t("about.files.log")) { EzDPI.revealLogFolder() }
+                Spacer()
+            }
+            .controlSize(.small)
+
             Text(L10n.t("about.copyright"))
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
         }
         .padding(18)
-        .frame(width: 340, alignment: .leading)
+        .frame(maxWidth: 420, alignment: .leading)
     }
 
     private var shortVersion: String {

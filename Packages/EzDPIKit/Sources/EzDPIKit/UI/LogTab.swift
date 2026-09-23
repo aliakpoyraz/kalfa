@@ -12,9 +12,6 @@ struct LogTab: View {
                     NSWorkspace.shared.selectFile(Paths.appLog.path,
                                                   inFileViewerRootedAtPath: Paths.logs.path)
                 }
-                Button(T("Ayrıntılı kayıt", "Detailed log")) {
-                    NSWorkspace.shared.open(Paths.engineLog)
-                }
                 Spacer()
             }
             ScrollViewReader { proxy in

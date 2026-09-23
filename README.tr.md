@@ -31,7 +31,7 @@ emekli — iki menü çubuğu uygulaması yerine tek uygulama.
 | **Onayla ya da geri al** | Doğrulanmamış modlar 15 saniye içinde korunmazsa geri alınır |
 | **Türkçe / English** | Uygulama içinden değiştirilir, sistem dilinden bağımsız |
 | **Kesintisiz fare kaydırması** | Her tekerlek çentiğini trackpad gibi piksel kaydırmasına çevirir (isteğe bağlı) |
-| **Engelli siteler** | Gömülü spoofdpi motoru + sistem proxy'si, yalnız listelediğin alan adları için |
+| **Engelli siteler** | Kalfa'nın kendi proxy motoru + sistem proxy'si, yalnız listelediğin alan adları için |
 | **Kurallar** | DPI tarafı uygulamaya, ağa ya da saate göre kendi açılır, işi bitince kapanır |
 | **Girişte başlat** | `SMAppService` |
 
@@ -136,17 +136,14 @@ Bu yüzden Kalfa değeri denetliyormuş gibi yapmak yerine gösteriyor. Seninki 
 ## Kurulum
 
 ```bash
-brew install xcodegen spoofdpi
+brew install xcodegen
 git clone https://github.com/aliakpoyraz/klapa.git
 cd klapa
 ./build.sh
 cp -R dist/Kalfa.app /Applications/
 ```
 
-`spoofdpi` DPI motorudur. Bu depoda durmaz — başkasının Apache-2.0 ikilisidir —
-derleme onu Homebrew'dan alıp paketin içine gömer; Kalfa'yı *kullanan* kimsenin
-Homebrew'a ihtiyacı olmaz. Motor yoksa ekran tarafı yine çalışır, DPI sekmesi
-motorun bulunamadığını söyler.
+Motor Kalfa'nın kendi kodudur (`Packages/EzDPIKit/Sources/EzDPIKit/Proxy`): yerel bir HTTP proxy'si, TLS ClientHello'yu parçalayarak gönderir. Gömülü ikili, ayrı süreç ve üçüncü taraf lisansı yoktur.
 
 Uygulama ad-hoc imzalıdır. İlk açılışta sağ tık → **Aç**.
 

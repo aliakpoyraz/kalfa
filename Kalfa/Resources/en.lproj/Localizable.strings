@@ -113,7 +113,7 @@
 "about.version" = "Version %@ (%@)";
 "about.repository" = "Source code";
 "about.license" = "MIT License";
-"about.credits" = "Written with BetterDisplay and FreeDisplay as references. Uses undocumented SkyLight calls to reach display modes CoreGraphics does not list. Smooth scrolling follows what Mos does; the DPI half drives spoofdpi (Apache-2.0).";
+"about.credits" = "Written with BetterDisplay and FreeDisplay as references. Reaches display modes CoreGraphics does not list through undocumented SkyLight calls. Smooth scrolling is modelled on Mos. The DPI engine is Kalfa's own code; nothing is bundled.";
 "about.copyright" = "© 2026 Ali Akpoyraz";
 
 /* Status line */
@@ -458,3 +458,9 @@
 "upkeep.tab.repair" = "Repairs";
 "upkeep.state" = "Disk, cleaning, uninstall";
 "palette.title" = "Command palette";
+"about.engine" = "DPI engine";
+"about.engine.value" = "Kalfa's own proxy";
+"about.engine.listening" = "Listening on %@";
+"about.files" = "Files";
+"about.files.config" = "Settings folder";
+"about.files.log" = "Log folder";

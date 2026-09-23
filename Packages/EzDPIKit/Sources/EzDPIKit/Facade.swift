@@ -58,6 +58,22 @@ public enum EzDPI {
     /// Whether the engine is up, for the menu bar icon.
     public static var isActive: Bool { Supervisor.shared.isActive }
 
+    /// Where the rules and the log live. The About page offers both, and this
+    /// is the only reason the host needs to know these paths exist.
+    public static func revealConfigFolder() {
+        NSWorkspace.shared.selectFile(Paths.config.path, inFileViewerRootedAtPath: Paths.support.path)
+    }
+
+    public static func revealLogFolder() {
+        NSWorkspace.shared.selectFile(Paths.appLog.path, inFileViewerRootedAtPath: Paths.logs.path)
+    }
+
+    /// One line for the About page: which engine, listening where.
+    public static var engineSummary: String {
+        guard let port = Supervisor.shared.activePort else { return "—" }
+        return "\(Supervisor.shared.store.config.settings.listenHost):\(port)"
+    }
+
     /// How the DPI half decides to run: by rules, always, or never. A scene can
     /// carry one of these along with a display arrangement.
     public enum Mode: String, CaseIterable, Sendable {

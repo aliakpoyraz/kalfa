@@ -15,8 +15,6 @@ struct SettingsView: View {
                 .tabItem { Label(T("Test", "Test"), systemImage: "checkmark.seal") }
             LogTab()
                 .tabItem { Label(T("Kayıtlar", "Log"), systemImage: "doc.plaintext") }
-            AboutTab()
-                .tabItem { Label(T("Hakkında", "About"), systemImage: "info.circle") }
         }
         .padding(12)
     }

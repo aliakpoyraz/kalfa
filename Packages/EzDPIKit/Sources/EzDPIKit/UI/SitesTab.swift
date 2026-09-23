@@ -109,7 +109,7 @@ struct SitesTab: View {
                             ForEach(DNSMode.allCases) { Text($0.label).tag($0) }
                         }
                         Picker(T("Parçalama", "Fragmentation"), selection: binding.splitMode) {
-                            ForEach(SplitMode.allCases) { Text($0.label).tag($0) }
+                            ForEach(SplitMode.selectable) { Text($0.label).tag($0) }
                         }
                         if binding.wrappedValue.splitMode == .chunk {
                             Stepper(T("Parça boyutu: \(binding.wrappedValue.chunkSize)",

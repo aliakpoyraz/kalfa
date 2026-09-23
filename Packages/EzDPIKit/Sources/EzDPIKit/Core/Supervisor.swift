@@ -41,32 +41,29 @@ final class Supervisor: ObservableObject {
     var currentSSID: String? { networkWatcher.currentSSID }
     var activeServices: [String] { networkWatcher.activeServices }
 
-    init(store: ConfigStore, engine: Engine = SpoofDPIEngine()) {
+    init(store: ConfigStore, engine: Engine = NativeEngine()) {
         self.store = store
         self.engine = engine
 
         // Önceki oturum çökerek kapandıysa sistem proxy'si açık kalmış olabilir.
         SystemProxyController.recoverIfDirty()
 
-        self.engine.onUnexpectedExit = { [weak self] _ in
+        self.engine.onUnexpectedExit = { [weak self] reason in
             guard let self else { return }
-            // Motor öldüyse proxy'yi bir an bile ayakta bırakma.
+            // Motor düştüyse proxy'yi bir an bile ayakta bırakma; sistem ölü
+            // porta bakarsa internet tamamen kesilir.
             SystemProxyController.restore()
             self.isActive = false
             self.activePort = nil
-            self.lastError = "Motor beklenmedik şekilde durdu. Sistem proxy'si kapatıldı."
+            self.lastError = "Motor durdu (\(reason)). Sistem proxy'si kapatıldı."
         }
     }
 
     func start() {
-        if Paths.bundledEngine == nil {
-            lastError = "Motor ikilisi bulunamadı."
-            Log.write(.error, "Motor ikilisi bulunamadı.")
-        }
         Log.write(.info, "Kalfa başladı.")
-        // Çökmüş ya da zorla kapatılmış önceki oturumdan kalan motorlar varsa
-        // portları tutuyorlar; bizimki yanlarına bir port ötede açılırdı.
-        SpoofDPIEngine.reapOrphans()
+        // Yetim motor avı kalktı: motor artık bu sürecin içinde, uygulama
+        // kapanınca dinleyici de kapanıyor. Eski sürümde çöken her oturum
+        // arkasında bir port tutan süreç bırakıyordu.
         appWatcher.start { [weak self] in self?.evaluate() }
         networkWatcher.start { [weak self] in self?.evaluate() }
         scheduleWatcher.start { [weak self] in self?.evaluate() }
@@ -120,10 +117,10 @@ final class Supervisor: ObservableObject {
     /// baş başa kalmasın diye varsayılan davranış budur.
     private func resolvePort(host: String, preferred: Int) -> Int? {
         let start = Self.sanitizePort(preferred)
-        if !SpoofDPIEngine.isPortBusy(host: host, port: start) { return start }
+        if !ProxyServer.isPortBusy(host: host, port: UInt16(clamping: start)) { return start }
         guard store.config.settings.autoPort else { return nil }
         for candidate in stride(from: start + 1, to: min(start + 40, 49151), by: 1)
-        where !SpoofDPIEngine.isPortBusy(host: host, port: candidate) {
+        where !ProxyServer.isPortBusy(host: host, port: UInt16(clamping: candidate)) {
             Log.write(.warn, "\(start) portu dolu, \(candidate) portuna geçildi.")
             return candidate
         }
@@ -144,16 +141,9 @@ final class Supervisor: ObservableObject {
         // config'e geri yazarsak, bir kez kayan numara bir daha geri dönmez ve
         // her çakışmada bir artar; ayarlardaki değer kullanıcının tercihi kalır.
         settings.listenPort = port
-        let toml = TOMLGenerator.build(from: store.config)
-        do {
-            try toml.write(to: Paths.engineConfig, atomically: true, encoding: .utf8)
-        } catch {
-            lastError = "Motor yapılandırması yazılamadı: \(error.localizedDescription)"
-            return
-        }
 
         do {
-            try engine.start(configPath: Paths.engineConfig,
+            try engine.start(config: store.config,
                              host: settings.listenHost,
                              port: settings.listenPort)
         } catch {
@@ -162,9 +152,9 @@ final class Supervisor: ObservableObject {
             return
         }
 
-        // Motorun dinlemeye başlaması için kısa pay; proxy'yi hazır olmadan
-        // açarsak ilk istekler düşer.
-        Thread.sleep(forTimeInterval: 0.4)
+        // Dinleyici `start` dönerken kurulmuş oluyor, bekleme payı gerekmiyor.
+        // Eski motor ayrı bir süreç olduğu için 0,4 saniye uyumak zorundaydık —
+        // proxy'yi motor hazır olmadan açarsak ilk istekler düşüyordu.
 
         let services = SystemProxyController.targetServices(config: settings)
         let ok = SystemProxyController.enable(host: settings.listenHost,
@@ -280,14 +270,24 @@ final class Supervisor: ObservableObject {
         Log.write(.warn, "Acil kapatma: proxy geri alındı, motor durduruldu.")
     }
 
-    /// Ayar değiştiğinde çağrılır. Motor TOML'u başlarken bir kez okuduğu için
-    /// açıkken değişiklik uygulamak yeniden başlatma gerektirir.
-    func applyConfigChange() {
+    /// Ayar değiştiğinde çağrılır.
+    ///
+    /// Kural tablosu motorun içinde durduğu için alan adı ve yöntem
+    /// değişiklikleri anında geçerli olur — eski motor TOML'u yalnızca
+    /// başlarken okuduğundan her küçük düzenleme bağlantıları koparan bir
+    /// yeniden başlatma demekti. Yalnızca dinlenen adres değişirse yeniden
+    /// başlatmak gerekir.
+    func applyConfigChange(restart: Bool = false) {
         store.save()
         guard isActive else { evaluate(); return }
-        Log.write(.info, "Yapılandırma değişti, motor yeniden başlatılıyor.")
-        deactivate()
-        activate()
+        if restart {
+            Log.write(.info, "Dinlenen adres değişti, motor yeniden başlatılıyor.")
+            deactivate()
+            activate()
+        } else {
+            engine.updateRules(config: store.config)
+            Log.write(.info, "Kural tablosu güncellendi.")
+        }
     }
 
     func shutdown() {
