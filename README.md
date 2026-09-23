@@ -1,283 +1,312 @@
 # Kalfa
 
-**A macOS menu bar app with two halves.** Displays — resolution and HiDPI
-switching, per-layout profiles, hardware brightness over DDC/CI, smooth mouse
-scrolling. And DPI — opening blocked sites through a bundled engine, driven by
-rules that turn themselves on and off.
+**macOS menü çubuğundan ekranını, sesini, bakımını ve engellenen siteleri tek yerden yönet.**
 
-*[Türkçe README](README.tr.md)*
+Kalfa, menü çubuğunda yaşayan bir Mac aletidir. Ekran çözünürlüğü ve HiDPI, monitör
+parlaklığı, ses cihazları, mikrofon susturma, uyanık tutma, sunum modu, pencere
+yerleştirme, disk temizliği, uygulama kaldırma, kesintisiz fare kaydırması ve
+engellenen sitelere erişim — hepsi aynı panelde.
 
-Kalfa started as Klapa, written for one specific failure: close a MacBook's lid
-to drive an external monitor, and the desktop stops being Retina. macOS quietly
-stops offering the HiDPI mode it was using a moment earlier, and System Settings
-has no way to get it back. The DPI half arrived from
-[ezDPI](https://github.com/aliakpoyraz/ezdpi), which is now retired — one menu
-bar app instead of two.
+[English](README.en.md) · macOS 14+ · Swift 6 · MIT
 
----
-
-## What it does
-
-| | |
-|---|---|
-| **Every resolution mode** | Merges the CoreGraphics list with the window server's own, longer one |
-| **Hidden HiDPI modes** | The Retina modes macOS withholds when the lid is closed |
-| **Refresh rate** | Submenu per resolution, plus a high/60 Hz switch |
-| **Pixel-grid check** | Labels every mode `pixel for pixel` / `clean 2×` / `scaled · soft` |
-| **Native timing marker** | Says when the active mode is one macOS synthesized rather than one the monitor advertises |
-| **Cable signal readout** | Colour format and framebuffer bit depth, e.g. `10-bit YCbCr 4:2:2` |
-| **Layout profiles** | Saved per set of connected panels; re-applied automatically when that set appears |
-| **DDC/CI brightness + contrast** | Apple Silicon, via `IOAVService` |
-| **Confirm-or-revert** | Unverified modes roll back after 15 seconds unless kept |
-| **Turkish / English** | Switchable in-app, independent of the system language |
-| **Smooth mouse scrolling** | Replays each wheel detent as pixel scrolling, trackpad-style (optional) |
-| **Blocked sites** | Kalfa's own proxy engine plus the system proxy, opened only for the domains you list |
-| **Rules** | The DPI half turns itself on by app, network or time of day, and off again afterwards |
-| **Launch at login** | `SMAppService` |
-
-No network access. Display management needs no permissions; smooth scrolling is
-the one exception — reading the scroll wheel requires Accessibility, and it is
-only asked for when that switch is turned on.
+<p align="center">
+  <img src="docs/gorseller/panel.png" width="420" alt="Kalfa menü çubuğu paneli">
+</p>
 
 ---
 
-## Smooth scrolling
+## Neden var
 
-Off by default, and the only feature that asks for a permission: reading the
-scroll wheel means an event tap, and an event tap means Accessibility.
+Bir Mac'i kendine göre ayarlamak için genelde beş altı ayrı menü çubuğu uygulaması
+kurarsın: biri çözünürlük için, biri kahve ikonuyla uykuyu engellemek için, biri fare
+kaydırmasını düzeltmek için, biri disk temizliği için, biri de engellenen siteler için.
+Hepsi ayrı ikon, ayrı ayar penceresi, ayrı güncelleme, ayrı izin kutusu.
 
-What it does is replace a detent's single jump with the same distance spread
-over the next frames, played back on the display's own vertical sync. Its
-behaviour is modelled on [Mos](https://github.com/Caldis/Mos) — a floor under
-how far one detent travels, a two-stage filter rather than a single decay, the
-gesture's own event reposted to the process under the pointer, and no scroll
-phases (they make apps add a second layer of inertia). Mos is licensed CC BY-NC,
-so none of its code is here; this is a separate implementation of what it does.
+Kalfa bu işleri tek uygulamada toplar. Menü çubuğunda tek bir ikon, ayarların tek bir
+yerde, izinler bir kez verilir.
 
-Trackpads and the Magic Mouse are passed straight through — they already scroll
-in pixels, and re-animating them would fight the driver's own inertia.
+**Somut olarak neyi kolaylaştırır:**
 
----
-
-## Why it reads the window server's private mode list
-
-`CGDisplayCopyAllDisplayModes` only returns modes carrying IOKit's "safe" flag.
-SkyLight — the window server — keeps a longer list, and the modes it withholds
-on a clamshell MacBook are the ones worth having.
-
-Measured on a MacBook Pro driving an MSI MAG 274QF with the lid closed:
-
-```
-CoreGraphics :  139 modes — largest HiDPI is 1280 × 720 (2560 × 1440 px)
-SkyLight     :  304 modes — including 2560 × 1440 HiDPI (5120 × 2880 px) at 180 Hz
-```
-
-That missing mode is the entire problem. Kalfa finds it in SkyLight's list and
-applies it with `CGSConfigureDisplayMode`, staged inside a normal
-`CGDisplayConfiguration` transaction so it is atomic and honours the same
-persistence rules as any other mode change.
-
-These modes lack the "safe" flag, so selecting one arms a 15-second
-**"Does the picture look right?"** countdown. Say nothing and the previous mode
-comes back.
+| Durum | Kalfa'sız | Kalfa ile |
+|---|---|---|
+| MacBook kapağı kapalıyken harici monitör Retina olmaktan çıkıyor | macOS o modu listelemiyor, çözüm yok gibi | Pencere sunucusunun gizli listesinden bulup uygular |
+| Toplantıda mikrofonu kapatmak | Hangi uygulama öndeyse onun düğmesi | ⌥⌘M ile sistem geneli, gerçek susturma |
+| Sunuma girerken masaüstünü toparlamak | Dock'u gizle, simgeleri kaldır, uykuyu kapat — elle, tek tek | Tek anahtar, çıkışta hepsi eski hâline döner |
+| Disk doldu | "Neyin yer kapladığını" tahmin etmek | Ev klasörünü 13 saniyede ölçer, en büyükleri sıralar |
+| Bir uygulamayı kaldırmak | Uygulamayı çöpe at, kalıntılar diskte kalsın | Paket kimliğiyle eşleşen kalıntıları bulur, çöpe taşır |
+| Engellenen bir site | VPN aç, tüm trafiğin yavaşlasın | Yalnız listelediğin adresler için devreye girer |
+| Fare tekerleği zıplayarak kaydırıyor | Ayrı bir uygulama kur | Tek anahtar |
 
 ---
 
-## The pixel-grid check
+## Ne yapar
 
-A HiDPI switch keeps the logical desktop size and only changes the backing
-store. Which combination you land on decides how sharp the result is:
+### Ekran
 
-| Logical | Backing store | On a 2560 × 1440 panel | |
+<img src="docs/gorseller/ekran.png" width="720" alt="Ekran bölümü">
+
+- **Çözünürlük ve HiDPI.** Her modun yanında piksel eşleşmesi etiketi var: *birebir*,
+  *tam 2×* ya da *küsuratlı · yumuşak*. Metnin neden yumuşak göründüğünü tahmin etmek
+  yerine okuyorsun.
+- **Gizli modlar.** macOS'un listelemediği ama pencere sunucusunun bildiği modlar.
+  MacBook kapağı kapalıyken 2560 × 1440 HiDPI'nin kaybolması bu yüzden olur; Kalfa o
+  modu bulup uygular. Ayrıntı: [Neden özel API](#neden-özel-api-kullanıyor).
+- **Onaylı geçiş.** Riskli bir mod uygulandığında 15 saniyelik geri sayım başlar.
+  Ekran okunmaz hâle gelirse hiçbir şeye dokunmadan eski moda döner.
+- **DDC parlaklık ve kontrast.** Harici monitörün kendi menüsüne girmeden.
+- **Kablo sinyali.** Bağlantının renk biçimi ve bit derinliği (örn. 10-bit YCbCr 4:2:2).
+  Salt okunur — macOS bunu seçmek için desteklenen bir yol sunmuyor — ama metnin neden
+  yumuşadığını açıklayan ikinci sebep çoğu zaman budur.
+- **Profiller.** Ekran düzenine göre kaydedilir; o düzen bağlandığında kendiliğinden
+  uygulanabilir. İstersen ses çıkışı, DPI modu ve uyanık tutma durumu da profile girer.
+
+### Ses
+
+- Çıkış ve giriş cihazını menüden seç, seviyeleri ayarla.
+- **Cihaz başına ses hafızası:** kulaklığa geri döndüğünde bıraktığın seviyeyle açılır.
+- **Gerçek sistem geneli mikrofon susturma.** Uygulamanın kendi susturması değil,
+  cihazın kendisi. Önde hangi toplantı uygulaması olursa olsun çalışır; susturulduğunda
+  menü çubuğunda gösterge belirir.
+- **Uygulama başına ses karıştırıcı** (macOS 14.2+).
+
+### Sistem
+
+<img src="docs/gorseller/sistem.png" width="720" alt="Sistem bölümü">
+
+- **Uyanık tut** — süreli ya da kapatana dek; "şu uygulamalar açıkken uyuma" kuralıyla.
+- **Sunum modu** — Dock'u gizler, masaüstü simgelerini kaldırır, diğer ekranları karartır,
+  uykuyu engeller. Kapatınca ve uygulamadan çıkınca hepsi geri gelir.
+- **Zamanlayıcı** — belirli süre sonra uyut, ekranı kapat ya da kapat.
+- **Pencere yerleştirme** — sol/sağ/üst/alt yarı, ortala, doldur; klavye kısayollarıyla.
+- **DNS** — bağlı tüm ağ servislerine uygulanır, Wi-Fi'dan kabloya geçince seninle gelir.
+- **Harici diskleri çıkar**, **gizli anahtarlar** (Finder gizli dosyalar, ekran görüntüsü
+  biçimi ve klasörü, Dock gecikmesi), **klavye kısayolları**.
+
+### Bakım
+
+<img src="docs/gorseller/bakim.png" width="720" alt="Bakım bölümü">
+
+- **Disk analizi.** Ev klasörünü dizin dizin ölçer. Bu makinede 1,01 milyon dosya /
+  180 GB → **13 saniye**. Treemap yok: sıralı liste + oransal çubuk, her satır tıklanır
+  bir hedef.
+- **Temizlik.** Önbellek, günlük, derleme çıktısı, çökme raporu, kurulum dosyası.
+  Varsayılan olarak **yalnızca makinenin kendi yeniden ürettiği şeyler** işaretli gelir;
+  proje çıktıları ve cihaz destek dosyaları işaretsiz durur.
+- **Kaldırıcı.** Eşleştirme paket kimliğiyle yapılır, isimle değil — isimle eşleştirmek
+  başka uygulamaların verisini yakalıyordu.
+- **Onarım.** DNS önbelleği, Birlikte Aç listesi, Quick Look, Finder/Dock yeniden
+  başlatma, Spotlight yeniden dizinleme.
+
+> **Silme yok, çöp kutusuna taşıma var** (`FileManager.trashItem`). Fikrini
+> değiştirirsen Finder'dan geri koyarsın. Tek istisna çöp kutusunun kendisini
+> boşaltmaktır — bir klasör kendi içine taşınamaz — ve bu durumda arayüz kalıcı
+> silme olacağını önceden söyler.
+>
+> Neye dokunulabileceğine tek bir karar noktası bakar (`Safety.swift`): yasak kökler,
+> korunan kullanıcı klasörleri, ev dizini sınırı, uygulama paketleri için ayrı kapı ve
+> çöp kutusu için ayrı kapı. 15 test bu kapıları sınar — `..` ile dışarı çıkmayı,
+> `~` yazımını, komşu dizinlerin önek kazasını ve kalıcı silmenin yalnız tek bir
+> yerde bulunduğunu.
+>
+> **Bilerek yok:** `purge` ya da "RAM temizle" düğmesi. macOS belleği zaten yönetir;
+> zorla boşaltmak sonraki erişimi diskten okutur. Klasik yalancı hızlandırıcıdır.
+
+### DPI — engellenen siteler
+
+<img src="docs/gorseller/dpi.png" width="720" alt="DPI bölümü">
+
+Türkiye'de ve benzeri yerlerde bazı siteler TLS el sıkışması sırasındaki sunucu adına
+bakılarak engellenir. Kalfa yerel bir HTTP proxy'si çalıştırır ve **yalnızca senin
+listelediğin adresler için** ilk paketi farklı bir şekilde gönderir: bayt bölme, sunucu
+adının ortasından kesme, TLS kaydı parçalama ya da rastgele kesim. Sunucuya ulaşan
+baytlar birebir aynıdır — değişen yalnızca yazmanın şeklidir.
+
+- **Listelemediğin hiçbir adrese dokunulmaz.** Eşleşmeyen trafik olduğu gibi aktarılır,
+  bu yüzden proxy sürekli açık kalabilir ve ödeme sayfaları etkilenmez.
+- **Kendiliğinden devreye girer:** bir uygulama açıkken, belirli bir ağdayken ya da
+  belirli saatlerde.
+- **Test bölümü** her adresi önce doğrudan, sonra Kalfa üzerinden dener ve sonucu cümle
+  olarak söyler: *"Engelli ama Kalfa ile açılıyor."*
+- Motor **Kalfa'nın kendi kodudur**; pakete gömülü üçüncü taraf ikili yoktur.
+
+> **Yapamadığı:** sahte TTL, sıra dışı segment ve benzeri desync teknikleri. Bunlar ham
+> soket ister, o da root ya da Network Extension ister. Kalfa yönetici hakkı istemez.
+
+### Sağlık
+
+<img src="docs/gorseller/saglik.png" width="720" alt="Sağlık bölümü">
+
+"Bu özellik neden çalışmıyor?" sorusunun tek sayfalık cevabı. Her satır sessizce
+başarısız olabilen bir şeye karşılık gelir — verilmemiş bir izin, 4:2:2'ye düşmüş bir
+monitör bağlantısı, başka bir uygulamanın kaptığı kısayol — ve düzelten düğmeyi taşır.
+
+### Kesintisiz fare kaydırması
+
+Fare tekerleği satır satır kaydırır, her çentikte bir zıplar. Kalfa her çentiği
+trackpad'in zaten yaptığı gibi piksel piksel harekete çevirir. Trackpad ve Magic Mouse'a
+dokunulmaz. Tek anahtar, ayar kaydırıcısı yok.
+
+### Komut paleti
+
+Kısayolla her yerden açılır, menü çubuğunu hedeflemeye gerek kalmaz. Türkçe arama
+Türkçe karakterden bağımsızdır: "cozunurluk" yazınca "çözünürlük" bulunur.
+
+---
+
+## Nelerden esinlendi, neler birleştirildi
+
+Kalfa iki ayrı uygulamanın birleşmesiyle doğdu ve üç açık kaynak projeden ders aldı.
+Hangisinden ne alındığı ve ne **alınmadığı** aşağıda açıkça yazılıdır.
+
+### Birleşen iki uygulama
+
+| Uygulama | Neydi | Kalfa'da nerede |
+|---|---|---|
+| **Klapa** | Ekran yöneticisi: çözünürlük, HiDPI, DDC, profiller | Ekran bölümü ve uygulamanın çekirdeği |
+| **ezDPI** | Engellenen sitelere erişim aracı | DPI bölümü (`Packages/EzDPIKit`) |
+
+İkisi de bu deponun yazarına ait, ayrı ayrı çalışan menü çubuğu uygulamalarıydı.
+17.09.2026'da tek pakete alındılar; ürün adı **Kalfa** oldu. Her ikisinin de kendi
+`Log`, `Diagnostics`, `SettingsView` ve `L10n` tipi olduğu için DPI yarısı ayrı bir
+yerel Swift paketi olarak durur — modül sınırı, tek bir tipi yeniden adlandırmadan bu
+çakışmayı çözer.
+
+Kullanıcı verisi eski klasörlerinde bırakıldı (`Application Support/Klapa` ve
+`ezDPI`): adı güzelleştirmek için taşımak, mevcut kurulumların profillerini ve kural
+listelerini sıfırlamak demekti.
+
+### Esinlenilen projeler
+
+| Proje | Lisansı | Ne alındı | Ne alınmadı |
 |---|---|---|---|
-| 2560 × 1440 | 2560 × 1440 | 1:1 | **pixel for pixel** |
-| 2560 × 1440 | 5120 × 2880 | exact 2× downscale | **clean 2×** |
-| 1920 × 1080 | 3840 × 2160 | 1.5× fractional downscale | **scaled · soft** |
+| [BetterDisplay](https://github.com/waydabber/BetterDisplay) | Kapalı kaynak | Bir ekran yöneticisinin hangi soruları cevaplaması gerektiği | Kod okunmadı; sanal ekran, gamma/ICC ve çentik gizleme kapsam dışı bırakıldı |
+| [FreeDisplay](https://github.com/huberdf/FreeDisplay) | Açık kaynak | Pencere sunucusunun gizli mod listesine ulaşma fikri | Uygulama sıfırdan yazıldı |
+| [Mos](https://github.com/Caldis/Mos) | CC BY-NC | Kaydırma **davranışı**: çentik başına alt sınır, iki aşamalı süzgeç, girdi önceliği, kaydırma fazı göndermeme | **Tek satır kod kopyalanmadı.** Mos ticari kullanıma kapalı; kod alınsaydı Kalfa MIT olamazdı |
+| [mole](https://github.com/tw93/mole) | GPL-3.0 | Bakım **özellik kümesi**: canlı izleme, disk analizi, kaldırıcı, temizlik | **Kod, dize ve kural listesi kopyalanmadı**, davranış sıfırdan yazıldı. Aksi hâlde Kalfa GPL'e geçmek zorunda kalırdı |
+| [SpoofDPI](https://github.com/xvzc/SpoofDPI) | Apache-2.0 | Parçalama yaklaşımının kendisi | Eskiden ikili olarak pakete gömülüydü; **24.09.2026'da çıkarıldı**, yerine Kalfa'nın kendi motoru yazıldı |
 
-The third row is easy to select by accident and is the usual reason "HiDPI
-looks blurry". Kalfa labels every mode and offers a one-click jump to the
-sharpest option when you are on a fractional one.
+Fikir düzeyinde borçlu olunan diğerleri: pencere yerleştirme için **Rectangle** ve
+**Magnet**, uyanık tutma için **Amphetamine** ve **KeepingYouAwake**, komut paleti için
+**Raycast**, panelin karo/kart dili için Apple'ın kendi **Denetim Merkezi**. Hiçbirinin
+kodu kullanılmadı.
 
----
+### Lisans neden önemliydi
 
-## The cable signal readout
-
-The row is deliberately read-only:
-
-```
-Cable signal
-10-bit YCbCr 4:2:2 · 10-bit framebuffer
-```
-
-`YCbCr 4:2:2` halves horizontal colour resolution. Text edges soften and can
-fringe. On the machine this was developed against, the link runs 8-bit
-YCbCr 4:4:4 with the lid open and 10-bit YCbCr 4:2:2 with it closed — same
-resolution, same refresh rate.
-
-**There is no supported way to change this.** It was checked properly:
-
-- No display mode advertises anything but 8 bits per channel, so the mode is not
-  the lever.
-- HDR is off (EDR reports 1.0), so it is not HDR forcing a 10-bit framebuffer.
-- Lowering the refresh rate to 165, 144 or 120 Hz does not change the format, so
-  it is not link bandwidth.
-- SkyLight exports `SLSGetDisplayPixelEncodingOfLength` and
-  `SLSCopyDisplayModePixelEncoding` — getters only. There is no setter.
-- DDC/CI has no standard VCP code for link pixel encoding.
-
-So Kalfa reports the value instead of pretending to control it. If yours is
-subsampled, the things that can actually help are the monitor's own OSD (DisplayPort
-version / input colour format), a different cable, or a different port.
+Kalfa MIT. Bir GPL projesinden kod almak Kalfa'yı da GPL'e zorlar; CC BY-NC'den kod
+almak ticari kullanımı kapatır. Bu yüzden mole ve Mos'tan **davranış** alındı,
+**kod** alınmadı — ve alınan davranışlar burada, bu tabloda, açıkça yazılıdır.
 
 ---
 
-## Install
+## Kurulum
 
 ```bash
 brew install xcodegen
-git clone https://github.com/aliakpoyraz/klapa.git
-cd klapa
+git clone https://github.com/aliakpoyraz/kalfa.git
+cd kalfa
 ./build.sh
 cp -R dist/Kalfa.app /Applications/
 ```
 
-The engine is Kalfa's own code (`Packages/EzDPIKit/Sources/EzDPIKit/Proxy`): a local HTTP proxy that reshapes the TLS ClientHello before sending it. No bundled binary, no child process, no third-party licence.
+Xcode gerekir; yalnız Command Line Tools ile uygulama paketi derlenemez. `build.sh`
+`DEVELOPER_DIR`'i kendisi ayarlar, `xcode-select`'in neyi gösterdiği önemli değildir.
 
-The app is ad-hoc signed. On first launch, right-click → **Open**.
+**Gereksinimler:** macOS 14 veya üzeri. DDC parlaklık için Apple Silicon; geri kalan her
+şey Intel'de de çalışır.
 
-Ad-hoc signing has a cost: the Accessibility grant is tied to the signature, so
-every rebuild loses it and smooth scrolling stops until it is granted again. A
-real certificate ends that.
+**İlk açılışta** sağ tık → **Aç**. Uygulama ad-hoc imzalıdır.
 
-### Building a release
+> Ad-hoc imzanın bedeli: Erişilebilirlik izni imzaya bağlıdır, yani her yeniden
+> derlemede izin düşer ve kesintisiz kaydırma durur. Gerçek bir Developer ID
+> sertifikasıyla imzalanmış sürümde bu sorun yoktur.
+
+### Dağıtılabilir sürüm
 
 ```bash
 ./release.sh 1.0
 ```
 
-Signs, notarises, staples and produces `dist/Kalfa-1.0.zip`. Two things are
-needed first, once: a **Developer ID Application** certificate and a notarisation
-credential stored with `xcrun notarytool store-credentials`. The steps are at the
-top of `release.sh`.
-
-It uses `ditto` rather than `zip`, which breaks the signature.
-
-**Not on the Mac App Store, and cannot be.** Sandboxing is mandatory there and
-most of what Kalfa does is forbidden inside it: the window server's private mode
-list (`CGSConfigureDisplayMode` — private API use is a rejection on its own),
-`CGEventTap`, the system proxy, scanning and trashing across the home directory,
-DDC, AppleScript with administrator rights. None of the apps in this category
-are there.
-
-Xcode is required; the Command Line Tools alone cannot build an app bundle.
-`build.sh` sets `DEVELOPER_DIR` itself, so `xcode-select` pointing at the
-Command Line Tools is not a problem.
-
-**Requirements:** macOS 14 or later. Apple Silicon for DDC brightness; everything
-else works on Intel too.
+İmzalar, noterletir, damgalar ve `dist/Kalfa-1.0.zip` üretir. Gereken iki hazırlık
+(Developer ID sertifikası ve saklanmış noterleme kimliği) `release.sh` dosyasının
+başında yazılıdır.
 
 ---
 
-## Diagnostics
+## İzinler
+
+Kalfa yalnızca gerçekten gereken izni, gerektiği anda ister.
+
+| İzin | Ne için | Ne zaman |
+|---|---|---|
+| **Erişilebilirlik** | Kesintisiz kaydırma ve pencere yerleştirme | İlk kullanıldığında |
+| **Ses kaydı** | Uygulama başına ses karıştırıcı | Karıştırıcı ilk açıldığında |
+| **Konum** | Wi-Fi ağ adını okumak (macOS bunu konum izni sayar) | Yalnız bir kuralı ağ adına bağlarsan |
+| **Yönetici** | Bazı onarım işleri | O işi çalıştırdığında; parola Kalfa'ya girmez, sistemin kendi kutusu açılır |
+
+---
+
+## Teşhis
 
 ```bash
 /Applications/Kalfa.app/Contents/MacOS/Kalfa --dump
 ```
 
-Prints every connected display, its active mode, the cable signal, the DDC
-reading, and the full mode list with IOKit flags. It calls out an active mode
-that is not the panel's native timing.
+Bağlı ekranları, kullanılan modu, kablo sinyalini, DDC okumasını ve pencere sunucusunun
+mod listesini yazdırır.
 
-```
-MAG 274QF
-  displayID   3
-  uuid        A1B2C3D4-0000-0000-0000-000000000000
-  active mode 2560 × 1440 (5120 × 2880 px)       180 Hz   [HiDPI,skylight-only,unverified] id=193
-  native mode 2560 × 1440 (2560 × 1440 px)       180 Hz   [native] id=130
-  link        10-bit YCbCr 4:2:2
-  DDC         brightness 100% (100/100), contrast 75% (75/100)
+**URL şeması** — Kısayollar, Raycast ya da kabuk betiğinden:
+
+```bash
+open "kalfa://window?section=dpi"     # pencereyi DPI sayfasında aç
+open "ezdpi://on"                     # DPI'yı sürekli açık moda al
+open "ezdpi://auto"                   # kural kararı versin
+open "ezdpi://relaunch?bundle=com.hnc.Discord"
 ```
 
 ---
 
-## Profiles
+## Mimari
 
-Stored as plain JSON at `~/Library/Application Support/Klapa/profiles.json` —
-the folder keeps its old name so the rename to Kalfa orphans nobody's profiles.
-The DPI half keeps its own rules in `~/Library/Application Support/ezDPI/` for
-the same reason.
+```
+Kalfa/                  uygulama hedefi — panel, pencere, servisler
+Packages/KalfaUI/       paylaşılan görsel dil (karo/kart/satır) ve dize arama
+Packages/EzDPIKit/      DPI yarısı: proxy motoru, kural değerlendirme, arayüzü
+Packages/UpkeepKit/     bakım yarısı: ölçüm, disk taraması, temizlik, kaldırma
+```
 
-A profile is keyed by **layout**: the sorted set of connected panel UUIDs. This
-is the same key macOS uses for its own per-arrangement display settings, which
-is why lid-open and lid-closed are two separate records and why one can be
-correct while the other is wrong.
+Üç yüzey vardır ve bir şey yalnız birinde bulunur: **panel** (günlük anahtarlar),
+**pencere** (oturup yapılan işler), **komut paleti** (adıyla ulaşma).
 
-Modes are stored by geometry, never by `IODisplayModeID` — the window server
-renumbers those after a reconfiguration, so a stored ID goes stale.
+### Neden özel API kullanıyor
+
+`CGDisplayCopyAllDisplayModes`, MacBook kapağı kapalıyken harici monitörün en iyi HiDPI
+modunu listelemiyor — masaüstü Retina olmaktan çıkıyor. Pencere sunucusunun kendi listesi
+(304 mod; CoreGraphics 139 tanesini gösteriyor) o modu içeriyor. Kalfa belgelenmemiş
+`CGSConfigureDisplayMode` çağrısıyla onu uygular ve bu modlarda güvenlik bayrağı
+bulunmadığı için 15 saniyelik onay/geri alma sayacı çalıştırır.
+
+Bunun iki sonucu var: uygulama **Mac App Store'a giremez** (özel API kullanımı tek başına
+ret sebebidir) ve macOS'un gelecek bir sürümünde bu çağrı değişebilir.
 
 ---
 
-## Architecture
+## Kapsam dışı
 
-```
-Kalfa/
-  Core/        ScreenMode · ScreenInfo · DisplaySetKey · L10n · Watchdog · Diagnostics
-  Services/    ModeService     CoreGraphics enumeration and application
-               SkyLightModes   the private mode list
-               LinkInfo        cable signal and framebuffer readings
-               DisplayCenter   state, reconfiguration callback, auto-apply
-               ProfileStore · DDCService · AppSettings · LaunchAtLogin
-               ScrollService   the wheel event tap and its pixel playback
-  Views/       RootView · DisplayCardView · ModePickerView · ScaleToggleView
-               LinkRow · DDCControlsView · ProfilesSectionView · SaveProfileView
-               SettingsView · ScrollSettingsView · AboutView · SwitchRow
-  Bridging/    IOAVService and CGS declarations
-
-Packages/EzDPIKit/   the DPI half, as its own module
-  Core/        Supervisor · Engine · SystemProxyController · TOMLGenerator
-  Watchers/    AppWatcher · NetworkWatcher · ScheduleWatcher
-  UI/          MenuPanel (the DPI tab) · SettingsView (the DPI window)
-  Facade.swift what the app target may touch: start, shutdown, URLs, two views
-```
-
-Both halves arrived as separate menu bar apps, and both define a `Log`, a
-`Diagnostics`, a `SettingsView` and an `L10n`. The module boundary settles that
-without renaming a type on either side; `Facade.swift` is the only public
-surface.
-
-Every window server call goes through `Watchdog`.
-`CGCompleteDisplayConfiguration` can block indefinitely during a
-reconfiguration, which is exactly when Kalfa is doing its work, and the menu bar
-must not freeze.
-
-### Private API notes
-
-- `CGSConfigureDisplayMode`'s first parameter is a `CGDisplayConfigRef` from
-  `CGBeginDisplayConfiguration`, **not** a CGS connection ID. Passing a
-  connection ID segfaults inside SkyLight, which dereferences it as the config
-  object.
-- `CGSGetDisplayModeDescriptionOfLength` expects a 212-byte (`0xD4`) struct.
-  Offsets: mode number `0x00`, flags `0x04`, width `0x08`, height `0x0C`,
-  depth `0x10`, refresh rate `0xBE` (`uint16`), density `0xD0` (`float`).
-- SkyLight exists only inside the dyld shared cache, so `SLS*` symbols cannot be
-  linked. They are resolved with `dlopen` + `dlsym` and degrade to "unavailable"
-  if missing.
-- A `ScrollView` inside a `MenuBarExtra` window resolves to zero ideal height and
-  silently swallows its content.
+- **Mac App Store.** Sandbox zorunludur ve Kalfa'nın yaptığı işlerin çoğu orada yasaktır:
+  pencere sunucusunun özel mod listesi, olay dinleyicisi, sistem proxy'si, ev dizini
+  genelinde tarama ve çöpe taşıma, DDC, yönetici yetkisiyle betik. Bu kategorideki
+  uygulamaların hiçbiri orada değildir.
+- Sanal ekran, gamma/ICC yönetimi, çentik gizleme.
+- Root gerektiren DPI teknikleri.
+- "RAM temizleme" ve benzeri yalancı hızlandırıcılar.
 
 ---
 
-## Not included
+## Lisans
 
-Virtual displays, gamma and colour temperature, ICC profile switching, notch
-hiding, brightness-key interception. [BetterDisplay](https://github.com/waydabber/BetterDisplay)
-and [FreeDisplay](https://github.com/huberdf/FreeDisplay) cover those.
+MIT — bkz. [LICENSE](LICENSE).
 
-## Credits
-
-Written with BetterDisplay and FreeDisplay as references for which private APIs
-exist and how the DDC/CI wire format is framed on Apple Silicon.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+Kaydırma davranışı [Mos](https://github.com/Caldis/Mos) (CC BY-NC) örnek alınarak,
+bakım özellikleri [mole](https://github.com/tw93/mole) (GPL-3.0) örnek alınarak
+**sıfırdan yazılmıştır**; her iki projeden de kod alınmamıştır. Ayrıntı:
+[Nelerden esinlendi](#nelerden-esinlendi-neler-birleştirildi).

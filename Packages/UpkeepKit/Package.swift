@@ -11,6 +11,12 @@ let package = Package(
         .library(name: "UpkeepKit", targets: ["UpkeepKit"])
     ],
     targets: [
+        .testTarget(
+            name: "UpkeepKitTests",
+            dependencies: ["UpkeepKit"],
+            path: "Tests/UpkeepKitTests",
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
         .target(
             name: "UpkeepKit",
             path: "Sources/UpkeepKit",

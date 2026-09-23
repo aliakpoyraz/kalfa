@@ -105,6 +105,15 @@ public final class CleanupService: ObservableObject {
                             moved: inout Int,
                             freed: inout UInt64,
                             failures: inout [String]) {
+        // Bu modüldeki TEK kalıcı silme burası, ve yalnız çöp kutusunun
+        // kendisi için: bir klasörü kendi içine taşımak mümkün değil. O yüzden
+        // kategoriye güvenmek yetmez — yolun gerçekten çöp kutusu olduğu ayrıca
+        // doğrulanır. Bir hata kategoriyi yanlış atasa bile başka bir dizin
+        // kalıcı olarak silinemez.
+        guard Safety.isTrash(item.path) else {
+            failures.append(item.displayName)
+            return
+        }
         let manager = FileManager.default
         guard let entries = try? manager.contentsOfDirectory(atPath: item.path) else {
             failures.append(item.displayName)

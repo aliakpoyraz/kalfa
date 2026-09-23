@@ -69,6 +69,15 @@ public enum Safety {
             || parent.hasPrefix("/Applications/")
     }
 
+    /// Yol kullanıcının kendi çöp kutusu mu?
+    ///
+    /// Çöp kutusunu boşaltmak kalıcıdır ve bu modüldeki tek geri alınamaz
+    /// işlemdir. Onu çalıştıran tek yer buradan geçer, yani "kalıcı silme"
+    /// kapısı da tek noktada durur.
+    public static func isTrash(_ path: String) -> Bool {
+        (path as NSString).standardizingPath == "\(NSHomeDirectory())/.Trash"
+    }
+
     /// Silmek yerine çöp kutusuna taşır.
     ///
     /// Geri alınamayan bir işlemi varsayılan yapmıyoruz: bir temizlik aracının
