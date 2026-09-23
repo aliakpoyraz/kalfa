@@ -30,7 +30,15 @@ final class ProxyServer: @unchecked Sendable {
 
     // MARK: Lifecycle
 
-    func start(host: String, port: UInt16, rules: [Rule]) throws {
+    /// Binds and waits until the listener is actually up.
+    ///
+    /// This has to be async. `NWListener.start` returns immediately and reports
+    /// success or failure later on its own queue, so a synchronous version could
+    /// only ever mean "asked politely". The supervisor turns the system proxy on
+    /// the moment this returns; if it returned before the bind was decided, a
+    /// failed bind left the whole machine pointed at a port nobody was
+    /// listening on — no internet, and nothing on screen saying why.
+    func start(host: String, port: UInt16, rules: [Rule]) async throws {
         setRules(rules)
 
         let options = NWProtocolTCP.Options()
@@ -48,19 +56,61 @@ final class ProxyServer: @unchecked Sendable {
         listener.newConnectionHandler = { [weak self] connection in
             self?.accept(connection)
         }
-        listener.stateUpdateHandler = { [weak self] state in
-            guard let self else { return }
-            if case .failed(let error) = state {
-                // The engine dying used to mean a child process exited; now it
-                // means the listener gave up. The supervisor treats both the
-                // same way: put the system proxy back immediately.
-                self.onFailure?(error.localizedDescription)
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            // Resumed exactly once: the handler keeps firing over the listener's
+            // life, and the first ready-or-failed is the answer to "did we bind".
+            var settled = false
+            listener.stateUpdateHandler = { [weak self] state in
+                guard let self else { return }
+                switch state {
+                case .ready:
+                    if !settled { settled = true; continuation.resume() }
+                case .failed(let error):
+                    if settled {
+                        // Died later: the supervisor puts the system proxy back
+                        // rather than leaving traffic aimed at a dead port.
+                        self.onFailure?(error.localizedDescription)
+                    } else {
+                        settled = true
+                        listener.cancel()
+                        continuation.resume(throwing: error)
+                    }
+                default:
+                    break
+                }
             }
+            listener.start(queue: queue)
         }
-        listener.start(queue: queue)
+
         self.listener = listener
         self.port = port
         Log.write(.info, "Yerel motor dinlemede: \(host):\(port)")
+    }
+
+    /// Cancels and waits for the port to come back.
+    ///
+    /// `cancel()` is as asynchronous as `start`, and restarting the engine —
+    /// which a rule change or the relaunch button does — used to rebind the
+    /// same port while the old listener was still holding it. That is where the
+    /// "Address already in use" came from: not another program, us.
+    func stopAndWait() async {
+        guard let listener else { return stop() }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            var settled = false
+            listener.stateUpdateHandler = { state in
+                if case .cancelled = state, !settled {
+                    settled = true
+                    continuation.resume()
+                }
+            }
+            stop()
+            // The handler is the normal path; this is the seatbelt for a
+            // listener that was never ready and so never reports cancelled.
+            queue.asyncAfter(deadline: .now() + 2) {
+                if !settled { settled = true; continuation.resume() }
+            }
+        }
     }
 
     func stop() {
@@ -131,18 +181,4 @@ final class ProxyServer: @unchecked Sendable {
         session.start()
     }
 
-    /// Whether anything is already listening there.
-    ///
-    /// Asked by trying to bind rather than by shelling out to `lsof`: the answer
-    /// is the same one the listener would give, and it costs no process.
-    static func isPortBusy(host: String, port: UInt16) -> Bool {
-        let parameters = NWParameters.tcp
-        parameters.requiredLocalEndpoint = NWEndpoint.hostPort(
-            host: NWEndpoint.Host(host),
-            port: NWEndpoint.Port(rawValue: port) ?? 18080
-        )
-        guard let probe = try? NWListener(using: parameters) else { return true }
-        probe.cancel()
-        return false
-    }
 }

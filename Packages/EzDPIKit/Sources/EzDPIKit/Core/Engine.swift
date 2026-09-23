@@ -1,4 +1,5 @@
 import Foundation
+import Network
 
 enum EngineError: LocalizedError {
     case portBusy(Int)
@@ -24,9 +25,15 @@ protocol Engine: AnyObject {
     var isRunning: Bool { get }
     /// Called when the engine stops on its own.
     var onUnexpectedExit: ((String) -> Void)? { get set }
-    func start(config: AppConfig, host: String, port: Int) throws
+    /// Returns once the engine is actually accepting connections, or throws.
+    /// The caller turns the system proxy on right after, so "started" has to
+    /// mean started.
+    func start(config: AppConfig, host: String, port: Int) async throws
     func updateRules(config: AppConfig)
+    /// Immediate teardown, for quitting.
     func stop()
+    /// Teardown that waits for the port to be free, for restarts.
+    func stopAndWait() async
 }
 
 /// Kalfa's own engine: an HTTP proxy in this process.
@@ -47,10 +54,8 @@ final class NativeEngine: Engine {
 
     var isRunning: Bool { server.isRunning }
 
-    func start(config: AppConfig, host: String, port: Int) throws {
+    func start(config: AppConfig, host: String, port: Int) async throws {
         guard !isRunning else { return }
-        let port16 = UInt16(clamping: port)
-        if ProxyServer.isPortBusy(host: host, port: port16) { throw EngineError.portBusy(port) }
 
         server.onFailure = { [weak self] message in
             Log.write(.error, "Yerel motor durdu: \(message)")
@@ -58,9 +63,13 @@ final class NativeEngine: Engine {
         }
 
         do {
-            try server.start(host: host, port: port16, rules: Self.rules(from: config))
+            try await server.start(host: host, port: UInt16(clamping: port),
+                                   rules: Self.rules(from: config))
         } catch {
-            throw EngineError.launchFailed("\(error)")
+            // A busy port is the one failure worth naming: it is the only one
+            // the person can do something about.
+            if (error as? NWError) == .posix(.EADDRINUSE) { throw EngineError.portBusy(port) }
+            throw EngineError.launchFailed(error.localizedDescription)
         }
     }
 
@@ -72,6 +81,10 @@ final class NativeEngine: Engine {
 
     func stop() {
         server.stop()
+    }
+
+    func stopAndWait() async {
+        await server.stopAndWait()
     }
 
     private static func rules(from config: AppConfig) -> [ProxyServer.Rule] {

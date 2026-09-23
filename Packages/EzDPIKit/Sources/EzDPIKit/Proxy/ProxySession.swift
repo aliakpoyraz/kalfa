@@ -24,7 +24,7 @@ final class ProxySession {
     private let client: NWConnection
     private let queue: DispatchQueue
     private let decide: @Sendable (String) -> Decision
-    private var upstream: NWConnection?
+    private var upstream: UpstreamSocket?
     private var closed = false
 
     /// Told to the server so it can forget this session; without it the table
@@ -134,50 +134,39 @@ final class ProxySession {
                 endpointHost = resolved
             }
 
-            let options = NWProtocolTCP.Options()
-            // Without this the kernel is free to coalesce the pieces back into
-            // one segment, and the whole exercise achieves nothing.
-            options.noDelay = true
-            options.connectionTimeout = 10
+            let socket = UpstreamSocket(queue: self.queue)
+            self.upstream = socket
 
-            let connection = NWConnection(
-                host: NWEndpoint.Host(endpointHost),
-                port: NWEndpoint.Port(rawValue: port) ?? 443,
-                using: NWParameters(tls: nil, tcp: options)
-            )
-            self.upstream = connection
-
-            connection.stateUpdateHandler = { [weak self] state in
+            socket.onData = { [weak self] data in
                 guard let self else { return }
-                switch state {
-                case .ready:
-                    if let replyToClient {
-                        self.send(replyToClient, over: self.client) {
-                            self.pumpFirstClientWrite(decision: decision)
-                        }
+                self.client.send(content: data, completion: .contentProcessed { error in
+                    if error != nil { self.close() }
+                })
+            }
+            socket.onClose = { [weak self] in self?.close() }
+
+            socket.connect(host: endpointHost, port: port) { [weak self] ok in
+                guard let self else { return }
+                guard ok else {
+                    Log.write(.warn, "\(host) bağlanamadı.")
+                    return self.close()
+                }
+                if let name = decision.ruleName {
+                    Log.write(.info, "\(host) · \(name)")
+                }
+
+                if let replyToClient {
+                    // CONNECT: tell the browser the tunnel is up, then reshape
+                    // the ClientHello it sends next.
+                    self.send(replyToClient, over: self.client) {
+                        self.pumpFirstClientWrite(decision: decision)
                     }
-                    if let firstWrite {
-                        self.sendFragmented(firstWrite, decision: decision, over: connection) {
-                            self.relay(from: connection, to: self.client)
-                            self.relay(from: self.client, to: connection)
-                        }
-                    } else if replyToClient == nil {
-                        self.relay(from: connection, to: self.client)
-                        self.relay(from: self.client, to: connection)
+                } else if let firstWrite {
+                    self.sendFragmented(firstWrite, decision: decision, over: socket) {
+                        self.relayClientToUpstream()
                     }
-                    if let name = decision.ruleName {
-                        Log.write(.info, "\(host) · \(name)")
-                    }
-                case .failed(let error):
-                    Log.write(.warn, "\(host) bağlanamadı: \(error.localizedDescription)")
-                    self.close()
-                case .cancelled:
-                    self.close()
-                default:
-                    break
                 }
             }
-            connection.start(queue: self.queue)
         }
     }
 
@@ -191,21 +180,20 @@ final class ProxySession {
                 return
             }
             self.sendFragmented(data, decision: decision, over: upstream) {
-                self.relay(from: upstream, to: self.client)
-                self.relay(from: self.client, to: upstream)
+                self.relayClientToUpstream()
             }
         }
     }
 
-    private func sendFragmented(_ data: Data, decision: Decision, over connection: NWConnection, then: @escaping () -> Void) {
+    private func sendFragmented(_ data: Data, decision: Decision, over socket: UpstreamSocket, then: @escaping () -> Void) {
         let pieces = Fragmenter.fragments(for: data, mode: decision.mode, chunkSize: decision.chunkSize)
-        guard pieces.count > 1 else { return send(data, over: connection, then: then) }
+        guard pieces.count > 1 else { return socket.send(data, then: then) }
 
         // One at a time, each waiting for the last to be handed to the kernel:
         // queuing them together would let them be written as a single segment.
         func write(_ index: Int) {
             guard index < pieces.count else { return then() }
-            send(pieces[index], over: connection) { write(index + 1) }
+            socket.send(pieces[index]) { write(index + 1) }
         }
         write(0)
     }
@@ -218,17 +206,16 @@ final class ProxySession {
 
     // MARK: Relay
 
-    private func relay(from source: NWConnection, to destination: NWConnection) {
-        source.receive(minimumIncompleteLength: 1, maximumLength: 64 * 1024) { [weak self] data, _, isComplete, error in
+    /// Server-to-client is wired in `onData`; this is the other direction.
+    private func relayClientToUpstream() {
+        client.receive(minimumIncompleteLength: 1, maximumLength: 64 * 1024) { [weak self] data, _, isComplete, error in
             guard let self else { return }
-            if let data, !data.isEmpty {
-                destination.send(content: data, completion: .contentProcessed { error in
-                    if error != nil { self.close() } else { self.relay(from: source, to: destination) }
-                })
+            if let data, !data.isEmpty, let upstream = self.upstream {
+                upstream.send(data) { self.relayClientToUpstream() }
             } else if isComplete || error != nil {
                 self.close()
             } else {
-                self.relay(from: source, to: destination)
+                self.relayClientToUpstream()
             }
         }
     }
@@ -244,7 +231,7 @@ final class ProxySession {
         guard !closed else { return }
         closed = true
         client.cancel()
-        upstream?.cancel()
+        upstream?.close()
         upstream = nil
         onFinish?()
         onFinish = nil

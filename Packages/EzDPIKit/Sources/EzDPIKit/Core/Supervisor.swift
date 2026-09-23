@@ -33,6 +33,11 @@ final class Supervisor: ObservableObject {
     /// motor durur, ortam değişkeni silinir ve uygulama yine korumasız başlar.
     private var holdCount = 0
 
+    /// Açma/kapama sırası girişken olmamalı: uygulama izleyicisi, ağ izleyicisi
+    /// ve zamanlayıcı birbiri ardına `evaluate()` çağırabiliyor. Biri motoru
+    /// kurarken ikincisi araya girerse aynı porta iki kez bağlanmaya çalışırız.
+    private var isTransitioning = false
+
     let store: ConfigStore
     private let engine: Engine
     private let appWatcher = AppWatcher()
@@ -85,8 +90,9 @@ final class Supervisor: ObservableObject {
         }
         if holdCount > 0 { desired = true }
 
+        guard !isTransitioning else { return }
         if desired && !isActive {
-            activate()
+            Task { await activate() }
         } else if !desired && isActive {
             deactivate()
         }
@@ -114,48 +120,57 @@ final class Supervisor: ObservableObject {
         min(max(port, 1024), 49151)
     }
 
-    /// Port doluysa sıradaki boş portu bulur. Kullanıcı "port dolu" hatasıyla
-    /// baş başa kalmasın diye varsayılan davranış budur.
-    private func resolvePort(host: String, preferred: Int) -> Int? {
-        let start = Self.sanitizePort(preferred)
-        if !ProxyServer.isPortBusy(host: host, port: UInt16(clamping: start)) { return start }
-        guard store.config.settings.autoPort else { return nil }
-        for candidate in stride(from: start + 1, to: min(start + 40, 49151), by: 1)
-        where !ProxyServer.isPortBusy(host: host, port: UInt16(clamping: candidate)) {
-            Log.write(.warn, "\(start) portu dolu, \(candidate) portuna geçildi.")
-            return candidate
-        }
-        return nil
-    }
+    /// Motoru kurar, ANCAK gerçekten dinlemeye başladıktan sonra sistem
+    /// proxy'sini açar.
+    ///
+    /// Sıra burada hayati: proxy açıkken motor yoksa makine ölü bir porta bakar
+    /// ve internet tamamen kesilir — kullanıcının teşhis edemeyeceği tek arıza
+    /// budur. Eskiden `engine.start` dinleyici kurulmadan dönüyordu, bağlanma
+    /// hatası saniyenin binde biri sonra geliyordu ve proxy o sırada çoktan
+    /// açılmış oluyordu.
+    private func activate() async {
+        guard !isTransitioning else { return }
+        isTransitioning = true
+        defer { isTransitioning = false }
 
-    private func activate() {
         lastError = nil
         activePort = nil
         var settings = store.config.settings
 
-        guard let port = resolvePort(host: settings.listenHost, preferred: settings.listenPort) else {
-            lastError = EngineError.portBusy(settings.listenPort).localizedDescription
-            Log.write(.error, "Boş port bulunamadı.")
+        // Portun boş olup olmadığının tek dürüst cevabı bağlanmayı denemek.
+        // Önceki sürümdeki yoklama NWListener'ı kurup hiç başlatmıyordu; bağlama
+        // `start()`'ta olduğu için o yoklama her zaman "boş" diyordu.
+        let first = Self.sanitizePort(settings.listenPort)
+        let candidates = store.config.settings.autoPort
+            ? Array(stride(from: first, to: min(first + 20, 49151), by: 1))
+            : [first]
+
+        var started = false
+        for candidate in candidates {
+            do {
+                try await engine.start(config: store.config,
+                                       host: settings.listenHost,
+                                       port: candidate)
+                // Yedek port yalnızca bu oturum için: kullanıcının seçtiği
+                // numarayı config'e geri yazarsak bir kez kayan port bir daha
+                // geri dönmez ve her çakışmada bir artar.
+                settings.listenPort = candidate
+                started = true
+                if candidate != first {
+                    Log.write(.warn, "\(first) portu dolu, \(candidate) portuna geçildi.")
+                }
+                break
+            } catch {
+                lastError = error.localizedDescription
+                continue
+            }
+        }
+
+        guard started else {
+            Log.write(.error, lastError ?? "Motor başlatılamadı.")
             return
         }
-        // Yedek port yalnızca bu oturum için. Kullanıcının seçtiği portu
-        // config'e geri yazarsak, bir kez kayan numara bir daha geri dönmez ve
-        // her çakışmada bir artar; ayarlardaki değer kullanıcının tercihi kalır.
-        settings.listenPort = port
-
-        do {
-            try engine.start(config: store.config,
-                             host: settings.listenHost,
-                             port: settings.listenPort)
-        } catch {
-            lastError = error.localizedDescription
-            Log.write(.error, error.localizedDescription)
-            return
-        }
-
-        // Dinleyici `start` dönerken kurulmuş oluyor, bekleme payı gerekmiyor.
-        // Eski motor ayrı bir süreç olduğu için 0,4 saniye uyumak zorundaydık —
-        // proxy'yi motor hazır olmadan açarsak ilk istekler düşüyordu.
+        lastError = nil
 
         let services = SystemProxyController.targetServices(config: settings)
         let ok = SystemProxyController.enable(host: settings.listenHost,
@@ -169,8 +184,18 @@ final class Supervisor: ObservableObject {
             lastError = "Sistem proxy'si ayarlanamadı."
             return
         }
-        activePort = port
+        activePort = settings.listenPort
         isActive = true
+    }
+
+    /// Yeniden başlatma yolunda kullanılan hâli: portun gerçekten serbest
+    /// kalmasını bekler. Beklemezsek yeni dinleyici eskisi hâlâ portu tutarken
+    /// bağlanmaya çalışır ve "Address already in use" alır.
+    private func deactivateAndWait() async {
+        SystemProxyController.restore()
+        await engine.stopAndWait()
+        isActive = false
+        activePort = nil
     }
 
     private func deactivate() {
@@ -209,8 +234,8 @@ final class Supervisor: ObservableObject {
         // Taze bir açılış: kirli durum dosyasına "ortam değişkeni kuruldu"
         // bilgisi de yazılsın. Aksi halde kapanışta değişken temizlenmez ve
         // ölü porta işaret eden bir https_proxy geride kalır.
-        if isActive { deactivate() }
-        activate()
+        if isActive { await deactivateAndWait() }
+        await activate()
         guard isActive else {
             lastError = L10n.t("dpi.engine.kalfa-could-not-start")
             Log.write(.error, "Motor açılamadığı için yeniden başlatma iptal edildi.")
@@ -280,8 +305,10 @@ final class Supervisor: ObservableObject {
         guard isActive else { evaluate(); return }
         if restart {
             Log.write(.info, "Dinlenen adres değişti, motor yeniden başlatılıyor.")
-            deactivate()
-            activate()
+            Task {
+                await deactivateAndWait()
+                await activate()
+            }
         } else {
             engine.updateRules(config: store.config)
             Log.write(.info, "Kural tablosu güncellendi.")
@@ -289,7 +316,14 @@ final class Supervisor: ObservableObject {
     }
 
     func shutdown() {
-        if isActive { deactivate() }
+        // Koşulsuz geri alma. `isActive` yanlışlıkla false olduğu hâlde proxy
+        // açık kalabiliyor — motor kendiliğinden düştüğünde tam olarak bu olur.
+        // O durumda çıkarken geri almazsak kullanıcı internetsiz kalır ve
+        // sebebini gösteren hiçbir şey ekranda olmaz.
+        SystemProxyController.restore()
+        engine.stop()
+        isActive = false
+        activePort = nil
         SystemProxyController.unsetEnvVars()
     }
 

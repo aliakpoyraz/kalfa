@@ -17,15 +17,12 @@ final class ProxyServerTests: XCTestCase {
 
         port = UInt16.random(in: 29000...29900)
         server = ProxyServer()
-        try server.start(host: "127.0.0.1", port: port, rules: [
+        try await server.start(host: "127.0.0.1", port: port, rules: [
             ProxyServer.Rule(domains: ["example.com"], mode: .chunk, chunkSize: 2,
                              dns: .system, name: "test-chunk", priority: 100),
             ProxyServer.Rule(domains: ["httpbin.org"], mode: .record, chunkSize: 24,
                              dns: .system, name: "test-record", priority: 90),
         ])
-        // The listener is up when `start` returns, but give the queue a beat
-        // before the first connection arrives.
-        try await Task.sleep(nanoseconds: 300_000_000)
     }
 
     override func tearDown() {
@@ -75,12 +72,33 @@ final class ProxyServerTests: XCTestCase {
         XCTAssertEqual(cached, resolved)
     }
 
-    /// Nothing may be left listening after `stop()`.
-    func testStopReleasesThePort() throws {
-        server.stop()
+    /// `start` must not report success for a port it did not get.
+    ///
+    /// The version this replaces asked a "is the port busy?" helper that built
+    /// an `NWListener` and never started it — and since a listener binds at
+    /// `start()`, not at construction, the answer was always "free". The engine
+    /// then reported success, the supervisor switched the system proxy on, and
+    /// the bind failed a moment later: proxy on, engine dead, no internet.
+    func testStartFailsOnATakenPort() async throws {
+        let intruder = ProxyServer()
+        do {
+            try await intruder.start(host: "127.0.0.1", port: port, rules: [])
+            intruder.stop()
+            XCTFail("dolu porta bağlanma başarılı sayıldı")
+        } catch {
+            // Expected.
+        }
+    }
+
+    /// And the port has to come back, or a restart cannot rebind it. This is
+    /// what `stopAndWait` exists for: `cancel()` is as asynchronous as `start`.
+    func testPortIsReusableAfterStopAndWait() async throws {
+        await server.stopAndWait()
         server = nil
-        Thread.sleep(forTimeInterval: 0.4)
-        XCTAssertFalse(ProxyServer.isPortBusy(host: "127.0.0.1", port: port))
+
+        let second = ProxyServer()
+        try await second.start(host: "127.0.0.1", port: port, rules: [])
+        second.stop()
     }
 
     // MARK: Helpers
