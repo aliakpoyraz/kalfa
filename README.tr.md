@@ -147,6 +147,29 @@ Motor Kalfa'nın kendi kodudur (`Packages/EzDPIKit/Sources/EzDPIKit/Proxy`): yer
 
 Uygulama ad-hoc imzalıdır. İlk açılışta sağ tık → **Aç**.
 
+Ad-hoc imzanın bir bedeli var: Erişilebilirlik izni imzaya bağlı olduğu için her
+yeniden derlemede izin düşer ve kesintisiz kaydırma durur. Gerçek bir sertifika
+bunu bitirir.
+
+### Dağıtılabilir sürüm
+
+```bash
+./release.sh 1.0
+```
+
+İmzalar, noterletir, damgalar ve `dist/Kalfa-1.0.zip` üretir. İki hazırlık
+gerekir — ikisi de bir kez: **Developer ID Application** sertifikası ve
+`xcrun notarytool store-credentials` ile saklanmış bir noterleme kimliği.
+Adımlar `release.sh` dosyasının başında yazılı.
+
+`zip` yerine `ditto` kullanılır; `zip` imzayı bozar.
+
+**Mac App Store'da yok ve olamaz.** Sandbox zorunludur, Kalfa'nın yaptığı işlerin
+çoğu orada yasaktır: pencere sunucusunun özel mod listesi (`CGSConfigureDisplayMode`
+— özel API kullanımı tek başına ret sebebi), `CGEventTap`, sistem proxy'si,
+ev dizini genelinde tarama ve çöpe atma, DDC, yönetici yetkisiyle AppleScript.
+Bu kategorideki uygulamaların hiçbiri orada değil.
+
 Xcode gerekir; yalnız Command Line Tools ile uygulama paketi derlenemez.
 `build.sh` `DEVELOPER_DIR`'i kendisi ayarladığı için `xcode-select`'in Command
 Line Tools'u göstermesi sorun değildir.

@@ -2,7 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Not sandboxed, and cannot be: reading the window server's private mode
+	     list, tapping scroll events, setting the system proxy and emptying a
+	     cache folder are all outside the sandbox. This is also why Kalfa is not
+	     a Mac App Store app. -->
 	<key>com.apple.security.app-sandbox</key>
 	<false/>
+	<!-- Under the hardened runtime, driving System Events needs saying so. The
+	     sleep/display-off timer and the Finder and Dock restarts go through
+	     AppleScript because pmset wants root and Kalfa refuses to ask for it. -->
+	<key>com.apple.security.automation.apple-events</key>
+	<true/>
 </dict>
 </plist>

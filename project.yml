@@ -5,6 +5,13 @@ options:
     macOS: "14.0"
   createIntermediateGroups: true
 
+configs:
+  Debug: debug
+  Release: release
+
+fileGroups:
+  - kalfa.xcconfig
+
 packages:
   # The shared visual language and string lookup. Lives in a package rather
   # than the app target so the DPI module can use it too — that is the whole
@@ -56,6 +63,11 @@ targets:
         NSLocationUsageDescription: "Bağlı olduğun Wi-Fi ağına göre kural çalıştırabilmek için ağ adı okunur."
         NSLocationWhenInUseUsageDescription: "Bağlı olduğun Wi-Fi ağına göre kural çalıştırabilmek için ağ adı okunur."
         NSAudioCaptureUsageDescription: "Uygulamaların ses düzeyini ayrı ayrı ayarlayabilmek için sistem sesi Kalfa üzerinden yönlendirilir."
+        # Zamanlayıcı ve Finder/Dock onarımı System Events üzerinden çalışır.
+        NSAppleEventsUsageDescription: "Uyutma, ekranı kapatma ve Finder/Dock'u yeniden başlatma işlemleri sistemin kendi betik arayüzü üzerinden yapılır."
+    configFiles:
+      Debug: kalfa.xcconfig
+      Release: kalfa.xcconfig
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aliakpoyraz.kalfa
@@ -66,16 +78,19 @@ targets:
         SWIFT_STRICT_CONCURRENCY: minimal
         SWIFT_OBJC_BRIDGING_HEADER: Kalfa/Bridging/Kalfa-Bridging-Header.h
         CODE_SIGN_ENTITLEMENTS: Kalfa/Resources/Kalfa.entitlements
-        # Ad-hoc signed. Kalfa needs no entitlements — DDC/IOKit, the display
-        # configuration API and networksetup are open to any process — so a
-        # developer identity buys nothing locally and only ties the build to a
-        # provisioning profile. Smooth scrolling asks for Accessibility at
-        # runtime, which is a TCC grant rather than an entitlement.
-        ENABLE_HARDENED_RUNTIME: NO
+        # Signing identity comes from the environment so the same project file
+        # produces both builds: ad-hoc for local work, Developer ID for a
+        # release. Ad-hoc is the default because it needs no account.
+        #
+        # The catch with ad-hoc: the Accessibility grant is tied to the
+        # signature, so every local rebuild loses it and smooth scrolling stops
+        # until the permission is given again. A real identity ends that.
+        ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_STYLE: Manual
-        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_IDENTITY: "$(KALFA_SIGN_IDENTITY)"
         CODE_SIGNING_REQUIRED: YES
         CODE_SIGNING_ALLOWED: YES
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: "$(KALFA_TEAM_ID)"
+        OTHER_CODE_SIGN_FLAGS: "--timestamp"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

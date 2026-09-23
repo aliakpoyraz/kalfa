@@ -1,0 +1,7 @@
+// Signing defaults. A release overrides these on the command line:
+//
+//   KALFA_SIGN_IDENTITY="Developer ID Application: ..." KALFA_TEAM_ID=7VT27N92K3 ./release.sh
+//
+// Left as ad-hoc here so a fresh clone builds with no account and no setup.
+KALFA_SIGN_IDENTITY = -
+KALFA_TEAM_ID =
