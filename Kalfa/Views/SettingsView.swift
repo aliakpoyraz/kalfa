@@ -34,6 +34,10 @@ struct SettingsView: View {
 
             Divider()
 
+            ScrollSettingsView()
+
+            Divider()
+
             Toggle(L10n.t("settings.launchAtLogin"), isOn: $launchAtLogin)
                 .onChange(of: launchAtLogin) { _, newValue in
                     // macOS refuses registration while the user has the item

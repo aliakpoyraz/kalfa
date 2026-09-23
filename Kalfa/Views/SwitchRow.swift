@@ -2,7 +2,7 @@ import SwiftUI
 
 /// One labelled switch with the value it controls shown next to it.
 ///
-/// Every capability in Klapa that is genuinely binary is presented this way, so
+/// Every capability in Kalfa that is genuinely binary is presented this way, so
 /// the panel reads as a list of things that are on or off rather than a set of
 /// menus to go digging through.
 struct SwitchRow<Trailing: View>: View {

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AboutView: View {
 
-    private static let repositoryURL = URL(string: "https://github.com/aliakpoyraz/klapa")!
+    private static let repositoryURL = URL(string: "https://github.com/aliakpoyraz/kalfa")!
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
