@@ -11,6 +11,12 @@ export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Develope
 CONFIGURATION="${1:-Release}"
 command -v xcodegen >/dev/null || { echo "xcodegen missing: brew install xcodegen"; exit 1; }
 
+# xcodegen üretilen Info.plist'in üzerine YAZMIYOR: bir kez oluşturduktan sonra
+# dosya diskte kaldığı için project.yml'deki sürüm değişikliği pakete hiç
+# ulaşmıyor. 1.0.0 etiketiyle 1.0 diyen bir uygulama bu yüzden çıktı. Tek
+# doğruluk kaynağı project.yml olsun diye her derlemede siliniyor.
+rm -f Supporting/Info.plist
+
 xcodegen generate --quiet
 
 xcodebuild \

@@ -49,6 +49,11 @@ targets:
       properties:
         CFBundleName: Kalfa
         CFBundleDisplayName: Kalfa
+        # Build ayarına bağlı: xcodegen bunları yazmazsa kendi varsayılanını
+        # ("1.0") koyuyor ve MARKETING_VERSION pakete hiç ulaşmıyor.
+        # infoPlistUtility derleme sırasında değişkeni genişletiyor.
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSMinimumSystemVersion: "14.0"
         # Menu bar only: no Dock tile, no app switcher entry.
         LSUIElement: true
