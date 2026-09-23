@@ -28,10 +28,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         registerHotkeys()
     }
 
-    /// `ezdpi://` and `kalfa://` drive the DPI half from Shortcuts, Raycast or a
-    /// shell script.
+    /// `ezdpi://on | off | auto | relaunch?bundle=<id>` drives the DPI half, and
+    /// `kalfa://window?section=<name>` opens the window on a given page — from
+    /// Shortcuts, Raycast or a shell script.
+    ///
+    /// The scheme was registered for both names from the start but only ever
+    /// answered the DPI half; now that the window is where everything lives, it
+    /// is worth being able to ask for a page by name without aiming at the menu
+    /// bar.
     func application(_ application: NSApplication, open urls: [URL]) {
         for url in urls {
+            if url.scheme == "kalfa", url.host == "window" {
+                let raw = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                    .queryItems?.first(where: { $0.name == "section" })?.value
+                MainActor.assumeIsolated {
+                    KalfaWindow.show(raw.flatMap(KalfaWindow.Section.init(rawValue:)) ?? .displays)
+                }
+                continue
+            }
             EzDPI.handle(url: url)
         }
     }

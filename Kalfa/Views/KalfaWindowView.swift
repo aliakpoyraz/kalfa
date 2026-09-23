@@ -42,7 +42,7 @@ enum KalfaWindow {
             case .displays: return .display
             case .audio: return .audio
             case .system, .settings, .about: return .neutral
-            case .upkeep: return .neutral
+            case .upkeep: return .tools
             case .dpi: return .dpi
             case .health: return .alert
             }
@@ -144,9 +144,11 @@ struct KalfaWindowView: View {
         case .system:
             page(section) { SystemTabView() }
         case .upkeep:
-            page(section) { UpkeepPage() }
+            // Its own lists scroll; an outer ScrollView would leave them nothing
+            // to size against.
+            page(section, scrolls: false) { UpkeepPage() }
         case .dpi:
-            page(section) { EzDPISettings() }
+            page(section, scrolls: false) { EzDPISettings() }
         case .health:
             HealthView()
         case .settings:
@@ -160,25 +162,35 @@ struct KalfaWindowView: View {
         }
     }
 
-    /// A titled, scrolling page. Inside this window a `ScrollView` is safe —
-    /// the zero-height collapse is a `MenuBarExtra` problem, not a general one.
+    /// A titled page.
+    ///
+    /// `scrolls` is not a style choice. A `List` or a `ScrollView` asked to live
+    /// inside another `ScrollView` has no height to measure itself against and
+    /// collapses — the DPI site list came out empty exactly this way. Pages
+    /// whose content scrolls itself get the title and nothing else.
+    @ViewBuilder
     private func page<Content: View>(
         _ section: KalfaWindow.Section,
+        scrolls: Bool = true,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: KalfaDesign.m) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(section.title)
-                        .font(.title3.weight(.semibold))
-                    Text(L10n.t("window.subtitle.\(section.rawValue)"))
-                        .font(KalfaDesign.captionFont)
-                        .foregroundStyle(.secondary)
-                }
-                content()
+        let body = VStack(alignment: .leading, spacing: KalfaDesign.m) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(section.title)
+                    .font(.title3.weight(.semibold))
+                Text(L10n.t("window.subtitle.\(section.rawValue)"))
+                    .font(KalfaDesign.captionFont)
+                    .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(KalfaDesign.l)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(KalfaDesign.l)
+
+        if scrolls {
+            ScrollView { body }
+        } else {
+            body.frame(maxHeight: .infinity, alignment: .topLeading)
         }
     }
 }

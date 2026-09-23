@@ -59,7 +59,9 @@ struct RootView: View {
             footer
         }
         .frame(width: KalfaDesign.panelWidth)
-        .background(.ultraThinMaterial)
+        // Thick, not ultra thin: this is a menu surface that has to stay
+        // legible over whatever happens to be on screen behind it.
+        .background(.thickMaterial)
         // Rebuilds the panel when the language changes; SwiftUI cannot see into
         // the strings bundle on its own.
         .id(center.settings.language.rawValue)
@@ -139,7 +141,7 @@ struct RootView: View {
                 title: L10n.t("home.action.microphone"),
                 state: audio.isInputMuted ? L10n.t("home.state.muted") : L10n.t("home.state.ready"),
                 symbol: audio.isInputMuted ? "mic.slash.fill" : "mic.fill",
-                role: .audio,
+                role: .microphone,
                 isOn: audio.isInputMuted
             ) {
                 audio.setInputMuted(!audio.isInputMuted)
@@ -150,7 +152,7 @@ struct RootView: View {
                 title: L10n.t("home.action.awake"),
                 state: caffeine.isActive ? L10n.t("on") : L10n.t("home.state.off"),
                 symbol: caffeine.isActive ? "cup.and.saucer.fill" : "cup.and.saucer",
-                role: .neutral,
+                role: .awake,
                 isOn: caffeine.isActive
             ) {
                 caffeine.toggle()
@@ -161,7 +163,7 @@ struct RootView: View {
                 title: L10n.t("presentation"),
                 state: presentation.isOn ? L10n.t("on") : L10n.t("home.state.off"),
                 symbol: "rectangle.on.rectangle",
-                role: .neutral,
+                role: .presentation,
                 isOn: presentation.isOn
             ) {
                 presentation.toggle()
@@ -172,7 +174,7 @@ struct RootView: View {
                 title: L10n.t("scroll"),
                 state: scroll.isEnabled ? L10n.t("on") : L10n.t("home.state.off"),
                 symbol: "computermouse",
-                role: .neutral,
+                role: .scroll,
                 isOn: scroll.isEnabled
             ) {
                 scroll.isEnabled.toggle()
@@ -198,7 +200,7 @@ struct RootView: View {
                 title: L10n.t("upkeep.title"),
                 state: L10n.t("upkeep.state"),
                 symbol: "wrench.adjustable",
-                role: .neutral,
+                role: .tools,
                 isOn: false
             ) {
                 KalfaWindow.show(.upkeep)
@@ -260,7 +262,7 @@ struct RootView: View {
                 title: L10n.t("profiles"),
                 summary: sceneSummary,
                 symbol: "sparkles.rectangle.stack",
-                role: .display,
+                role: .scene,
                 isExpanded: binding(for: .scenes)
             ) {
                 ProfilesSectionView(showingSaveSheet: $showingSaveSheet)
@@ -270,7 +272,7 @@ struct RootView: View {
                 title: L10n.t("monitor"),
                 summary: monitorSummary,
                 symbol: "gauge.with.dots.needle.33percent",
-                role: .neutral,
+                role: .monitor,
                 isExpanded: binding(for: .monitor)
             ) {
                 MonitorCardView()

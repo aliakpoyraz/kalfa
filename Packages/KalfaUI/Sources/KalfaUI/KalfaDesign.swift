@@ -39,21 +39,34 @@ public enum KalfaDesign {
 
 /// What a control is about.
 ///
-/// Five roles, not eleven. Colour names the *subject* — screens are blue, sound
-/// is purple, the protection half is green, something wanting attention is
-/// orange, everything else is neutral. Whether a control is on is carried by the
-/// tint being filled in at all, so an eleventh hue bought nothing except a panel
-/// that looked like a box of highlighters.
+/// One tint per subject. An earlier pass cut this to five on the theory that
+/// colour should name the subject and the filled tint alone should say "on" —
+/// which looked tidy in the abstract and was wrong in the panel: it turned the
+/// toggles grey, and a grey "on" does not read as on. The tints are back,
+/// because in a panel you scan rather than read, colour is the fastest thing
+/// the eye resolves, and these are the colours people already associate with
+/// each thing (red for a muted microphone, orange for staying awake).
+///
+/// `neutral` and `alert` stay from that pass: they are the two that mean
+/// something rather than name something.
 public enum KalfaRole {
-    case neutral, display, audio, dpi, alert
+    case neutral, alert
+    case display, audio, microphone, awake, presentation, dpi, scroll, tools, scene, monitor
 
     public var tint: Color {
         switch self {
         case .neutral: return .secondary
+        case .alert: return .orange
         case .display: return .blue
         case .audio: return .purple
+        case .microphone: return .red
+        case .awake: return .orange
+        case .presentation: return .indigo
         case .dpi: return .green
-        case .alert: return .orange
+        case .scroll: return .teal
+        case .tools: return .gray
+        case .scene: return .cyan
+        case .monitor: return .mint
         }
     }
 }
@@ -69,7 +82,12 @@ private struct KalfaSurface: ViewModifier {
         content
             .background {
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(isActive ? AnyShapeStyle((tint ?? .accentColor).opacity(0.14)) : AnyShapeStyle(.regularMaterial))
+                    // A tinted wash when on, a neutral one when off — never a
+                    // material. A material samples the desktop behind the
+                    // window, so an inactive card sitting over a red photo came
+                    // out red and read as a warning. Colour in this panel means
+                    // something; it cannot be decided by the wallpaper.
+                    .fill(isActive ? AnyShapeStyle((tint ?? .accentColor).opacity(0.16)) : AnyShapeStyle(Color.primary.opacity(0.06)))
                     .overlay {
                         RoundedRectangle(cornerRadius: radius, style: .continuous)
                             .strokeBorder(
