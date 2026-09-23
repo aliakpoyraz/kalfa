@@ -1,4 +1,13 @@
 import Foundation
+import KalfaUI
+
+/// Which language the DPI half's own config asks for. Kept here rather than in
+/// a localisation file because it is a stored setting: the lookup itself lives
+/// in KalfaUI now, shared with the rest of the app.
+enum Language: String, Codable, CaseIterable, Identifiable {
+    case system, tr, en
+    var id: String { rawValue }
+}
 
 // MARK: - Alan adı grupları
 
@@ -57,19 +66,19 @@ enum BypassPreset: String, Codable, CaseIterable, Identifiable {
 
     @MainActor var label: String {
         switch self {
-        case .standard: return T("Standart (önerilen)", "Standard (recommended)")
-        case .alternative1: return T("Alternatif 1", "Alternative 1")
-        case .alternative2: return T("Alternatif 2", "Alternative 2")
-        case .custom: return T("Özel", "Custom")
+        case .standard: return L10n.t("dpi.config.standard-recommended")
+        case .alternative1: return L10n.t("dpi.config.alternative-1")
+        case .alternative2: return L10n.t("dpi.config.alternative-2")
+        case .custom: return L10n.t("dpi.config.custom")
         }
     }
 
     @MainActor var hint: String {
         switch self {
-        case .standard: return T("Çoğu engelde çalışır.", "Works for most blocks.")
-        case .alternative1: return T("Standart yetmezse bunu dene.", "Try this if standard fails.")
-        case .alternative2: return T("Son çare.", "Last resort.")
-        case .custom: return T("Değerleri elle ayarladın.", "You set the values manually.")
+        case .standard: return L10n.t("dpi.config.works-most-blocks")
+        case .alternative1: return L10n.t("dpi.config.try-this-if-standard")
+        case .alternative2: return L10n.t("dpi.config.last-resort")
+        case .custom: return L10n.t("dpi.config.set-values-manually")
         }
     }
 

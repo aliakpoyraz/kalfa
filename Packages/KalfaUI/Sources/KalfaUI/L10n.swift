@@ -6,17 +6,17 @@ import Foundation
 /// nothing else. Kalfa lets someone pick Turkish or English independently,
 /// because the language a person wants to read technical display terminology in
 /// is not always the language their Mac is set to.
-enum L10n {
+public enum L10n {
 
-    enum Language: String, CaseIterable, Identifiable {
+    public enum Language: String, CaseIterable, Identifiable {
         case system
         case turkish = "tr"
         case english = "en"
 
-        var id: String { rawValue }
+        public var id: String { rawValue }
 
         /// Shown in its own language, the way language pickers are expected to read.
-        var nativeName: String {
+        public var nativeName: String {
             switch self {
             case .system: return L10n.t("language.system")
             case .turkish: return "Türkçe"
@@ -25,11 +25,11 @@ enum L10n {
         }
     }
 
-    static let defaultsKey = "language"
+    public static let defaultsKey = "language"
 
 
 
-    static var language: Language {
+    public static var language: Language {
         get {
             Language(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .system
         }
@@ -41,11 +41,11 @@ enum L10n {
 
     // MARK: Lookup
 
-    static func t(_ key: String) -> String {
+    public static func t(_ key: String) -> String {
         cache.bundle().localizedString(forKey: key, value: key, table: nil)
     }
 
-    static func t(_ key: String, _ arguments: any CVarArg...) -> String {
+    public static func t(_ key: String, _ arguments: any CVarArg...) -> String {
         String(format: t(key), locale: Locale.current, arguments: arguments)
     }
 
@@ -85,7 +85,7 @@ enum L10n {
 
 extension L10n.Language {
     /// How the DPI half words the same choice: nil means "follow the system".
-    var prefersTurkish: Bool? {
+    public var prefersTurkish: Bool? {
         switch self {
         case .system: return nil
         case .turkish: return true

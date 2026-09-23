@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import UpkeepKit
+import KalfaUI
 
 /// Uninstalling: pick an app, see everything it leaves behind, confirm.
 ///

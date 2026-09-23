@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import UpkeepKit
+import KalfaUI
 
 /// The size tree, one directory at a time.
 ///

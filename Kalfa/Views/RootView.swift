@@ -1,6 +1,7 @@
 import EzDPIKit
 import SwiftUI
 import UpkeepKit
+import KalfaUI
 
 /// The menu bar panel: what the machine is doing, and the switches worth
 /// flicking on the way past.

@@ -2,6 +2,7 @@ import AppKit
 import ColorSync
 import CoreGraphics
 import Foundation
+import KalfaUI
 
 /// A display that is online right now, plus the identity Kalfa uses to recognise
 /// it again after it is unplugged and replugged.

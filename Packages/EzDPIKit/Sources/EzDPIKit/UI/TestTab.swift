@@ -1,4 +1,5 @@
 import SwiftUI
+import KalfaUI
 
 /// Test sekmesi. Sonuçlar teknik kod değil, cümle olarak sunulur:
 /// "engelli ama Kalfa ile açılıyor" gibi.
@@ -6,7 +7,6 @@ struct TestTab: View {
     @EnvironmentObject var store: ConfigStore
     @EnvironmentObject var supervisor: Supervisor
     @EnvironmentObject var diagnostics: Diagnostics
-    @EnvironmentObject var l10n: L10n
 
     private var domains: [String] {
         store.config.groups.filter(\.enabled).flatMap(\.domains)
@@ -16,8 +16,8 @@ struct TestTab: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Button(diagnostics.running
-                       ? T("Test sürüyor…", "Testing…")
-                       : T("Siteleri test et", "Test sites")) {
+                       ? L10n.t("dpi.test.testing")
+                       : L10n.t("dpi.test.test-sites")) {
                     diagnostics.run(domains: domains,
                                     host: store.config.settings.listenHost,
                                     port: supervisor.activePort ?? store.config.settings.listenPort,
@@ -27,8 +27,7 @@ struct TestTab: View {
                 .buttonStyle(.borderedProminent)
 
                 if !supervisor.isActive {
-                    Text(T("Kalfa kapalı, yalnızca normal bağlantı denenecek.",
-                           "Kalfa is off, only the normal connection will be tested."))
+                    Text(L10n.t("dpi.test.kalfa-off-only-normal"))
                         .font(.caption).foregroundStyle(.orange)
                 }
                 Spacer()
@@ -36,10 +35,9 @@ struct TestTab: View {
 
             if diagnostics.checks.isEmpty {
                 ContentUnavailableView(
-                    T("Henüz test yapılmadı", "No test yet"),
+                    L10n.t("dpi.test.no-test-yet"),
                     systemImage: "checkmark.seal",
-                    description: Text(T("Listendeki her adres önce normal, sonra Kalfa üzerinden denenir.",
-                                        "Each address is tried normally first, then through Kalfa."))
+                    description: Text(L10n.t("dpi.test.each-address-tried-normally"))
                 )
             } else {
                 List(diagnostics.checks) { check in
@@ -65,25 +63,23 @@ struct TestTab: View {
         let direct = check.direct
         let proxied = check.throughProxy
 
-        guard let direct else { return T("Bekleniyor…", "Waiting…") }
+        guard let direct else { return L10n.t("dpi.test.waiting") }
 
         if direct.ok && proxied == nil {
-            return T("Zaten açılıyor, Kalfa gerekmiyor.", "Already works, Kalfa not needed.")
+            return L10n.t("dpi.test.already-works-kalfa-not")
         }
         if !direct.ok && proxied == nil {
-            return T("Açılmıyor (\(direct.detail)). Kalfa'yı açıp tekrar test et.",
-                     "Blocked (\(direct.detail)). Turn Kalfa on and test again.")
+            return L10n.t("dpi.test.blocked-turn-kalfa-on", "\(direct.detail)")
         }
-        guard let proxied else { return T("Bekleniyor…", "Waiting…") }
+        guard let proxied else { return L10n.t("dpi.test.waiting-2") }
 
         if proxied.ok && !direct.ok {
-            return T("Engelli ama Kalfa ile açılıyor.", "Blocked, but Kalfa opens it.")
+            return L10n.t("dpi.test.blocked-but-kalfa-opens")
         }
         if proxied.ok && direct.ok {
-            return T("Her iki durumda da açılıyor.", "Works either way.")
+            return L10n.t("dpi.test.works-either-way")
         }
-        return T("Kalfa ile de açılmadı (\(proxied.detail)). Siteler sekmesinden başka bir yöntem dene.",
-                 "Still blocked with Kalfa (\(proxied.detail)). Try another method in the Sites tab.")
+        return L10n.t("dpi.test.still-blocked-with-kalfa", "\(proxied.detail)")
     }
 
     private func icon(for check: DomainCheck) -> String {

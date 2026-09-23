@@ -1,4 +1,5 @@
 import SwiftUI
+import KalfaUI
 
 /// One display: what it is running now, what else it can run, what the cable is
 /// carrying, and — for external panels that answer DDC — hardware brightness.

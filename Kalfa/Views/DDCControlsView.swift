@@ -1,4 +1,5 @@
 import SwiftUI
+import KalfaUI
 
 /// Hardware brightness and contrast sliders for one external display.
 ///

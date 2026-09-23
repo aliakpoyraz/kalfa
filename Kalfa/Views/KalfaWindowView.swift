@@ -2,6 +2,7 @@ import AppKit
 import EzDPIKit
 import SwiftUI
 import UpkeepKit
+import KalfaUI
 
 /// Kalfa's one window.
 ///
@@ -145,8 +146,7 @@ struct KalfaWindowView: View {
         case .upkeep:
             page(section) { UpkeepPage() }
         case .dpi:
-            // The DPI half brings its own tabbed layout and fills the pane itself.
-            EzDPISettings()
+            page(section) { EzDPISettings() }
         case .health:
             HealthView()
         case .settings:

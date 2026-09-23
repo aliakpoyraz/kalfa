@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import KalfaUI
 
 /// The switches that have nowhere else to live: staying awake, presenting,
 /// timers, disks, DNS, window placement, and the `defaults` flags people keep in

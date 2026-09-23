@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import KalfaUI
 
 /// The shortcut list: one row per action, each row a recorder.
 struct HotkeysView: View {

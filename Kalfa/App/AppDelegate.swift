@@ -1,5 +1,6 @@
 import AppKit
 import EzDPIKit
+import KalfaUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -21,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
 
         EzDPI.setLanguage(turkish: L10n.language.prefersTurkish)
+        EzDPI.showSettings = { KalfaWindow.show(.dpi) }
         EzDPI.start()
         installSignalHandlers()
         registerHotkeys()

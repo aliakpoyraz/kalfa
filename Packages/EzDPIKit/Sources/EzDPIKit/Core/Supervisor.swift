@@ -1,6 +1,7 @@
 import Foundation
 import AppKit
 import ServiceManagement
+import KalfaUI
 
 enum RunMode: String, Codable {
     case auto      // kurallar karar verir
@@ -193,7 +194,7 @@ final class Supervisor: ObservableObject {
 
         Log.write(.info, "Yeniden başlatma istendi: \(bundleID)")
         guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
-            lastError = T("Uygulama bulunamadı.", "App not found.")
+            lastError = L10n.t("dpi.engine.app-not-found")
             Log.write(.error, "Uygulama bulunamadı: \(bundleID)")
             return
         }
@@ -211,8 +212,7 @@ final class Supervisor: ObservableObject {
         if isActive { deactivate() }
         activate()
         guard isActive else {
-            lastError = T("Kalfa başlatılamadı, uygulama yeniden başlatılmadı.",
-                          "Kalfa could not start, the app was not relaunched.")
+            lastError = L10n.t("dpi.engine.kalfa-could-not-start")
             Log.write(.error, "Motor açılamadığı için yeniden başlatma iptal edildi.")
             return
         }
@@ -224,8 +224,7 @@ final class Supervisor: ObservableObject {
             try? await Task.sleep(nanoseconds: 250_000_000)
         }
         if !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty {
-            lastError = T("Uygulama kapanmadı, elle kapatıp tekrar dene.",
-                          "The app did not quit. Close it manually and try again.")
+            lastError = L10n.t("dpi.engine.app-did-not-quit")
             Log.write(.error, "\(bundleID) kapanmadı, yeniden başlatma yarıda kaldı.")
             return
         }
@@ -236,8 +235,7 @@ final class Supervisor: ObservableObject {
             _ = try await NSWorkspace.shared.openApplication(at: appURL, configuration: configuration)
             Log.write(.info, "\(bundleID) Kalfa ortamıyla yeniden başlatıldı.")
         } catch {
-            lastError = T("Uygulama açılamadı: \(error.localizedDescription)",
-                          "Could not open the app: \(error.localizedDescription)")
+            lastError = L10n.t("dpi.engine.could-not-open-app", "\(error.localizedDescription)")
             return
         }
 

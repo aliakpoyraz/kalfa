@@ -11,9 +11,15 @@ let package = Package(
     products: [
         .library(name: "EzDPIKit", targets: ["EzDPIKit"])
     ],
+    dependencies: [
+        // The card grammar and the string table. Before this the DPI half had
+        // its own of both, which is why it looked like a different app.
+        .package(path: "../KalfaUI")
+    ],
     targets: [
         .target(
             name: "EzDPIKit",
+            dependencies: [.product(name: "KalfaUI", package: "KalfaUI")],
             path: "Sources/EzDPIKit",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

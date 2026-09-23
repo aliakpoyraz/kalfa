@@ -6,6 +6,11 @@ options:
   createIntermediateGroups: true
 
 packages:
+  # The shared visual language and string lookup. Lives in a package rather
+  # than the app target so the DPI module can use it too — that is the whole
+  # reason the two halves looked different.
+  KalfaUI:
+    path: Packages/KalfaUI
   # The DPI half, vendored in this repo. A local package rather than more files
   # in the app target: both halves arrived with their own Log, Diagnostics,
   # SettingsView and L10n, and a module boundary settles that without renaming
@@ -27,6 +32,7 @@ targets:
         excludes:
           - "**/*.md"
     dependencies:
+      - package: KalfaUI
       - package: EzDPIKit
       - package: UpkeepKit
     info:

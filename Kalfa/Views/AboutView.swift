@@ -1,5 +1,6 @@
 import EzDPIKit
 import SwiftUI
+import KalfaUI
 
 struct AboutView: View {
 

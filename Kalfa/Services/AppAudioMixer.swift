@@ -3,6 +3,7 @@ import AudioToolbox
 import CoreAudio
 import Foundation
 import Observation
+import KalfaUI
 
 /// Per-application sound: a level, a mute, a meter, and which speakers each app
 /// plays through.

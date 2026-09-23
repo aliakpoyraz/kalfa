@@ -1,14 +1,14 @@
 import SwiftUI
 import AppKit
+import KalfaUI
 
 struct LogTab: View {
     @ObservedObject private var log = Log.shared
-    @EnvironmentObject var l10n: L10n
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Button(T("Kayıt klasörünü aç", "Open log folder")) {
+                Button(L10n.t("dpi.log.open-log-folder")) {
                     NSWorkspace.shared.selectFile(Paths.appLog.path,
                                                   inFileViewerRootedAtPath: Paths.logs.path)
                 }

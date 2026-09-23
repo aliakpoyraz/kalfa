@@ -1,6 +1,7 @@
 import EzDPIKit
 import Foundation
 import Observation
+import KalfaUI
 
 /// User preferences, backed by `UserDefaults`.
 @MainActor

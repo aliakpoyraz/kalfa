@@ -1,4 +1,5 @@
 import SwiftUI
+import KalfaUI
 
 /// Profiles for the arrangement that is plugged in right now.
 ///

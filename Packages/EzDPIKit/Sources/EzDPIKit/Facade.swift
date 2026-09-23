@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import SwiftUI
+import KalfaUI
 
 /// What the host app is allowed to touch.
 ///
@@ -47,16 +48,27 @@ public enum EzDPI {
         return true
     }
 
-    /// Follows the host's language picker. The DPI half stores its own choice in
-    /// its config file, so the two stay in step rather than arguing.
+    /// Kept so the host's existing call still compiles, and so a config written
+    /// by an older version keeps its recorded choice. There is nothing to do
+    /// any more: both halves read the same `L10n`, whose language is the one the
+    /// person picked in Kalfa's settings. The DPI half used to carry a second
+    /// language picker that set a second stored value.
     public static func setLanguage(turkish: Bool?) {
-        let language: Language = turkish.map { $0 ? .tr : .en } ?? .system
-        ConfigStore.shared.config.settings.language = language
-        L10n.shared.language = language
+        ConfigStore.shared.config.settings.language = turkish.map { $0 ? .tr : .en } ?? .system
     }
 
     /// Whether the engine is up, for the menu bar icon.
     public static var isActive: Bool { Supervisor.shared.isActive }
+
+    /// How the DPI panel reaches its own page in the host's window.
+    ///
+    /// It used to call `openSettings()` and rely on a SwiftUI `Settings` scene.
+    /// That scene is gone — the DPI settings are a section of the one Kalfa
+    /// window now — and the environment action silently does nothing when no
+    /// such scene exists, so the button in the panel had quietly stopped
+    /// working. A closure the host fills in cannot rot the same way: it is nil
+    /// or it is wired.
+    public static var showSettings: (() -> Void)?
 
     /// Where the rules and the log live. The About page offers both, and this
     /// is the only reason the host needs to know these paths exist.
@@ -122,10 +134,10 @@ public struct EzDPIPanel: View {
 
     public var body: some View {
         MenuPanel()
+            .id(L10n.language.rawValue)
             .environmentObject(ConfigStore.shared)
             .environmentObject(Supervisor.shared)
-            .environmentObject(L10n.shared)
-    }
+                }
 }
 
 /// The DPI settings window: sites, rules, test, log, about.
@@ -137,9 +149,9 @@ public struct EzDPISettings: View {
 
     public var body: some View {
         SettingsView()
+            .id(L10n.language.rawValue)
             .environmentObject(ConfigStore.shared)
             .environmentObject(Supervisor.shared)
             .environmentObject(diagnostics)
-            .environmentObject(L10n.shared)
-    }
+                }
 }

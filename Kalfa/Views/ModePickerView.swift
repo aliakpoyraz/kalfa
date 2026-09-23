@@ -1,4 +1,5 @@
 import SwiftUI
+import KalfaUI
 
 /// Resolution menu, grouped the way a person thinks about it: pick a size, then a
 /// refresh rate. A flat list is unusable — a 1440p monitor commonly exposes 80+

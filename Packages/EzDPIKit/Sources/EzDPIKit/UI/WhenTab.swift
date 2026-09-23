@@ -1,12 +1,12 @@
 import SwiftUI
 import AppKit
+import KalfaUI
 
 /// "Ne zaman açılsın" sekmesi. Kural kavramı kullanıcıya cümle olarak
 /// sunuluyor: bir uygulama açıkken, bir ağdayken ya da belirli saatlerde.
 struct WhenTab: View {
     @EnvironmentObject var store: ConfigStore
     @EnvironmentObject var supervisor: Supervisor
-    @EnvironmentObject var l10n: L10n
     @State private var selection: UUID?
 
     private var selectedIndex: Int? {
@@ -40,9 +40,9 @@ struct WhenTab: View {
             }
             HStack(spacing: 6) {
                 Menu {
-                    Button(T("Bir uygulama açıkken", "While an app is open")) { add(.app(bundleIDs: [])) }
-                    Button(T("Belirli bir ağdayken", "On a certain network")) { add(.network(ssids: [], serviceNames: [])) }
-                    Button(T("Belirli saatlerde", "During certain hours")) {
+                    Button(L10n.t("dpi.when.while-app-open")) { add(.app(bundleIDs: [])) }
+                    Button(L10n.t("dpi.when.on-certain-network")) { add(.network(ssids: [], serviceNames: [])) }
+                    Button(L10n.t("dpi.when.during-certain-hours")) {
                         add(.schedule(days: [], startMinute: 20 * 60, endMinute: 23 * 60))
                     }
                 } label: { Image(systemName: "plus") }
@@ -62,12 +62,12 @@ struct WhenTab: View {
         switch trigger {
         case .app(let ids):
             return ids.isEmpty
-                ? T("Uygulama seçilmedi", "No app chosen")
-                : T("\(ids.count) uygulama", "\(ids.count) app(s)")
+                ? L10n.t("dpi.when.no-app-chosen")
+                : L10n.t("dpi.when.app-s", "\(ids.count)")
         case .network(let ssids, let services):
             let count = ssids.count + services.count
-            return count == 0 ? T("Ağ seçilmedi", "No network chosen")
-                              : T("\(count) ağ", "\(count) network(s)")
+            return count == 0 ? L10n.t("dpi.when.no-network-chosen")
+                              : L10n.t("dpi.when.network-s", "\(count)")
         case .schedule(_, let start, let end):
             return "\(Self.format(start)) – \(Self.format(end))"
         }
@@ -78,8 +78,8 @@ struct WhenTab: View {
         if let index = selectedIndex {
             Form {
                 Section {
-                    TextField(T("Ad", "Name"), text: $store.config.rules[index].name)
-                    Toggle(T("Bu kural çalışsın", "Use this rule"), isOn: $store.config.rules[index].enabled)
+                    TextField(L10n.t("dpi.when.name"), text: $store.config.rules[index].name)
+                    Toggle(L10n.t("dpi.when.use-this-rule"), isOn: $store.config.rules[index].enabled)
                 }
                 triggerEditor(index: index)
             }
@@ -87,10 +87,9 @@ struct WhenTab: View {
             .onChange(of: store.config.rules) { supervisor.evaluate() }
         } else {
             ContentUnavailableView(
-                T("Bir kural seç", "Select a rule"),
+                L10n.t("dpi.when.select-rule"),
                 systemImage: "clock",
-                description: Text(T("Soldaki artı ile yeni kural ekleyebilirsin.",
-                                    "Use the plus button on the left to add one."))
+                description: Text(L10n.t("dpi.when.use-plus-button-on"))
             )
         }
     }
@@ -108,12 +107,11 @@ struct WhenTab: View {
                             .buttonStyle(.borderless)
                     }
                 }
-                Button(T("Uygulama seç…", "Choose app…")) { pickApp(at: index) }
-                Text(T("Uygulama açılır açılmaz devreye girer, kapanınca kendiliğinden durur.",
-                       "Turns on the moment the app opens and off when it closes."))
+                Button(L10n.t("dpi.when.choose-app")) { pickApp(at: index) }
+                Text(L10n.t("dpi.when.turns-on-moment-app"))
                     .font(.caption).foregroundStyle(.secondary)
             } header: {
-                Text(T("Bu uygulamalar açıkken", "While these apps are open"))
+                Text(L10n.t("dpi.when.while-these-apps-open"))
             }
 
         case .network(let ssids, let services):
@@ -129,17 +127,16 @@ struct WhenTab: View {
                     }
                 }
                 if let current = supervisor.currentSSID {
-                    Button(T("Şu anki ağı ekle (\(current))", "Add current network (\(current))")) {
+                    Button(L10n.t("dpi.when.add-current-network", "\(current)")) {
                         guard !ssids.contains(current) else { return }
                         setNetwork(at: index, ssids: ssids + [current], services: services)
                     }
                 } else {
-                    Text(T("Wi-Fi adı okunamıyor. macOS bunun için konum izni istiyor; izin vermezsen aşağıdan bağlantı türünü seçebilirsin.",
-                           "Cannot read the Wi-Fi name. macOS requires location permission for it; otherwise pick a connection type below."))
+                    Text(L10n.t("dpi.when.cannot-read-wi-fi"))
                         .font(.caption).foregroundStyle(.orange)
                 }
             } header: {
-                Text(T("Wi-Fi ağı", "Wi-Fi network"))
+                Text(L10n.t("dpi.when.wi-fi-network"))
             }
             Section {
                 ForEach(supervisor.activeServices, id: \.self) { service in
@@ -152,7 +149,7 @@ struct WhenTab: View {
                     ))
                 }
             } header: {
-                Text(T("Bağlantı türü", "Connection type"))
+                Text(L10n.t("dpi.when.connection-type"))
             }
 
         case .schedule(let days, let start, let end):
@@ -170,34 +167,30 @@ struct WhenTab: View {
                         .toggleStyle(.button)
                     }
                 }
-                Text(T("Hiç gün seçmezsen her gün geçerli olur.",
-                       "If you pick no days, it applies every day."))
+                Text(L10n.t("dpi.when.if-pick-no-days"))
                     .font(.caption).foregroundStyle(.secondary)
             } header: {
-                Text(T("Günler", "Days"))
+                Text(L10n.t("dpi.when.days"))
             }
             Section {
-                Stepper(T("Başlangıç: \(Self.format(start))", "Start: \(Self.format(start))"), value: Binding(
+                Stepper(L10n.t("dpi.when.start", "\(Self.format(start))"), value: Binding(
                     get: { start },
                     set: { store.config.rules[index].trigger = .schedule(days: days, startMinute: $0, endMinute: end) }
                 ), in: 0...1439, step: 15)
-                Stepper(T("Bitiş: \(Self.format(end))", "End: \(Self.format(end))"), value: Binding(
+                Stepper(L10n.t("dpi.when.end", "\(Self.format(end))"), value: Binding(
                     get: { end },
                     set: { store.config.rules[index].trigger = .schedule(days: days, startMinute: start, endMinute: $0) }
                 ), in: 0...1439, step: 15)
-                Text(T("Bitiş saati başlangıçtan küçükse aralık gece yarısını aşar.",
-                       "If the end is earlier than the start, the range crosses midnight."))
+                Text(L10n.t("dpi.when.if-end-earlier-than"))
                     .font(.caption).foregroundStyle(.secondary)
             } header: {
-                Text(T("Saat aralığı", "Hours"))
+                Text(L10n.t("dpi.when.hours"))
             }
         }
     }
 
     private var dayNames: [String] {
-        l10n.isTurkish
-            ? ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"]
-            : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        (1...7).map { L10n.t("dpi.when.day.\($0)") }
     }
 
     private static func format(_ minute: Int) -> String {
@@ -213,7 +206,7 @@ struct WhenTab: View {
     }
 
     private func add(_ trigger: Trigger) {
-        let rule = AutomationRule(name: T("Yeni kural", "New rule"), trigger: trigger)
+        let rule = AutomationRule(name: L10n.t("dpi.when.new-rule"), trigger: trigger)
         store.config.rules.append(rule)
         selection = rule.id
     }
@@ -247,8 +240,8 @@ struct WhenTab: View {
               !ids.contains(bundleID) else { return }
         store.config.rules[index].trigger = .app(bundleIDs: ids + [bundleID])
         let appTitle = url.deletingPathExtension().lastPathComponent
-        if store.config.rules[index].name == T("Yeni kural", "New rule") {
-            store.config.rules[index].name = T("\(appTitle) açıkken", "While \(appTitle) is open")
+        if store.config.rules[index].name == L10n.t("dpi.when.new-rule-2") {
+            store.config.rules[index].name = L10n.t("dpi.when.while-open", "\(appTitle)")
         }
     }
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import KalfaUI
 
 /// The two switches that decide how a display actually looks: Retina or not, and
 /// fast or not. Both keep the logical resolution where it is.

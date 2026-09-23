@@ -1,5 +1,6 @@
 import SwiftUI
 import UpkeepKit
+import KalfaUI
 
 /// The live monitoring card: what this Mac is spending itself on right now.
 ///

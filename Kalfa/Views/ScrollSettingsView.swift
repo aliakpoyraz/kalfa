@@ -1,4 +1,5 @@
 import SwiftUI
+import KalfaUI
 
 /// The smooth scrolling section of the settings popover. One switch: the values
 /// behind it are fixed, because a scroll feel is judged by hand, not by number.

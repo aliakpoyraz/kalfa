@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import Observation
+import KalfaUI
 
 /// "In 45 minutes, sleep." The opposite of the keep-awake switch, and it lives
 /// next to it for that reason.

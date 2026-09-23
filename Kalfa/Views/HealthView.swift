@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import KalfaUI
 
 /// The page someone opens when something is wrong: every row maps to a Kalfa
 /// feature that can fail silently — a permission never granted, a monitor link

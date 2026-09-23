@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import KalfaUI
 
 /// The floating search box, opened by a shortcut from anywhere.
 ///

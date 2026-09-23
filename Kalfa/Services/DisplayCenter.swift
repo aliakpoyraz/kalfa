@@ -3,6 +3,7 @@ import CoreGraphics
 import EzDPIKit
 import Foundation
 import Observation
+import KalfaUI
 
 /// The single source of truth about what is plugged in right now.
 ///

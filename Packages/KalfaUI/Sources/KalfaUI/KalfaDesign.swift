@@ -11,30 +11,30 @@ import SwiftUI
 /// 3. **System colours only.** Kalfa follows macOS appearance and contrast
 ///    settings rather than maintaining a palette of its own; role tints are the
 ///    standard ones people already read (red for microphone, orange for awake).
-enum KalfaDesign {
+public enum KalfaDesign {
 
-    static let panelWidth: CGFloat = 392
+    public static let panelWidth: CGFloat = 392
 
     // Spacing scale. Four steps, used everywhere; no ad-hoc paddings.
-    static let xs: CGFloat = 4
-    static let s: CGFloat = 8
-    static let m: CGFloat = 12
-    static let l: CGFloat = 16
-    static let edge: CGFloat = 14
+    public static let xs: CGFloat = 4
+    public static let s: CGFloat = 8
+    public static let m: CGFloat = 12
+    public static let l: CGFloat = 16
+    public static let edge: CGFloat = 14
 
-    static let tileRadius: CGFloat = 11
-    static let cardRadius: CGFloat = 13
-    static let controlRadius: CGFloat = 7
+    public static let tileRadius: CGFloat = 11
+    public static let cardRadius: CGFloat = 13
+    public static let controlRadius: CGFloat = 7
 
     // Type scale. Four sizes; anything else is a mistake, not a decision.
-    static let titleFont = Font.system(size: 15, weight: .semibold)
-    static let headingFont = Font.system(size: 13, weight: .semibold)
-    static let bodyFont = Font.system(size: 12)
-    static let captionFont = Font.system(size: 11)
+    public static let titleFont = Font.system(size: 15, weight: .semibold)
+    public static let headingFont = Font.system(size: 13, weight: .semibold)
+    public static let bodyFont = Font.system(size: 12)
+    public static let captionFont = Font.system(size: 11)
 
     /// Short enough not to be in the way, long enough to be seen. Halved when the
     /// reader has asked for reduced motion.
-    static let motion = Animation.easeOut(duration: 0.18)
+    public static let motion = Animation.easeOut(duration: 0.18)
 }
 
 /// What a control is about.
@@ -44,10 +44,10 @@ enum KalfaDesign {
 /// orange, everything else is neutral. Whether a control is on is carried by the
 /// tint being filled in at all, so an eleventh hue bought nothing except a panel
 /// that looked like a box of highlighters.
-enum KalfaRole {
+public enum KalfaRole {
     case neutral, display, audio, dpi, alert
 
-    var tint: Color {
+    public var tint: Color {
         switch self {
         case .neutral: return .secondary
         case .display: return .blue
@@ -82,7 +82,7 @@ private struct KalfaSurface: ViewModifier {
 }
 
 extension View {
-    func kalfaSurface(tint: Color? = nil, isActive: Bool = false, radius: CGFloat = KalfaDesign.cardRadius) -> some View {
+    public func kalfaSurface(tint: Color? = nil, isActive: Bool = false, radius: CGFloat = KalfaDesign.cardRadius) -> some View {
         modifier(KalfaSurface(tint: tint, isActive: isActive, radius: radius))
     }
 }
@@ -92,18 +92,27 @@ extension View {
 /// A live switch. The whole rectangle is the control, it is tinted while the
 /// thing is on, and the second line always says what the current state *is*
 /// rather than repeating the title.
-struct KalfaTile: View {
-    let title: String
-    let state: String
-    let symbol: String
-    let role: KalfaRole
-    let isOn: Bool
-    let action: () -> Void
+public struct KalfaTile: View {
+    public let title: String
+    public let state: String
+    public let symbol: String
+    public let role: KalfaRole
+    public let isOn: Bool
+    public let action: () -> Void
 
     @State private var hovering = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    var body: some View {
+    public init(title: String, state: String, symbol: String, role: KalfaRole, isOn: Bool, action: @escaping () -> Void) {
+        self.title = title
+        self.state = state
+        self.symbol = symbol
+        self.role = role
+        self.isOn = isOn
+        self.action = action
+    }
+
+    public var body: some View {
         Button(action: action) {
             HStack(spacing: KalfaDesign.s) {
                 Image(systemName: symbol)
@@ -154,18 +163,34 @@ struct KalfaTile: View {
 /// The header is a summary line that is worth reading with the card shut — the
 /// point is that the panel tells you the state of the machine before you touch
 /// anything.
-struct KalfaCard<Content: View>: View {
-    let title: String
-    let summary: String?
-    let symbol: String
-    let role: KalfaRole
-    @Binding var isExpanded: Bool
-    @ViewBuilder let content: () -> Content
+public struct KalfaCard<Content: View>: View {
+    public let title: String
+    public let summary: String?
+    public let symbol: String
+    public let role: KalfaRole
+    @Binding public var isExpanded: Bool
+    @ViewBuilder public let content: () -> Content
 
     @State private var hovering = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    var body: some View {
+    public init(
+        title: String,
+        summary: String?,
+        symbol: String,
+        role: KalfaRole,
+        isExpanded: Binding<Bool>,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.title = title
+        self.summary = summary
+        self.symbol = symbol
+        self.role = role
+        self._isExpanded = isExpanded
+        self.content = content
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
                 withAnimation(reduceMotion ? nil : KalfaDesign.motion) { isExpanded.toggle() }
@@ -229,13 +254,13 @@ struct KalfaCard<Content: View>: View {
 
 /// One setting inside a card or the tools window: a label, what it is worth now,
 /// and the control that changes it.
-struct KalfaRow<Control: View>: View {
-    let title: String
-    let value: String?
-    let help: String
-    @ViewBuilder let control: () -> Control
+public struct KalfaRow<Control: View>: View {
+    public let title: String
+    public let value: String?
+    public let help: String
+    @ViewBuilder public let control: () -> Control
 
-    init(
+    public init(
         _ title: String,
         value: String? = nil,
         help: String = "",
@@ -247,7 +272,7 @@ struct KalfaRow<Control: View>: View {
         self.control = control
     }
 
-    var body: some View {
+    public var body: some View {
         HStack(spacing: KalfaDesign.s) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
@@ -268,14 +293,20 @@ struct KalfaRow<Control: View>: View {
 }
 
 /// A compact toolbar control with a visible hover and pressed state.
-struct KalfaToolbarButton: View {
-    let systemName: String
-    let help: String
-    let action: () -> Void
+public struct KalfaToolbarButton: View {
+    public let systemName: String
+    public let help: String
+    public let action: () -> Void
 
     @State private var hovering = false
 
-    var body: some View {
+    public init(systemName: String, help: String, action: @escaping () -> Void) {
+        self.systemName = systemName
+        self.help = help
+        self.action = action
+    }
+
+    public var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 12, weight: .medium))
@@ -295,18 +326,18 @@ struct KalfaToolbarButton: View {
 
 /// The state line at the top of the panel: one chip per thing worth knowing at a
 /// glance, so the machine's condition is legible before any control is touched.
-struct KalfaChip: View {
-    let text: String
-    let symbol: String
-    let tint: Color?
+public struct KalfaChip: View {
+    public let text: String
+    public let symbol: String
+    public let tint: Color?
 
-    init(_ text: String, symbol: String, tint: Color? = nil) {
+    public init(_ text: String, symbol: String, tint: Color? = nil) {
         self.text = text
         self.symbol = symbol
         self.tint = tint
     }
 
-    var body: some View {
+    public var body: some View {
         HStack(spacing: 4) {
             Image(systemName: symbol)
                 .font(.system(size: 9, weight: .semibold))

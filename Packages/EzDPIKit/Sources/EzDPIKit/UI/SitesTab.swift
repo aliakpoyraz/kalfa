@@ -1,11 +1,11 @@
 import SwiftUI
+import KalfaUI
 
 /// Site listesi. Kullanıcı yalnızca adres yazar ve gerekirse üç hazır
 /// yöntemden birini seçer; parça boyutu gibi terimler "Gelişmiş" altında.
 struct SitesTab: View {
     @EnvironmentObject var store: ConfigStore
     @EnvironmentObject var supervisor: Supervisor
-    @EnvironmentObject var l10n: L10n
     @State private var selection: UUID?
     @State private var newDomain = ""
 
@@ -31,7 +31,7 @@ struct SitesTab: View {
                             .foregroundStyle(group.enabled ? .green : .secondary)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(group.name)
-                            Text(T("\(group.domains.count) adres", "\(group.domains.count) addresses"))
+                            Text(L10n.t("dpi.sites.addresses", "\(group.domains.count)"))
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
                     }
@@ -55,15 +55,15 @@ struct SitesTab: View {
             let binding = $store.config.groups[index]
             Form {
                 Section {
-                    TextField(T("Liste adı", "List name"), text: binding.name)
-                    Toggle(T("Bu liste kullanılsın", "Use this list"), isOn: binding.enabled)
+                    TextField(L10n.t("dpi.sites.list-name"), text: binding.name)
+                    Toggle(L10n.t("dpi.sites.use-this-list"), isOn: binding.enabled)
                 }
 
                 Section {
                     HStack {
-                        TextField(T("engellenen-site.com", "blocked-site.com"), text: $newDomain)
+                        TextField(L10n.t("dpi.sites.blocked-site-com"), text: $newDomain)
                             .onSubmit { addDomain(to: index) }
-                        Button(T("Ekle", "Add")) { addDomain(to: index) }
+                        Button(L10n.t("dpi.sites.add")) { addDomain(to: index) }
                             .disabled(newDomain.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                     ForEach(Array(binding.wrappedValue.domains.enumerated()), id: \.offset) { offset, domain in
@@ -78,16 +78,15 @@ struct SitesTab: View {
                         }
                     }
                     if binding.wrappedValue.domains.isEmpty {
-                        Text(T("Henüz adres yok. Açılmayan sitenin adresini yaz, alt adresleri de kendiliğinden kapsanır.",
-                               "No addresses yet. Type the site that will not open; its subdomains are covered too."))
+                        Text(L10n.t("dpi.sites.no-addresses-yet-type"))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 } header: {
-                    Text(T("Adresler", "Addresses"))
+                    Text(L10n.t("dpi.sites.addresses-2"))
                 }
 
                 Section {
-                    Picker(T("Yöntem", "Method"), selection: Binding(
+                    Picker(L10n.t("dpi.sites.method"), selection: Binding(
                         get: { binding.wrappedValue.preset },
                         set: { newValue in
                             store.config.groups[index].apply(preset: newValue)
@@ -100,39 +99,37 @@ struct SitesTab: View {
                     }
                     Text(binding.wrappedValue.preset.hint)
                         .font(.caption).foregroundStyle(.secondary)
-                    Text(T("Site hâlâ açılmıyorsa sırayla diğer yöntemleri dene, sonra Test sekmesinden kontrol et.",
-                           "If the site still will not open, try the other methods in order, then check the Test tab."))
+                    Text(L10n.t("dpi.sites.if-site-still-will"))
                         .font(.caption).foregroundStyle(.secondary)
 
                     if store.config.settings.advancedMode {
-                        Picker(T("Ad çözümleme", "Name resolution"), selection: binding.dnsMode) {
+                        Picker(L10n.t("dpi.sites.name-resolution"), selection: binding.dnsMode) {
                             ForEach(DNSMode.allCases) { Text($0.label).tag($0) }
                         }
-                        Picker(T("Parçalama", "Fragmentation"), selection: binding.splitMode) {
+                        Picker(L10n.t("dpi.sites.fragmentation"), selection: binding.splitMode) {
                             ForEach(SplitMode.selectable) { Text($0.label).tag($0) }
                         }
                         if binding.wrappedValue.splitMode == .chunk {
-                            Stepper(T("Parça boyutu: \(binding.wrappedValue.chunkSize)",
-                                      "Chunk size: \(binding.wrappedValue.chunkSize)"),
+                            Stepper(L10n.t("dpi.sites.chunk-size", "\(binding.wrappedValue.chunkSize)"),
                                     value: binding.chunkSize, in: 1...100)
                         }
-                        Button(T("Uygula", "Apply")) {
+                        Button(L10n.t("dpi.sites.apply")) {
                             store.config.groups[index].preset = .custom
                             supervisor.applyConfigChange()
                         }
                     }
                 } header: {
-                    Text(T("Nasıl açılsın", "How to unblock"))
+                    Text(L10n.t("dpi.sites.how-unblock"))
                 }
             }
             .formStyle(.grouped)
         } else {
-            ContentUnavailableView(T("Bir liste seç", "Select a list"), systemImage: "globe")
+            ContentUnavailableView(L10n.t("dpi.sites.select-list"), systemImage: "globe")
         }
     }
 
     private func addGroup() {
-        var group = DomainGroup(name: T("Yeni liste", "New list"),
+        var group = DomainGroup(name: L10n.t("dpi.sites.new-list"),
                                 priority: (store.config.groups.map(\.priority).max() ?? 10) + 10)
         group.apply(preset: .standard)
         store.config.groups.append(group)

@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import KalfaUI
 
 /// DNS switching and "eject everything".
 ///
