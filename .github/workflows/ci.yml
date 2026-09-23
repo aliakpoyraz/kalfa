@@ -1,0 +1,32 @@
+name: derleme ve testler
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: xcodegen kur
+        run: brew install xcodegen
+
+      - name: Uygulamayı derle
+        run: ./build.sh
+
+      - name: Bakım testleri
+        run: swift test
+        working-directory: Packages/UpkeepKit
+
+      # Ağ testleri bilerek dışarıda: proxy oturumu gerçek sitelere bağlanıyor,
+      # koşucunun ağı yavaşladığında kırmızı yanar ve kimse bakmaz olur. Ayrıştırıcı
+      # ve parçalayıcı testleri saf mantık, her zaman koşar.
+      - name: DPI testleri (ağ gerektirmeyenler)
+        run: swift test --skip ProxyServerTests
+        working-directory: Packages/EzDPIKit
+
+      - name: Teşhis çıktısı alınabiliyor mu
+        run: dist/Kalfa.app/Contents/MacOS/Kalfa --dump | head -5
