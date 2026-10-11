@@ -38,6 +38,7 @@ yerde, izinler bir kez verilir.
 | Bir uygulamayı kaldırmak | Uygulamayı çöpe at, kalıntılar diskte kalsın | Paket kimliğiyle eşleşen kalıntıları bulur, çöpe taşır |
 | Engellenen bir site | VPN aç, tüm trafiğin yavaşlasın | Yalnız listelediğin adresler için devreye girer |
 | Fare tekerleği zıplayarak kaydırıyor | Ayrı bir uygulama kur | Tek anahtar |
+| İmleci aşağı indirince Dock laptop ekranına kaçıyor | macOS'ta ayarı yok | Dock ana ekranda kalır ya da yalnız dokunduğun kenara geçer |
 
 ---
 
@@ -83,6 +84,7 @@ yerde, izinler bir kez verilir.
 - **DNS** — bağlı tüm ağ servislerine uygulanır, Wi-Fi'dan kabloya geçince seninle gelir.
 - **Harici diskleri çıkar**, **gizli anahtarlar** (Finder gizli dosyalar, ekran görüntüsü
   biçimi ve klasörü, Dock gecikmesi), **klavye kısayolları**.
+- **Dock konumu** — Dock'un hangi ekranda duracağı. Ayrıntısı aşağıda.
 
 ### Bakım
 
@@ -148,6 +150,30 @@ Fare tekerleği satır satır kaydırır, her çentikte bir zıplar. Kalfa her �
 trackpad'in zaten yaptığı gibi piksel piksel harekete çevirir. Trackpad ve Magic Mouse'a
 dokunulmaz. Tek anahtar, ayar kaydırıcısı yok.
 
+### Dock konumu
+
+macOS, imleç hangi ekranın Dock kenarına bastırırsa Dock'u o ekrana taşır. Laptop harici
+monitörün altındaysa bu kenar laptopun alt kenarıdır ve imleç aşağı indikçe Dock oraya
+kaçar. "Ekranların ayrı alanları var" ayarını kapatmak da artık işe yaramıyor.
+
+Panelde **Dock kilidi** düğmesi üç mod arasında geçer (Sistem > Gizli anahtarlar'da da
+seçilir):
+
+| Mod | Ne yapar |
+|---|---|
+| **Kapalı** | macOS'un kendi davranışı |
+| **Ana ekranda** | Diğer ekranların Dock kenarındaki 10 noktalık şeritte imleç hareketi Dock'a iletilmez; Dock ana ekrandan ayrılmaz |
+| **Kenara dokununca** | Dock'u hangi ekranda istiyorsan o ekranın Dock kenarına dokunman yeter, bastırmak gerekmez |
+
+Kalfa imleci hiçbir modda yerinden oynatmaz. Başka bir ekranın devam ettiği kenar
+parçaları (laptopun üstündeki monitör kenarı gibi) geçit sayılır, dokunmaya karışmaz.
+Erişilebilirlik izni ister; açıldığı anda istenir.
+
+Yaklaşımı [DockAnchor](https://github.com/bwya77/DockAnchor)'dan öğrenildi: olayları
+oturum düzeyinde yakalayıp yalnızca düşürmek. İlk denemede olay HID düzeyinde yakalanıp
+imleç geri itiliyordu; geri itme çağrısı pencere sunucusunu, pencere sunucusu da olay
+dinleyicisini beklediği için bütün ekranlar donuyordu.
+
 ### Komut paleti
 
 Kısayolla her yerden açılır, menü çubuğunu hedeflemeye gerek kalmaz. Türkçe arama
@@ -185,6 +211,7 @@ listelerini sıfırlamak demekti.
 | [FreeDisplay](https://github.com/huberdf/FreeDisplay) | Açık kaynak | Pencere sunucusunun gizli mod listesine ulaşma fikri | Uygulama sıfırdan yazıldı |
 | [Mos](https://github.com/Caldis/Mos) | CC BY-NC | Kaydırma **davranışı**: çentik başına alt sınır, iki aşamalı süzgeç, girdi önceliği, kaydırma fazı göndermeme | **Tek satır kod kopyalanmadı.** Mos ticari kullanıma kapalı; kod alınsaydı Kalfa MIT olamazdı |
 | [mole](https://github.com/tw93/mole) | GPL-3.0 | Bakım **özellik kümesi**: canlı izleme, disk analizi, kaldırıcı, temizlik | **Kod, dize ve kural listesi kopyalanmadı**, davranış sıfırdan yazıldı. Aksi hâlde Kalfa GPL'e geçmek zorunda kalırdı |
+| [DockAnchor](https://github.com/bwya77/DockAnchor) | MIT | Dock kilidinin yöntemi: oturum düzeyinde olay dinleyici, kenar şeridinde olayı düşürmek | Kod kopyalanmadı; geçit/duvar ayrımı ve kenara dokunma modu Kalfa'nın |
 | [SpoofDPI](https://github.com/xvzc/SpoofDPI) | Apache-2.0 | Parçalama yaklaşımının kendisi | Eskiden ikili olarak pakete gömülüydü; **24.09.2026'da çıkarıldı**, yerine Kalfa'nın kendi motoru yazıldı |
 
 Fikir düzeyinde borçlu olunan diğerleri: pencere yerleştirme için **Rectangle** ve
@@ -240,7 +267,7 @@ Kalfa yalnızca gerçekten gereken izni, gerektiği anda ister.
 
 | İzin | Ne için | Ne zaman |
 |---|---|---|
-| **Erişilebilirlik** | Kesintisiz kaydırma ve pencere yerleştirme | İlk kullanıldığında |
+| **Erişilebilirlik** | Kesintisiz kaydırma, pencere yerleştirme ve Dock konumu | İlk kullanıldığında |
 | **Ses kaydı** | Uygulama başına ses karıştırıcı | Karıştırıcı ilk açıldığında |
 | **Konum** | Wi-Fi ağ adını okumak (macOS bunu konum izni sayar) | Yalnız bir kuralı ağ adına bağlarsan |
 | **Yönetici** | Bazı onarım işleri | O işi çalıştırdığında; parola Kalfa'ya girmez, sistemin kendi kutusu açılır |

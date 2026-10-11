@@ -51,7 +51,7 @@ public enum KalfaDesign {
 /// something rather than name something.
 public enum KalfaRole {
     case neutral, alert
-    case display, audio, microphone, awake, presentation, dpi, scroll, tools, scene, monitor
+    case display, audio, microphone, awake, presentation, dpi, scroll, dock, tools, scene, monitor
 
     public var tint: Color {
         switch self {
@@ -64,6 +64,7 @@ public enum KalfaRole {
         case .presentation: return .indigo
         case .dpi: return .green
         case .scroll: return .teal
+        case .dock: return .pink
         case .tools: return .gray
         case .scene: return .cyan
         case .monitor: return .mint

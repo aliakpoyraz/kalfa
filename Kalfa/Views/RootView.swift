@@ -28,6 +28,7 @@ struct RootView: View {
     private let audio = AudioService.shared
     private let caffeine = CaffeineService.shared
     private let presentation = PresentationMode.shared
+    private let dockLock = DockLockService.shared
     /// Observed, not just held: the DPI engine's state drives the tile and the
     /// header chip, and a plain `let` would leave both stale.
     @StateObject private var dpi = EzDPIStatus()
@@ -179,6 +180,21 @@ struct RootView: View {
             ) {
                 scroll.isEnabled.toggle()
                 say(L10n.t(scroll.isEnabled ? "home.feedback.scrollOn" : "home.feedback.scrollOff"))
+            }
+
+            KalfaTile(
+                title: L10n.t("home.action.dockLock"),
+                state: dockLock.isEnabled && !dockLock.isTrusted
+                    ? L10n.t("home.state.needsPermission")
+                    : L10n.t("dock.mode.\(dockLock.mode.rawValue)"),
+                symbol: "dock.rectangle",
+                role: .dock,
+                isOn: dockLock.isEnabled
+            ) {
+                // Off, main display, edge touch — then round again.
+                dockLock.cycleMode()
+                if dockLock.isEnabled && !dockLock.isTrusted { dockLock.requestPermission() }
+                say(L10n.t("home.feedback.dockMode", L10n.t("dock.mode.\(dockLock.mode.rawValue)")))
             }
 
             KalfaTile(

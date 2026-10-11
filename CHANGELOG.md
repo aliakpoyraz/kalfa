@@ -3,6 +3,13 @@
 Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/),
 sürümleme [SemVer](https://semver.org/lang/tr/).
 
+## [Yayımlanmadı]
+
+### Eklendi
+- Dock konumu: Kapalı / Ana ekranda / Kenara dokununca. Panelde tek düğme, Sistem >
+  Gizli anahtarlar'da seçici. Yöntem DockAnchor'dan (oturum düzeyinde dinleyici,
+  olay düşürme); Kalfa imleci hiç oynatmaz.
+
 ## [1.0.0] — 2026-09-24
 
 İlk herkese açık sürüm.

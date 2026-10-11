@@ -33,13 +33,14 @@ bar app instead of two.
 | **Confirm-or-revert** | Unverified modes roll back after 15 seconds unless kept |
 | **Turkish / English** | Switchable in-app, independent of the system language |
 | **Smooth mouse scrolling** | Replays each wheel detent as pixel scrolling, trackpad-style (optional) |
+| **Dock position** | Keep the Dock on the main display, or move it only to the display whose edge you touch (optional) |
 | **Blocked sites** | Kalfa's own proxy engine plus the system proxy, opened only for the domains you list |
 | **Rules** | The DPI half turns itself on by app, network or time of day, and off again afterwards |
 | **Launch at login** | `SMAppService` |
 
-No network access. Display management needs no permissions; smooth scrolling is
-the one exception — reading the scroll wheel requires Accessibility, and it is
-only asked for when that switch is turned on.
+No network access. Display management needs no permissions; smooth scrolling and
+Dock position are the exceptions — both read the pointer through an event tap,
+which requires Accessibility, and it is only asked for when one is turned on.
 
 ---
 
@@ -58,6 +59,33 @@ so none of its code is here; this is a separate implementation of what it does.
 
 Trackpads and the Magic Mouse are passed straight through — they already scroll
 in pixels, and re-animating them would fight the driver's own inertia.
+
+---
+
+## Dock position
+
+macOS moves the Dock to whichever display the pointer presses against the Dock
+edge of. With a laptop under an external monitor, that edge is the laptop's
+bottom — exactly where the pointer lands when pushed down — and turning off
+"Displays have separate Spaces" no longer stops it.
+
+The **Dock lock** tile in the panel cycles three modes (also under System >
+Hidden switches):
+
+| Mode | What it does |
+|---|---|
+| **Off** | macOS's own behaviour |
+| **Main display** | Pointer moves in a 10-point band along other displays' Dock edge never reach the Dock, so it stays on the main display |
+| **On edge touch** | Touch the Dock edge of any display to bring the Dock there; no push needed |
+
+Kalfa never moves the pointer in any mode. Stretches of an edge that another
+display continues past (the monitor's bottom above a laptop) count as doorways
+and are left alone.
+
+The method comes from [DockAnchor](https://github.com/bwya77/DockAnchor): a
+session-level tap that only ever drops events. A first attempt tapped at the HID
+level and warped the pointer back from the callback; the warp waits on the
+window server while the window server waits on the tap, and every display froze.
 
 ---
 
@@ -230,6 +258,7 @@ Kalfa/
                DisplayCenter   state, reconfiguration callback, auto-apply
                ProfileStore · DDCService · AppSettings · LaunchAtLogin
                ScrollService   the wheel event tap and its pixel playback
+               DockLockService the pointer tap that keeps or moves the Dock
   Views/       RootView (the panel) · KalfaWindowView (the one window)
                DisplayCardView · ModePickerView · ScaleToggleView · LinkRow
                DDCControlsView · ProfilesSectionView · SaveProfileView

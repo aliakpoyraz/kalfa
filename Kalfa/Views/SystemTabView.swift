@@ -14,6 +14,7 @@ struct SystemTabView: View {
     private let presentation = PresentationMode.shared
     private let timer = PowerTimer.shared
     private let network = NetworkTools.shared
+    private let dockLock = DockLockService.shared
 
     @State private var expanded: Section?
     @State private var ejectMessage: String?
@@ -342,6 +343,22 @@ struct SystemTabView: View {
                     SystemTweaks.dockIsInstant = $0
                 }
             ))
+            Picker(L10n.t("tweaks.dockLock"), selection: Binding(
+                get: { dockLock.mode },
+                set: { dockLock.mode = $0 }
+            )) {
+                ForEach(DockLockService.Mode.allCases, id: \.self) { mode in
+                    Text(L10n.t("dock.mode.\(mode.rawValue)")).tag(mode)
+                }
+            }
+            if dockLock.isEnabled && !dockLock.isTrusted {
+                Button(L10n.t("scroll.permission.grant")) { dockLock.requestPermission() }
+                    .buttonStyle(.borderless)
+            }
+            Text(L10n.t("tweaks.dockLock.help"))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 8) {
                 Text(L10n.t("tweaks.screenshotFormat"))

@@ -252,6 +252,8 @@
 "tweaks.extensions" = "Tüm dosya uzantılarını göster";
 "tweaks.screenshotShadow" = "Pencere ekran görüntülerinde gölge kalsın";
 "tweaks.instantDock" = "Dock anında açılsın";
+"tweaks.dockLock" = "Dock konumu";
+"tweaks.dockLock.help" = "Ana ekranda: Dock diğer ekranlara kaymaz. Kenara dokununca: Dock'u istediğin ekranın alt kenarına dokunman yeter, bastırmana gerek yok. Kalfa imleci hiç oynatmaz. Erişilebilirlik izni ister.";
 "tweaks.screenshotFormat" = "Ekran görüntüsü biçimi";
 "tweaks.screenshotFolder" = "Ekran görüntüsü klasörü";
 "tweaks.help" = "Bunlar insanların bir not dosyasında sakladığı defaults komutlarının aynısı. Biri değişince Finder ve Dock yeniden başlar, bir saniye sürer.";
@@ -570,3 +572,10 @@ Geride bıraktığı dosyalar listelenir, sen onaylamadan hiçbir şey taşınma
 "dpi.page.test" = "Test";
 "dpi.page.log" = "Kayıtlar";
 "dpi.page.general" = "Genel";
+
+"home.action.dockLock" = "Dock kilidi";
+"home.state.needsPermission" = "İzin gerekli";
+"dock.mode.off" = "Kapalı";
+"dock.mode.main" = "Ana ekranda";
+"home.feedback.dockMode" = "Dock: %@";
+"dock.mode.touch" = "Kenara dokununca";

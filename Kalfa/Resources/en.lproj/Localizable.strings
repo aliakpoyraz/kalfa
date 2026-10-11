@@ -252,6 +252,8 @@
 "tweaks.extensions" = "Show all filename extensions";
 "tweaks.screenshotShadow" = "Keep the shadow on window screenshots";
 "tweaks.instantDock" = "Dock appears instantly";
+"tweaks.dockLock" = "Dock position";
+"tweaks.dockLock.help" = "Main display: the Dock stays off other displays. On edge touch: touch the Dock edge of any display to bring the Dock there, no push needed. Kalfa never moves the pointer. Needs accessibility permission.";
 "tweaks.screenshotFormat" = "Screenshot format";
 "tweaks.screenshotFolder" = "Screenshot folder";
 "tweaks.help" = "These are the same settings as the defaults commands people keep in a notes file. Finder and the Dock restart when one changes, which takes a second.";
@@ -569,3 +571,10 @@
 "dpi.page.test" = "Test";
 "dpi.page.log" = "Log";
 "dpi.page.general" = "General";
+
+"home.action.dockLock" = "Dock lock";
+"home.state.needsPermission" = "Needs permission";
+"dock.mode.off" = "Off";
+"dock.mode.main" = "Main display";
+"home.feedback.dockMode" = "Dock: %@";
+"dock.mode.touch" = "On edge touch";

@@ -7,4 +7,5 @@ enum Log {
     static let profile = Logger(subsystem: subsystem, category: "profile")
     static let ddc     = Logger(subsystem: subsystem, category: "ddc")
     static let scroll  = Logger(subsystem: subsystem, category: "scroll")
+    static let dock    = Logger(subsystem: subsystem, category: "dock")
 }

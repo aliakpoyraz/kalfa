@@ -7,6 +7,8 @@ struct KalfaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var center = DisplayCenter.shared
     @State private var scroll = ScrollService.shared
+    /// Created at launch so a lock left on comes back without opening the panel.
+    private let dockLock = DockLockService.shared
     /// Mirrors the DPI engine's running state so the menu bar icon can show it.
     @StateObject private var dpi = EzDPIStatus()
     /// Read here so a mute from the keyboard shows up in the menu bar at once.
