@@ -3,7 +3,7 @@
 Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/),
 sürümleme [SemVer](https://semver.org/lang/tr/).
 
-## [Yayımlanmadı]
+## [1.1.0] — 2026-10-12
 
 ### Eklendi
 - Dock konumu: Kapalı / Ana ekranda / Kenara dokununca. Panelde tek düğme, Sistem >
