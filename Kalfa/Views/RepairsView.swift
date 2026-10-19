@@ -17,6 +17,16 @@ struct RepairsView: View {
     @ObservedObject private var service = Upkeep.optimize
 
     var body: some View {
+        // Scrolls itself like the other three modes. Without it the page has no
+        // height to size against: the split view measured the wrapped detail
+        // texts at a sliver of width, the page grew to ~6000 pt and pushed the
+        // whole window, sidebar included, off screen — it came out blank.
+        ScrollView {
+            list.frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var list: some View {
         VStack(alignment: .leading, spacing: KalfaDesign.s) {
             ForEach(service.tasks) { task in
                 VStack(alignment: .leading, spacing: 2) {

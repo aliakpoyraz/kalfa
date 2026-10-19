@@ -68,7 +68,9 @@ public enum Optimizer {
         case rebuildLaunchServices.rawValue:
             let lsregister = "/System/Library/Frameworks/CoreServices.framework/Frameworks"
                 + "/LaunchServices.framework/Support/lsregister"
-            try shell(lsregister, ["-kill", "-r", "-domain", "local", "-domain", "user"])
+            // `-kill` ve `-domain` yeni macOS'ta yok, eski tarif her seferinde
+            // hata veriyordu. -gc ölü kayıtları atar, -all yeniden kaydeder.
+            try shell(lsregister, ["-gc", "-r", "-f", "-all", "local,user"])
 
         case resetQuickLook.rawValue:
             try shell("/usr/bin/qlmanage", ["-r"])
@@ -119,21 +121,20 @@ public enum Optimizer {
     /// Parola Kalfa'ya HİÇ girmiyor: sistem kendi kutusunu açar, komutu kendi
     /// çalıştırır. Parolayı uygulamanın içinde bir alana yazdırmak, onu bir kez
     /// bellekte tutmak demek olurdu.
+    ///
+    /// `NSAppleScript` yerine ayrı bir `osascript` süreci: NSAppleScript yalnız
+    /// ana iş parçacığında güvenli, burası ise arka kuyrukta çalışıyor.
     private static func admin(_ command: String) throws {
         let escaped = command.replacingOccurrences(of: "\\", with: "\\\\")
                              .replacingOccurrences(of: "\"", with: "\\\"")
         let source = "do shell script \"\(escaped)\" with administrator privileges"
 
-        var error: NSDictionary?
-        guard let script = NSAppleScript(source: source) else {
-            throw TaskError.failed("Betik kurulamadı.")
-        }
-        script.executeAndReturnError(&error)
-
-        if let error {
+        do {
+            try shell("/usr/bin/osascript", ["-e", source])
+        } catch TaskError.failed(let message) {
             // -128: kullanıcı parola kutusunu kapattı. Hata değil, karar.
-            if (error[NSAppleScript.errorNumber] as? Int) == -128 { throw TaskError.cancelled }
-            throw TaskError.failed((error[NSAppleScript.errorMessage] as? String) ?? "Yönetici işlemi başarısız.")
+            if message.contains("(-128)") { throw TaskError.cancelled }
+            throw TaskError.failed(message)
         }
     }
 }

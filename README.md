@@ -10,10 +10,41 @@ engellenen sitelere erişim — hepsi aynı panelde.
 [English](README.en.md) · macOS 14+ · Swift 6 · MIT
 
 [![derleme ve testler](https://github.com/aliakpoyraz/kalfa/actions/workflows/ci.yml/badge.svg)](https://github.com/aliakpoyraz/kalfa/actions/workflows/ci.yml)
+[![son sürüm](https://img.shields.io/github/v/release/aliakpoyraz/kalfa?label=s%C3%BCr%C3%BCm)](https://github.com/aliakpoyraz/kalfa/releases/latest)
+[![lisans](https://img.shields.io/github/license/aliakpoyraz/kalfa?label=lisans)](LICENSE)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)
+![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+
+**[⬇︎ Son sürümü indir](https://github.com/aliakpoyraz/kalfa/releases/latest)** —
+zip'i aç, `Kalfa.app`'i Uygulamalar klasörüne taşı. İlk açılış için
+[bu adıma](#ilk-açılış-gatekeeper) bak.
 
 <p align="center">
   <img src="docs/gorseller/panel.png" width="420" alt="Kalfa menü çubuğu paneli">
 </p>
+
+---
+
+<details>
+<summary><b>İçindekiler</b></summary>
+
+- [Neden var](#neden-var)
+- [Ne yapar](#ne-yapar) — [Ekran](#ekran) · [Ses](#ses) · [Sistem](#sistem) ·
+  [Bakım](#bakım) · [DPI](#dpi--engellenen-siteler) · [Sağlık](#sağlık) ·
+  [Kaydırma](#kesintisiz-fare-kaydırması) · [Dock konumu](#dock-konumu) ·
+  [Komut paleti](#komut-paleti)
+- [Klavye kısayolları](#klavye-kısayolları)
+- [Nelerden esinlendi](#nelerden-esinlendi-neler-birleştirildi)
+- [Kurulum](#kurulum)
+- [İzinler](#izinler)
+- [Sık sorulanlar ve sorun giderme](#sık-sorulanlar-ve-sorun-giderme)
+- [Teşhis](#teşhis)
+- [Mimari](#mimari)
+- [Geliştirme](#geliştirme)
+- [Kapsam dışı](#kapsam-dışı)
+- [Lisans](#lisans)
+
+</details>
 
 ---
 
@@ -98,8 +129,18 @@ yerde, izinler bir kez verilir.
   proje çıktıları ve cihaz destek dosyaları işaretsiz durur.
 - **Kaldırıcı.** Eşleştirme paket kimliğiyle yapılır, isimle değil — isimle eşleştirmek
   başka uygulamaların verisini yakalıyordu.
-- **Onarım.** DNS önbelleği, Birlikte Aç listesi, Quick Look, Finder/Dock yeniden
-  başlatma, Spotlight yeniden dizinleme.
+- **Onarım.** Her biri tek bir gerçek belirtiyi çözen beş iş:
+
+  | İş | Ne zaman | Yönetici |
+  |---|---|---|
+  | DNS önbelleğini temizle | Bir site yeni sunucuya taşındı ama Mac eskisine gidiyor | ✓ |
+  | Birlikte Aç listesini onar | Kaldırdığın uygulamalar menüde duruyor, dosya ikonları yanlış | |
+  | Önizlemeyi sıfırla | Boşluk tuşu önizlemesi dosyanın eski hâlini gösteriyor | |
+  | Finder ve Dock'u yeniden başlat | Takılı pencere, güncellenmeyen ikon | |
+  | Spotlight dizinini yeniden kur | Arama hiçbir şey bulmuyor (saatler sürer) | ✓ |
+
+  Yönetici gereken işler önceden rozetle işaretlidir; parola Kalfa'ya girmez, macOS'un
+  kendi parola kutusu açılır. Kutuyu kapatmak hata değil, vazgeçme sayılır.
 
 > **Silme yok, çöp kutusuna taşıma var** (`FileManager.trashItem`). Fikrini
 > değiştirirsen Finder'dan geri koyarsın. Tek istisna çöp kutusunun kendisini
@@ -181,6 +222,22 @@ Türkçe karakterden bağımsızdır: "cozunurluk" yazınca "çözünürlük" bu
 
 ---
 
+## Klavye kısayolları
+
+Hepsi sistem genelidir ve **Sistem → Klavye kısayolları**'ndan değiştirilebilir ya da kapatılabilir. Başka bir
+uygulama aynı tuşu kaptıysa Sağlık sayfası bunu söyler.
+
+| Kısayol | Ne yapar |
+|---|---|
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>K</kbd> | Komut paletini aç |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>M</kbd> | Mikrofonu sustur / aç (sistem geneli) |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>←</kbd> / <kbd>→</kbd> | Öndeki pencereyi sol / sağ yarıya yerleştir |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>↑</kbd> / <kbd>↓</kbd> | Üst / alt yarı |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>C</kbd> | Ortala |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>↩</kbd> | Ekranı doldur |
+
+---
+
 ## Nelerden esinlendi, neler birleştirildi
 
 Kalfa iki ayrı uygulamanın birleşmesiyle doğdu ve üç açık kaynak projeden ders aldı.
@@ -229,6 +286,27 @@ almak ticari kullanımı kapatır. Bu yüzden mole ve Mos'tan **davranış** al�
 
 ## Kurulum
 
+### Hazır paket
+
+1. [Releases](https://github.com/aliakpoyraz/kalfa/releases/latest) sayfasından
+   `Kalfa-<sürüm>.zip` dosyasını indir.
+2. İstersen bütünlüğü doğrula: `shasum -a 256 Kalfa-*.zip` çıktısı yanındaki
+   `.sha256` dosyasıyla aynı olmalı.
+3. Zip'i aç, `Kalfa.app`'i **/Applications** klasörüne taşı (eskisi varsa üzerine).
+
+#### İlk açılış (Gatekeeper)
+
+Paket henüz Apple tarafından noterlenmedi. macOS 15 ve sonrasında **sağ tık → Aç artık
+yetmiyor**; doğru yol:
+
+1. Kalfa'yı bir kez çift tıklayıp aç — macOS engelleyecek.
+2. **Sistem Ayarları → Gizlilik ve Güvenlik**'e gir.
+3. Aşağıdaki "Kalfa engellendi" satırında **Yine de Aç**'a bas.
+
+Bu yalnız ilk açılışta gerekir.
+
+### Kaynaktan derleme
+
 ```bash
 brew install xcodegen
 git clone https://github.com/aliakpoyraz/kalfa.git
@@ -243,7 +321,7 @@ Xcode gerekir; yalnız Command Line Tools ile uygulama paketi derlenemez. `build
 **Gereksinimler:** macOS 14 veya üzeri. DDC parlaklık için Apple Silicon; geri kalan her
 şey Intel'de de çalışır.
 
-**İlk açılışta** sağ tık → **Aç**. Uygulama ad-hoc imzalıdır.
+Kendi derlediğin paket de ad-hoc imzalıdır; ilk açılış adımı yukarıdakiyle aynı.
 
 > Ad-hoc imzanın bedeli: Erişilebilirlik izni imzaya bağlıdır, yani her yeniden
 > derlemede izin düşer ve kesintisiz kaydırma durur. Gerçek bir Developer ID
@@ -252,10 +330,10 @@ Xcode gerekir; yalnız Command Line Tools ile uygulama paketi derlenemez. `build
 ### Dağıtılabilir sürüm
 
 ```bash
-./release.sh 1.0
+./release.sh 1.1.1
 ```
 
-İmzalar, noterletir, damgalar ve `dist/Kalfa-1.0.zip` üretir. Gereken iki hazırlık
+İmzalar, noterletir, damgalar ve `dist/Kalfa-1.1.1.zip` üretir. Gereken iki hazırlık
 (Developer ID sertifikası ve saklanmış noterleme kimliği) `release.sh` dosyasının
 başında yazılıdır.
 
@@ -271,6 +349,42 @@ Kalfa yalnızca gerçekten gereken izni, gerektiği anda ister.
 | **Ses kaydı** | Uygulama başına ses karıştırıcı | Karıştırıcı ilk açıldığında |
 | **Konum** | Wi-Fi ağ adını okumak (macOS bunu konum izni sayar) | Yalnız bir kuralı ağ adına bağlarsan |
 | **Yönetici** | Bazı onarım işleri | O işi çalıştırdığında; parola Kalfa'ya girmez, sistemin kendi kutusu açılır |
+
+---
+
+## Sık sorulanlar ve sorun giderme
+
+**Kesintisiz kaydırma / Dock kilidi güncellemeden sonra çalışmıyor.**
+Erişilebilirlik izni uygulamanın imzasına bağlıdır ve her sürümde imza değişir.
+Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik listesinde Kalfa'yı
+**–** ile sil, **+** ile yeniden ekle. Sağlık sayfası bu durumu kırmızıyla gösterir.
+
+**Pencere açılmıyor ya da ayarlar "kayboluyor".**
+Büyük ihtimalle iki Kalfa birden çalışıyor (ör. biri /Applications'ta, biri
+İndirilenler'de). Aynı adı taşıyan iki süreç `kalfa://` bağlantılarını yanlış kopyaya
+gönderir. Birini kapatıp sil.
+
+**DPI açık ama site hâlâ açılmıyor.**
+DPI → Test bölümünde adresi dene: önce doğrudan, sonra Kalfa üzerinden bağlanıp sonucu
+cümleyle söyler. Kalfa ile de açılmıyorsa DPI ayarlarında **Standart** yerine
+**Alternatif 1** (rastgele kesim) ya da **Alternatif 2** (TLS kaydı parçalama) dene. IP düzeyinde engellenen
+siteleri hiçbir parçalama yöntemi açamaz; o durumda VPN gerekir.
+
+**Harici monitörde yazılar yumuşak.**
+İki ayrı sebebi var, Ekran bölümü ikisini de gösterir: (1) küsuratlı ölçekleme — mod
+etiketinde *küsuratlı · yumuşak* yazar, *tam 2×* olan bir moda geç; (2) kablonun
+YCbCr 4:2:2'ye düşmesi — yazılımdan değiştirilemez, monitörün kendi menüsünden ya da
+farklı bir kablo/port ile çözülür.
+
+**Temizlik bir şeyi yanlışlıkla sildi mi?**
+Hayır: Kalfa silmez, çöp kutusuna taşır. Finder'da Çöp Sepeti'nden **Geri Koy**.
+
+**Kalfa'yı tamamen kaldırmak.**
+Uygulamayı çöpe at; istersen şu klasörleri de sil:
+`~/Library/Application Support/Klapa`, `~/Library/Application Support/ezDPI` ve
+`~/Library/Preferences/com.aliakpoyraz.kalfa.plist`. Kalfa kapanırken açtığı sistem
+proxy'sini geri alır; yine de bir sorun olursa Sistem Ayarları → Ağ → Ayrıntılar →
+Proxy'ler'den kapat.
 
 ---
 
@@ -316,6 +430,27 @@ bulunmadığı için 15 saniyelik onay/geri alma sayacı çalıştırır.
 
 Bunun iki sonucu var: uygulama **Mac App Store'a giremez** (özel API kullanımı tek başına
 ret sebebidir) ve macOS'un gelecek bir sürümünde bu çağrı değişebilir.
+
+---
+
+## Geliştirme
+
+```bash
+./build.sh            # Release derlemesi → dist/Kalfa.app
+./build.sh Debug      # hata ayıklama derlemesi
+
+# Testler (ağ gerektirenler dahil)
+(cd Packages/UpkeepKit && swift test)    # güvenlik kapıları
+(cd Packages/EzDPIKit  && swift test)    # proxy, parçalama, DoH
+```
+
+- Proje dosyası `project.yml`'den **xcodegen** ile üretilir; `Kalfa.xcodeproj` depoda
+  tutulmaz. Sürüm numarası da yalnız oradadır (`MARKETING_VERSION`).
+- Yerelleştirme `tr.lproj` / `en.lproj` altındadır; iki dilde de her anahtar bulunmalı.
+  Değişkenin sonuna Türkçe ek getiren metinlerden kaçın — ek uyumu güvenle üretilemez.
+- CI (`.github/workflows/ci.yml`) her push'ta derler ve ağ gerektirmeyen testleri
+  koşturur.
+- Değişiklik geçmişi: [CHANGELOG.md](CHANGELOG.md).
 
 ---
 

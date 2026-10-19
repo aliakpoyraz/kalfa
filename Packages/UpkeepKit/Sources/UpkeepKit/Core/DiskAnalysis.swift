@@ -46,13 +46,13 @@ public final class DiskAnalysis: ObservableObject {
                 Task { @MainActor [weak self] in self?.progress = snapshot }
             }
             Task { @MainActor [weak self] in
-                guard let self else { return }
                 // İptal edilmiş tarama yarım ağaç döndürür; onu sonuç diye
                 // göstermek kullanıcıya eksik tabloyu tam gibi sunmak olurdu.
-                if self.isScanning {
-                    self.root = tree
-                    self.trail = [tree]
-                }
+                // `isScanning` yetmez: iptalin hemen ardından yeni tarama
+                // başladıysa eskisi onu kendi bitişi sanıyordu.
+                guard let self, self.scanner === scanner else { return }
+                self.root = tree
+                self.trail = [tree]
                 self.isScanning = false
                 self.scanner = nil
             }

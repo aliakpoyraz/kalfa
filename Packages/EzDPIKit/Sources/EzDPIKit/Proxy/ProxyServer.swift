@@ -60,19 +60,18 @@ final class ProxyServer: @unchecked Sendable {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             // Resumed exactly once: the handler keeps firing over the listener's
             // life, and the first ready-or-failed is the answer to "did we bind".
-            var settled = false
+            let settled = Once()
             listener.stateUpdateHandler = { [weak self] state in
                 guard let self else { return }
                 switch state {
                 case .ready:
-                    if !settled { settled = true; continuation.resume() }
+                    if settled.claim() { continuation.resume() }
                 case .failed(let error):
-                    if settled {
+                    if !settled.claim() {
                         // Died later: the supervisor puts the system proxy back
                         // rather than leaving traffic aimed at a dead port.
                         self.onFailure?(error.localizedDescription)
                     } else {
-                        settled = true
                         listener.cancel()
                         continuation.resume(throwing: error)
                     }
@@ -97,10 +96,9 @@ final class ProxyServer: @unchecked Sendable {
     func stopAndWait() async {
         guard let listener else { return stop() }
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            var settled = false
+            let settled = Once()
             listener.stateUpdateHandler = { state in
-                if case .cancelled = state, !settled {
-                    settled = true
+                if case .cancelled = state, settled.claim() {
                     continuation.resume()
                 }
             }
@@ -108,7 +106,7 @@ final class ProxyServer: @unchecked Sendable {
             // The handler is the normal path; this is the seatbelt for a
             // listener that was never ready and so never reports cancelled.
             queue.asyncAfter(deadline: .now() + 2) {
-                if !settled { settled = true; continuation.resume() }
+                if settled.claim() { continuation.resume() }
             }
         }
     }
@@ -181,4 +179,22 @@ final class ProxyServer: @unchecked Sendable {
         session.start()
     }
 
+}
+
+/// A flag that only one caller can win.
+///
+/// The proxy queue is concurrent, so the state handler and the stop seatbelt
+/// can run at the same time; a plain `var` let both see "not yet" and resume
+/// the same continuation twice, which traps.
+private final class Once: @unchecked Sendable {
+    private let lock = NSLock()
+    private var done = false
+
+    /// True for the first caller only.
+    func claim() -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        if done { return false }
+        done = true
+        return true
+    }
 }

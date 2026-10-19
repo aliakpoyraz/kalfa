@@ -3,6 +3,25 @@
 Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/),
 sürümleme [SemVer](https://semver.org/lang/tr/).
 
+## [1.1.1] — 2026-10-19
+
+### Düzeltildi
+- Bakım > Onarım sekmesi pencerenin tamamını boş gösteriyordu (kenar çubuğu dahil):
+  liste kendi kaydırmasını taşımadığı için sayfa ~6000 pt'ye uzayıp pencereyi ekranın
+  dışına itiyordu.
+- "Birlikte Aç listesini onar" her seferinde hata veriyordu: `lsregister -kill` ve
+  `-domain` yeni macOS'ta yok; yerine `-gc` + `-all local,user`.
+- Yönetici gerektiren onarımlar `NSAppleScript`'i arka kuyrukta çalıştırıyordu (yalnız
+  ana iş parçacığında güvenli); artık ayrı `osascript` süreci.
+- DPI motoru yeniden başlatılırken nadiren çökebiliyordu: eşzamanlı kuyrukta durum
+  işleyicisi ile emniyet zamanlayıcısı aynı continuation'ı iki kez sürdürebiliyordu.
+- Disk analizi: iptalin hemen ardından başlatılan tarama, eskisinin yarım sonucuyla
+  "bitti" sayılabiliyordu.
+
+### Belgeler
+- README (TR/EN) genişletildi: hazır paketle kurulum, macOS 15+ ilk açılış adımı,
+  kısayol tablosu, onarım ayrıntısı, SSS ve sorun giderme, geliştirme.
+
 ## [1.1.0] — 2026-10-12
 
 ### Eklendi
