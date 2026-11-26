@@ -602,7 +602,7 @@
 "brightness.method.overlay" = "Dimming window";
 "brightness.reset" = "Lift dimming now";
 "brightness.reset.done" = "Dimming lifted";
-"brightness.help" = "Once the backlight is at its lowest the slider enters the hatched zone and the picture itself is darkened. The screen never goes below the lowest visibility. The colour table also dims the pointer and stays out of screenshots; if it has no effect on a display, try the dimming window.";
+"brightness.help" = "Once the backlight is at its lowest the slider enters the hatched zone and the picture itself is darkened. The screen never goes below the lowest visibility. The dimming window works on every display and stays out of screenshots; the pointer stays bright. The colour table dims the pointer too but does not take effect everywhere: on the MacBook's own display it changes nothing you can see.";
 "hotkey.brightnessDown" = "Brightness: down (display under the pointer)";
 "hotkey.brightnessUp" = "Brightness: up (display under the pointer)";
 "hotkey.resetDimming" = "Brightness: lift dimming";

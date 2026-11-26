@@ -32,8 +32,11 @@ final class BrightnessService {
         case software
     }
 
+    /// How the picture is darkened. The window comes first because it is the
+    /// one that cannot fail: the colour table is written and reads back fine on
+    /// the built-in XDR panel, and changes nothing you can see.
     enum Method: String, CaseIterable, Identifiable {
-        case gamma, overlay
+        case overlay, gamma
         var id: String { rawValue }
     }
 
@@ -68,11 +71,11 @@ final class BrightnessService {
         defaults.register(defaults: [
             Key.allowsBelowZero: true,
             Key.floor: 0.3,
-            Key.method: Method.gamma.rawValue,
+            Key.method: Method.overlay.rawValue,
         ])
         allowsBelowZero = defaults.bool(forKey: Key.allowsBelowZero)
         floor = defaults.double(forKey: Key.floor)
-        method = Method(rawValue: defaults.string(forKey: Key.method) ?? "") ?? .gamma
+        method = Method(rawValue: defaults.string(forKey: Key.method) ?? "") ?? .overlay
 
         // The window server resets transfer tables on wake and on some mode
         // changes, so whatever was dimmed has to be dimmed again.

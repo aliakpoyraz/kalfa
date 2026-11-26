@@ -6,12 +6,15 @@ import CoreGraphics
 ///
 /// Two ways to do it, because neither is right everywhere:
 ///
-/// - **Gamma** scales the display's transfer table. It dims everything including
-///   the pointer, costs nothing to composite and never shows up in a screenshot.
-///   The window server owns the table and hands it back to ColorSync the moment
-///   this process exits, so a crash cannot leave the screen dark.
 /// - **Overlay** is a black, click-through window above everything. It is the
-///   fallback for setups where the table is ignored; the pointer stays bright.
+///   default because it is the one that always shows: it is composited like any
+///   other window. The pointer stays bright, and the window is kept out of
+///   screenshots and screen sharing.
+/// - **Gamma** scales the display's transfer table. Where it works it also dims
+///   the pointer, but not every panel honours the table — the built-in XDR
+///   display accepts the write, reads it back, and looks exactly the same. The
+///   window server hands the table back to ColorSync the moment this process
+///   exits, so a crash cannot leave the screen dark.
 ///
 /// `factor` is the share of the signal that is let through: 1 is untouched.
 @MainActor

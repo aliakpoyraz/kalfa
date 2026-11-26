@@ -115,9 +115,11 @@ setting is still too bright at night.
   and display changes. If Kalfa quits or crashes the screen returns to normal.
   Raise the backlight with the brightness keys and the dimming lifts too.
 - **Emergency exit:** <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> lifts all of it.
-- **Two methods.** The default scales the display's colour table: it dims the
-  pointer too and stays out of screenshots and screen sharing. If it has no
-  effect on a display, switch to the *dimming window* on the Displays page.
+- **Two methods.** The default is a black, click-through *dimming window* above
+  everything: it works on every display and stays out of screenshots and screen
+  sharing; the pointer stays bright. The other scales the display's *colour
+  table* and dims the pointer too, but not every panel honours it — the
+  MacBook's own XDR display accepts the table, reads it back, and looks the same.
 - <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>↓</kbd> / <kbd>↑</kbd> step the display
   under the pointer, and do not stop at zero.
 
@@ -426,8 +428,8 @@ again with **+**. The Health page flags this in red.
 **The screen stayed too dark.**
 <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> lifts the extra dimming; so does
 quitting Kalfa. The screen never goes under the lowest visibility you chose. If
-dimming shows no effect at all, set the method to *dimming window* on the Displays
-page.
+the knob is in the hatched zone and nothing darkens, check that the method on the
+Displays page is *dimming window*; the *colour table* does not work on every display.
 
 **The window does not open, or settings seem to vanish.**
 Most likely two copies are running (say, one in /Applications and one in

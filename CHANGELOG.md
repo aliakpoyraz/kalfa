@@ -3,6 +3,15 @@
 Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/),
 sürümleme [SemVer](https://semver.org/lang/tr/).
 
+## [1.2.1] — 2026-11-27
+
+### Düzeltildi
+- **Ek karartma MacBook'un kendi ekranında görünmüyordu.** Varsayılan yöntem olan renk
+  tablosu dahili XDR ekranda yazılıyor ve geri okunuyor, ama görüntüyü değiştirmiyor.
+  Varsayılan artık her ekranda çalışan karartma penceresi; renk tablosu Ekran
+  sayfasında seçenek olarak duruyor. 1.2.0'da yöntemi elle değiştirmediysen bir şey
+  yapman gerekmez.
+
 ## [1.2.0] — 2026-11-26
 
 Arayüz baştan tasarlandı ve parlaklık artık her ekranda, sıfırın altına kadar.

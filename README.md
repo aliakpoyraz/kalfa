@@ -125,9 +125,11 @@ gelen bir monitör içindir.
   parlaklık tuşlarıyla yükseltirsen karartma da kalkar.
 - **Acil çıkış:** <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> bütün karartmayı
   kaldırır.
-- **İki yöntem.** Varsayılan, ekranın renk tablosunu ölçekler: imleci de karartır,
-  ekran görüntülerine ve ekran paylaşımına yansımaz. Bir ekranda etkisi olmazsa
-  Ekran sayfasından *karartma penceresi*ne geçilir.
+- **İki yöntem.** Varsayılan, her şeyin üstünde duran, tıklamaları geçiren siyah bir
+  *karartma penceresi*dir: her ekranda çalışır, ekran görüntülerine ve ekran
+  paylaşımına yansımaz, imleç parlak kalır. İkincisi ekranın *renk tablosu*nu
+  ölçekler ve imleci de karartır, ama her panel bu tabloyu uygulamaz: MacBook'un
+  kendi XDR ekranı yazılan tabloyu kabul eder, geri okutur ve hiçbir şey değişmez.
 - <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>↓</kbd> / <kbd>↑</kbd> imlecin olduğu
   ekranın parlaklığını bir kademe değiştirir, sıfırda durmaz.
 
@@ -424,7 +426,8 @@ siteleri hiçbir parçalama yöntemi açamaz; o durumda VPN gerekir.
 **Ekran çok karanlık kaldı.**
 <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> ek karartmayı kaldırır; Kalfa'dan
 çıkmak da aynı işi görür. Ekran hiçbir durumda seçtiğin en düşük görünürlüğün altına
-inmez. Karartma hiç görünmüyorsa Ekran sayfasında yöntemi *karartma penceresi* yap.
+inmez. Kaydırıcı çizgili bölgedeyken ekran hiç kararmıyorsa Ekran sayfasında yöntemin
+*karartma penceresi* olduğuna bak; *renk tablosu* her ekranda etkili değildir.
 
 **Harici monitörde yazılar yumuşak.**
 İki ayrı sebebi var, Ekran bölümü ikisini de gösterir: (1) küsuratlı ölçekleme — mod

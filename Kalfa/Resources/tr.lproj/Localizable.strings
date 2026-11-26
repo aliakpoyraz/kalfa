@@ -603,7 +603,7 @@ Geride bıraktığı dosyalar listelenir, sen onaylamadan hiçbir şey taşınma
 "brightness.method.overlay" = "Karartma penceresi";
 "brightness.reset" = "Karartmayı hemen kaldır";
 "brightness.reset.done" = "Karartma kaldırıldı";
-"brightness.help" = "Ekranın ışığı en düşüğe indikten sonra kaydırıcı çizgili bölgeye girer ve görüntünün kendisi karartılır. Ekran hiçbir zaman en düşük görünürlüğün altına inmez. Renk tablosu imleci de karartır ve ekran görüntülerine yansımaz; bir ekranda etkisi olmazsa karartma penceresini dene.";
+"brightness.help" = "Ekranın ışığı en düşüğe indikten sonra kaydırıcı çizgili bölgeye girer ve görüntünün kendisi karartılır. Ekran hiçbir zaman en düşük görünürlüğün altına inmez. Karartma penceresi her ekranda çalışır ve ekran görüntülerine yansımaz; imleç parlak kalır. Renk tablosu imleci de karartır ama her ekranda etkili değildir: MacBook'un kendi ekranında görünür bir etkisi yoktur.";
 "hotkey.brightnessDown" = "Parlaklık: azalt (imlecin olduğu ekran)";
 "hotkey.brightnessUp" = "Parlaklık: artır (imlecin olduğu ekran)";
 "hotkey.resetDimming" = "Parlaklık: karartmayı kaldır";

@@ -77,8 +77,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aliakpoyraz.kalfa
         PRODUCT_NAME: Kalfa
-        MARKETING_VERSION: "1.2.0"
-        CURRENT_PROJECT_VERSION: "4"
+        MARKETING_VERSION: "1.2.1"
+        CURRENT_PROJECT_VERSION: "5"
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: minimal
         SWIFT_OBJC_BRIDGING_HEADER: Kalfa/Bridging/Kalfa-Bridging-Header.h
