@@ -22,7 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
 
         EzDPI.setLanguage(turkish: L10n.language.prefersTurkish)
-        EzDPI.showSettings = { KalfaWindow.show(.dpi) }
+        EzDPI.showSettings = { KalfaWindow.show(.network) }
         EzDPI.start()
         installSignalHandlers()
         registerHotkeys()
@@ -42,7 +42,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 let raw = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                     .queryItems?.first(where: { $0.name == "section" })?.value
                 MainActor.assumeIsolated {
-                    KalfaWindow.show(raw.flatMap(KalfaWindow.Section.init(rawValue:)) ?? .displays)
+                    KalfaWindow.show(raw.flatMap(KalfaWindow.Section.init(name:)) ?? .displays)
+                }
+                continue
+            }
+            // `kalfa://brightness?level=-20` sets the display under the pointer,
+            // `kalfa://brightness?reset` lifts every darkening.
+            if url.scheme == "kalfa", url.host == "brightness" {
+                let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+                MainActor.assumeIsolated {
+                    if items.contains(where: { $0.name == "reset" }) {
+                        BrightnessService.shared.resetDimming()
+                    } else if let level = items.first(where: { $0.name == "level" })?.value.flatMap(Double.init) {
+                        BrightnessService.shared.setLevelUnderPointer(level)
+                    }
                 }
                 continue
             }
@@ -54,6 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Order matters: presentation mode put the Dock and the desktop the way
         // they are, and leaving them hidden after a quit looks like a broken Mac.
         PresentationMode.shared.stop()
+        BrightnessService.shared.shutdown()
         EzDPI.shutdown()
     }
 
@@ -72,6 +86,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeys.install(.tileBottom) { WindowService.place(.bottom) }
         hotkeys.install(.tileCenter) { WindowService.place(.center) }
         hotkeys.install(.tileFull) { WindowService.place(.full) }
+        // One sixteenth per press, the same grain as the brightness keys.
+        hotkeys.install(.brightnessDown) { BrightnessService.shared.step(-6.25) }
+        hotkeys.install(.brightnessUp) { BrightnessService.shared.step(6.25) }
+        hotkeys.install(.resetDimming) { BrightnessService.shared.resetDimming() }
     }
 
     /// Quitting from the menu runs `applicationWillTerminate`, but a `launchctl
@@ -83,7 +101,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             signal(sig, SIG_IGN)
             let source = DispatchSource.makeSignalSource(signal: sig, queue: .main)
             source.setEventHandler {
-                MainActor.assumeIsolated { EzDPI.shutdown() }
+                MainActor.assumeIsolated {
+                    BrightnessService.shared.shutdown()
+                    EzDPI.shutdown()
+                }
                 exit(0)
             }
             source.resume()

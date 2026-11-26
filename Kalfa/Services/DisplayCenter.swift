@@ -67,6 +67,7 @@ final class DisplayCenter {
     init(profiles: ProfileStore = ProfileStore()) {
         self.profiles = profiles
         refreshNow()
+        syncBrightness()
         registerForReconfiguration()
     }
 
@@ -91,6 +92,12 @@ final class DisplayCenter {
         }
         modesByUUID = modes
         currentModeByUUID = current
+    }
+
+    /// Re-reads who controls each backlight. Separate from `refreshNow` because
+    /// that runs on every panel redraw and this one talks to the DDC bus.
+    func syncBrightness() {
+        BrightnessService.shared.sync(screens)
     }
 
     func modes(for screen: ScreenInfo) -> [ScreenMode] {
@@ -274,11 +281,12 @@ final class DisplayCenter {
                 displayName: screen.name,
                 mode: mode.fingerprint
             )
-            if includeBrightness, screen.supportsDDC {
-                entry.brightness = await DDCService.shared
-                    .read(.brightness, from: screen.displayID)?.percent
-                entry.contrast = await DDCService.shared
-                    .read(.contrast, from: screen.displayID)?.percent
+            if includeBrightness {
+                entry.level = BrightnessService.shared.level(for: screen)
+                if screen.supportsDDC {
+                    entry.contrast = await DDCService.shared
+                        .read(.contrast, from: screen.displayID)?.percent
+                }
             }
             entries.append(entry)
         }
@@ -357,7 +365,9 @@ final class DisplayCenter {
         if ok, profile.restoresBrightness {
             for entry in profile.entries {
                 guard let displayID = ScreenInfo.displayID(forUUID: entry.displayUUID) else { continue }
-                if let brightness = entry.brightness {
+                if let level = entry.level, let screen = screens.first(where: { $0.uuid == entry.displayUUID }) {
+                    BrightnessService.shared.setLevel(level, for: screen)
+                } else if let brightness = entry.brightness {
                     await DDCService.shared.write(.brightness, percent: brightness, to: displayID)
                 }
                 if let contrast = entry.contrast {
@@ -413,6 +423,7 @@ final class DisplayCenter {
             DDCService.shared.invalidate()
             self.refreshNow()
             await self.autoApplyIfNeeded()
+            self.syncBrightness()
         }
     }
 

@@ -10,21 +10,13 @@ struct ModePickerView: View {
     let screen: ScreenInfo
 
     var body: some View {
-        HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(L10n.t("resolution"))
-                    .font(.caption)
-                Text(center.currentMode(for: screen)?.resolutionLabel ?? "—")
-                    .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer(minLength: 8)
-
+        KalfaSettingRow(
+            L10n.t("resolution"),
+            detail: center.currentMode(for: screen)?.resolutionLabel ?? "?"
+        ) {
             if let native = nativeMode, shouldOfferNative(native) {
                 Button(L10n.t("resolution.monitorMode")) { apply(native) }
                     .buttonStyle(.borderless)
-                    .font(.caption)
                     .help(L10n.t("resolution.monitorMode.help", native.summary))
                     .disabled(center.isApplying)
             }
@@ -38,7 +30,6 @@ struct ModePickerView: View {
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
-            .font(.caption)
             .disabled(center.isApplying || groups.isEmpty)
         }
     }

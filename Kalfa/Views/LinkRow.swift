@@ -15,26 +15,17 @@ struct LinkRow: View {
 
     var body: some View {
         if let text = summary {
-            HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(L10n.t("link"))
-                        .font(.caption)
-                    Text(text)
-                        .font(.caption2.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                }
-
+            KalfaSettingRow(L10n.t("link"), detail: text, help: L10n.t("link.help")) {
                 if link?.colorFormat?.isSubsampled == true {
-                    TagPill(L10n.t("grid.fractional"), tint: .orange)
+                    KalfaBadge(L10n.t("grid.fractional"), tone: .warn)
                         .help(L10n.t(
                             "link.subsampled.help",
                             link?.colorFormat?.label ?? ""
                         ))
                 }
-
-                Spacer(minLength: 8)
+            } control: {
+                EmptyView()
             }
-            .help(L10n.t("link.help"))
         }
     }
 

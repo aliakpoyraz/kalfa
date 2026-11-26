@@ -1,53 +1,55 @@
 import SwiftUI
 import KalfaUI
 
-/// Kalfa panelinin DPI sekmesi. Teknik terim yok: kullanıcı ne olduğunu tek
-/// bakışta anlamalı ve engelli bir siteyi buradan ekleyebilmeli.
-///
-/// Kendi çıkış düğmesi ve markası yok — ikisi de panelin altbilgisinde, bir kez.
+/// The DPI half's state at a glance: whether it is running and why, the three
+/// modes, and the two actions that are about "right now" rather than about
+/// configuration. Sits above the settings on the network page.
 struct MenuPanel: View {
     @EnvironmentObject var store: ConfigStore
     @EnvironmentObject var supervisor: Supervisor
-    @State private var quickDomain = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: KalfaDesign.s) {
-            statusCard
-            modePicker
-            sites
-            relaunchRow
-            footer
-        }
-    }
-
-    // MARK: Durum
-
-    /// Same shape as a tile elsewhere in the panel: an icon that carries the
-    /// state in its tint, a line saying what is true, and a line saying why.
-    private var statusCard: some View {
-        HStack(alignment: .top, spacing: KalfaDesign.s) {
-            Image(systemName: supervisor.isActive ? "lock.shield.fill" : "lock.shield")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(supervisor.isActive ? KalfaRole.dpi.tint : Color.secondary)
-                .frame(width: 28, height: 28)
-                .background(
-                    (supervisor.isActive ? KalfaRole.dpi.tint : Color.secondary)
-                        .opacity(supervisor.isActive ? 0.18 : 0.10),
-                    in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius, style: .continuous)
-                )
-            VStack(alignment: .leading, spacing: 1) {
-                Text(supervisor.isActive ? L10n.t("dpi.panel.on") : L10n.t("dpi.panel.off"))
-                    .font(KalfaDesign.bodyFont.weight(.medium))
-                Text(statusReason)
-                    .font(KalfaDesign.captionFont)
-                    .foregroundStyle(supervisor.lastError == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.orange))
-                    .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: KalfaDesign.m) {
+                Image(systemName: supervisor.isActive ? "lock.shield.fill" : "lock.shield")
+                    .font(KalfaDesign.titleFont)
+                    .foregroundStyle(supervisor.isActive ? AnyShapeStyle(KalfaTone.accent.color) : AnyShapeStyle(.secondary))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(supervisor.isActive ? L10n.t("dpi.panel.on") : L10n.t("dpi.panel.off"))
+                        .font(KalfaDesign.headingFont)
+                    Text(statusReason)
+                        .font(KalfaDesign.captionFont)
+                        .foregroundStyle(supervisor.lastError == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(KalfaTone.warn.color))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: KalfaDesign.s)
+                modePicker
             }
-            Spacer(minLength: 0)
+
+            HStack(spacing: KalfaDesign.s) {
+                // Tools like Discord's updater read the proxy environment only
+                // at launch; this restarts one of them with it in place.
+                Menu(L10n.t("dpi.panel.relaunch-with-kalfa")) {
+                    ForEach(supervisor.ruleAppBundleIDs, id: \.self) { bundleID in
+                        Button(appName(bundleID)) {
+                            Task { await supervisor.relaunchWithProxy(bundleID: bundleID) }
+                        }
+                    }
+                    if !supervisor.ruleAppBundleIDs.isEmpty { Divider() }
+                    Button(L10n.t("dpi.panel.choose-another-app")) { pickAndRelaunch() }
+                }
+                .fixedSize()
+                .help(L10n.t("dpi.panel.some-apps-read-network"))
+
+                Spacer()
+
+                if supervisor.isActive {
+                    Button(L10n.t("dpi.panel.turn-off-now"), role: .destructive) { supervisor.panic() }
+                }
+            }
         }
-        .padding(KalfaDesign.s)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .kalfaSurface(tint: KalfaRole.dpi.tint, isActive: supervisor.isActive, radius: KalfaDesign.tileRadius)
+        .padding(KalfaDesign.m)
+        .kalfaGroup()
     }
 
     private var statusReason: String {
@@ -77,90 +79,7 @@ struct MenuPanel: View {
         }
         .pickerStyle(.segmented)
         .labelsHidden()
-    }
-
-    // MARK: Siteler
-
-    private var sites: some View {
-        VStack(alignment: .leading, spacing: KalfaDesign.xs) {
-            Text(L10n.t("dpi.panel.sites"))
-                .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
-
-            ForEach($store.config.groups) { $group in
-                Toggle(isOn: Binding(
-                    get: { group.enabled },
-                    set: { newValue in
-                        group.enabled = newValue
-                        supervisor.applyConfigChange()
-                    }
-                )) {
-                    Text("\(group.name) · \(group.domains.count)")
-                        .font(KalfaDesign.bodyFont)
-                }
-                .toggleStyle(.checkbox)
-            }
-
-            HStack(spacing: KalfaDesign.xs) {
-                TextField(L10n.t("dpi.panel.blocked-site-com"), text: $quickDomain)
-                    .textFieldStyle(.roundedBorder)
-                    .font(KalfaDesign.bodyFont)
-                    .onSubmit(addQuickDomain)
-                Button(L10n.t("dpi.panel.add"), action: addQuickDomain)
-                    .disabled(quickDomain.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
-        }
-    }
-
-    /// Menüden eklenen adresler "Benim sitelerim" grubuna gider; kullanıcı
-    /// grup kavramıyla uğraşmadan engelli bir siteyi hemen ekleyebilsin.
-    private func addQuickDomain() {
-        let raw = quickDomain.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !raw.isEmpty else { return }
-        let cleaned = raw
-            .replacingOccurrences(of: "https://", with: "")
-            .replacingOccurrences(of: "http://", with: "")
-            .split(separator: "/").first.map(String.init) ?? raw
-
-        let name = L10n.t("dpi.panel.my-sites")
-        if let index = store.config.groups.firstIndex(where: { $0.name == name }) {
-            if !store.config.groups[index].domains.contains(cleaned) {
-                store.config.groups[index].domains.append(cleaned)
-            }
-        } else {
-            var group = DomainGroup(name: name, domains: [cleaned],
-                                    priority: (store.config.groups.map(\.priority).max() ?? 10) + 10)
-            group.apply(preset: .standard)
-            store.config.groups.append(group)
-        }
-        quickDomain = ""
-        supervisor.applyConfigChange()
-    }
-
-    // MARK: Alt bölüm
-
-    /// Discord güncelleyicisi gibi araçlar ortam değişkenini yalnızca başlarken
-    /// okur. Uygulama zaten açıkken DPI devreye girdiğinde onlar korumasız
-    /// kalır; bu düğme uygulamayı Kalfa ortamıyla yeniden başlatır.
-    @ViewBuilder
-    private var relaunchRow: some View {
-        Divider().opacity(0.5)
-        VStack(alignment: .leading, spacing: KalfaDesign.xs) {
-            Text(L10n.t("dpi.panel.if-app-cannot-update"))
-                .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
-            Menu(L10n.t("dpi.panel.relaunch-with-kalfa")) {
-                ForEach(supervisor.ruleAppBundleIDs, id: \.self) { bundleID in
-                    Button(appName(bundleID)) {
-                        Task { await supervisor.relaunchWithProxy(bundleID: bundleID) }
-                    }
-                }
-                if !supervisor.ruleAppBundleIDs.isEmpty { Divider() }
-                Button(L10n.t("dpi.panel.choose-another-app")) { pickAndRelaunch() }
-            }
-            .menuStyle(.borderlessButton)
-            Text(L10n.t("dpi.panel.some-apps-read-network"))
-                .font(KalfaDesign.captionFont).foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
+        .fixedSize()
     }
 
     /// Kurallarda olmayan herhangi bir uygulama da seçilebilir.
@@ -180,20 +99,5 @@ struct MenuPanel: View {
             return bundleID
         }
         return url.deletingPathExtension().lastPathComponent
-    }
-
-    private var footer: some View {
-        HStack {
-            Button(L10n.t("dpi.panel.dpi-settings")) { EzDPI.showSettings?() }
-                .buttonStyle(.borderless)
-                .font(KalfaDesign.captionFont)
-            Spacer()
-            if supervisor.isActive {
-                Button(L10n.t("dpi.panel.turn-off-now")) { supervisor.panic() }
-                    .buttonStyle(.borderless)
-                    .font(KalfaDesign.captionFont)
-                    .tint(.red)
-            }
-        }
     }
 }

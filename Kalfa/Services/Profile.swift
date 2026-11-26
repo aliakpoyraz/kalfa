@@ -21,6 +21,10 @@ struct Profile: Codable, Identifiable, Hashable {
         var brightness: Int?
         /// DDC contrast 0-100, when it was readable at save time.
         var contrast: Int?
+        /// Brightness on Kalfa's own scale, which also covers the built-in
+        /// display and the darkening below zero. Absent in scenes saved before
+        /// 1.2, which carry only `brightness`.
+        var level: Double?
     }
 
     let id: UUID

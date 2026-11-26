@@ -17,50 +17,43 @@ struct SaveProfileView: View {
     @State private var saving = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: KalfaDesign.m) {
             Text(L10n.t("save.title"))
-                .font(.headline)
+                .font(KalfaDesign.titleFont)
 
             TextField(L10n.t("save.name"), text: $name)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit(save)
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: KalfaDesign.s) {
                 ForEach(center.screens) { screen in
-                    HStack(spacing: 6) {
+                    HStack(spacing: KalfaDesign.s) {
                         Image(systemName: screen.isBuiltIn ? "laptopcomputer" : "display")
                             .foregroundStyle(.secondary)
                         Text(screen.name)
-                            .font(.caption)
+                            .font(KalfaDesign.bodyFont)
                         Spacer()
-                        Text(center.currentMode(for: screen)?.summary ?? "—")
-                            .font(.caption)
+                        Text(center.currentMode(for: screen)?.summary ?? "?")
+                            .font(KalfaDesign.captionFont.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
                 }
             }
-            .padding(10)
-            .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 8))
+            .padding(KalfaDesign.m)
+            .kalfaGroup()
 
             Toggle(L10n.t("save.autoApply"), isOn: $autoApply)
-                .font(.caption)
 
-            if hasDDCCapableScreen {
-                Toggle(L10n.t("save.includeBrightness"), isOn: $includeBrightness)
-                    .font(.caption)
-                    .help(L10n.t("save.includeBrightness.help"))
-            }
+            Toggle(L10n.t("save.includeBrightness"), isOn: $includeBrightness)
+                .help(L10n.t("save.includeBrightness.help"))
 
             // Left off by default, every one of them: a scene that quietly moves
             // the sound or flips the DPI switch is a scene nobody trusts twice.
             if let output = AudioService.shared.currentOutput {
                 Toggle(L10n.t("save.includeAudio", output.name), isOn: $includeAudio)
-                    .font(.caption)
             }
             Toggle(L10n.t("save.includeDPI", dpiModeLabel), isOn: $includeDPI)
-                .font(.caption)
             Toggle(L10n.t("save.includeCaffeine"), isOn: $includeCaffeine)
-                .font(.caption)
 
             HStack {
                 Spacer()
@@ -70,14 +63,16 @@ struct SaveProfileView: View {
                     .disabled(trimmedName.isEmpty || saving)
             }
         }
-        .padding(18)
-        .frame(width: 340)
+        .toggleStyle(.switch)
+        .controlSize(.small)
+        .padding(KalfaDesign.l)
+        .frame(width: KalfaDesign.panelWidth)
         .onAppear { if name.isEmpty { name = center.suggestedProfileName() } }
         .overlay {
             if saving {
                 ProgressView()
-                    .padding(20)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .padding(KalfaDesign.xl)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: KalfaDesign.groupRadius))
             }
         }
     }
@@ -92,10 +87,6 @@ struct SaveProfileView: View {
         case .on: return L10n.t("dpi.mode.on")
         case .off: return L10n.t("dpi.mode.off")
         }
-    }
-
-    private var hasDDCCapableScreen: Bool {
-        DDCService.shared.isSupported && center.screens.contains(where: \.supportsDDC)
     }
 
     private func save() {

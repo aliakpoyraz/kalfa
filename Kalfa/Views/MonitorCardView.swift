@@ -22,7 +22,6 @@ struct MonitorCardView: View {
             Divider()
             processes
         }
-        .padding(.vertical, KalfaDesign.s)
         // Sampling is tied to this view being on screen: the panel is closed most
         // of the time, and a meter nobody is looking at should cost nothing.
         .onAppear { monitor.retain() }
@@ -38,7 +37,7 @@ struct MonitorCardView: View {
                 value: monitor.sample.cpu.total,
                 detail: percent(monitor.sample.cpu.total),
                 history: monitor.cpuHistory,
-                tint: .blue
+                tint: .accentColor
             )
 
             MeterRow(
@@ -54,7 +53,7 @@ struct MonitorCardView: View {
                          value: gpu,
                          detail: percent(gpu),
                          history: [],
-                         tint: .purple)
+                         tint: .accentColor)
             }
 
             MeterRow(
@@ -62,20 +61,20 @@ struct MonitorCardView: View {
                 value: monitor.sample.disk.usedFraction,
                 detail: L10n.t("monitor.disk.free", Upkeep.bytes(monitor.sample.disk.free)),
                 history: [],
-                tint: .orange
+                tint: .accentColor
             )
 
             HStack(spacing: KalfaDesign.xs) {
-                KalfaChip(Upkeep.rate(monitor.sample.network.inPerSecond,
-                                      perSecond: L10n.t("monitor.perSecond")),
-                          symbol: "arrow.down", tint: .teal)
-                KalfaChip(Upkeep.rate(monitor.sample.network.outPerSecond,
-                                      perSecond: L10n.t("monitor.perSecond")),
-                          symbol: "arrow.up", tint: .teal)
+                KalfaBadge(Upkeep.rate(monitor.sample.network.inPerSecond,
+                                       perSecond: L10n.t("monitor.perSecond")),
+                           symbol: "arrow.down")
+                KalfaBadge(Upkeep.rate(monitor.sample.network.outPerSecond,
+                                       perSecond: L10n.t("monitor.perSecond")),
+                           symbol: "arrow.up")
                 if let power = monitor.sample.power {
-                    KalfaChip("%\(power.percentage)",
-                              symbol: power.isPluggedIn ? "bolt.fill" : "battery.50",
-                              tint: power.percentage <= 20 && !power.isPluggedIn ? .red : .green)
+                    KalfaBadge("%\(power.percentage)",
+                               symbol: power.isPluggedIn ? "bolt.fill" : "battery.50",
+                               tone: power.percentage <= 20 && !power.isPluggedIn ? .bad : .neutral)
                 }
                 Spacer(minLength: 0)
             }
@@ -86,7 +85,7 @@ struct MonitorCardView: View {
                              : "monitor.pressure.warning"),
                       systemImage: "exclamationmark.triangle.fill")
                     .font(KalfaDesign.captionFont)
-                    .foregroundStyle(monitor.sample.memory.pressure == .critical ? .red : .orange)
+                    .foregroundStyle((monitor.sample.memory.pressure == .critical ? KalfaTone.bad : KalfaTone.warn).color)
             }
         }
     }
@@ -96,9 +95,9 @@ struct MonitorCardView: View {
     /// and colouring it red would teach people to ignore the one real warning.
     private var pressureTint: Color {
         switch monitor.sample.memory.pressure {
-        case .normal: return .green
-        case .warning: return .orange
-        case .critical: return .red
+        case .normal: return .accentColor
+        case .warning: return KalfaTone.warn.color
+        case .critical: return KalfaTone.bad.color
         }
     }
 

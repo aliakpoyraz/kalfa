@@ -37,6 +37,9 @@ final class HotkeyService {
         case tileBottom
         case tileCenter
         case tileFull
+        case brightnessDown
+        case brightnessUp
+        case resetDimming
 
         var id: UInt32 { rawValue }
 
@@ -55,6 +58,9 @@ final class HotkeyService {
             case .tileBottom:     return .init(keyCode: UInt32(kVK_DownArrow), modifiers: control | option, label: "⌃⌥↓")
             case .tileCenter:     return .init(keyCode: UInt32(kVK_ANSI_C), modifiers: control | option, label: "⌃⌥C")
             case .tileFull:       return .init(keyCode: UInt32(kVK_Return), modifiers: control | option, label: "⌃⌥↩")
+            case .brightnessDown: return .init(keyCode: UInt32(kVK_DownArrow), modifiers: control | option | command, label: "⌃⌥⌘↓")
+            case .brightnessUp:   return .init(keyCode: UInt32(kVK_UpArrow), modifiers: control | option | command, label: "⌃⌥⌘↑")
+            case .resetDimming:   return .init(keyCode: UInt32(kVK_ANSI_0), modifiers: control | option | command, label: "⌃⌥⌘0")
             }
         }
 
@@ -68,6 +74,9 @@ final class HotkeyService {
             case .tileBottom:     return "hotkey.tileBottom"
             case .tileCenter:     return "hotkey.tileCenter"
             case .tileFull:       return "hotkey.tileFull"
+            case .brightnessDown: return "hotkey.brightnessDown"
+            case .brightnessUp:   return "hotkey.brightnessUp"
+            case .resetDimming:   return "hotkey.resetDimming"
             }
         }
     }

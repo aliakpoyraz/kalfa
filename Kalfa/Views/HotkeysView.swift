@@ -8,19 +8,8 @@ struct HotkeysView: View {
     private let hotkeys = HotkeyService.shared
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ForEach(HotkeyService.Action.allCases) { action in
-                HotkeyRow(action: action)
-                if action != HotkeyService.Action.allCases.last {
-                    Divider().opacity(0.4)
-                }
-            }
-
-            Text(L10n.t("hotkey.help"))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 2)
+        ForEach(HotkeyService.Action.allCases) { action in
+            HotkeyRow(action: action)
         }
     }
 }
@@ -33,35 +22,35 @@ private struct HotkeyRow: View {
     @State private var monitor: Any?
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: KalfaDesign.s) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(L10n.t(action.titleKey))
-                    .font(.caption)
+                    .font(KalfaDesign.bodyFont)
                 if let problem = hotkeys.problems[action] {
                     Text(problemText(problem))
-                        .font(.caption2)
-                        .foregroundStyle(.orange)
+                        .font(KalfaDesign.captionFont)
+                        .foregroundStyle(KalfaTone.warn.color)
                         .lineLimit(1)
                 }
             }
 
-            Spacer(minLength: 6)
+            Spacer(minLength: KalfaDesign.s)
 
             Button {
                 isRecording ? stopRecording() : startRecording()
             } label: {
                 Text(isRecording ? L10n.t("hotkey.recording") : hotkeys.label(for: action))
-                    .font(.caption.monospaced())
-                    .frame(minWidth: 62)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
+                    .font(KalfaDesign.bodyFont.monospaced())
+                    .frame(minWidth: 64)
+                    .padding(.horizontal, KalfaDesign.s)
+                    .padding(.vertical, KalfaDesign.xs)
                     .background(
-                        isRecording ? Color.accentColor.opacity(0.22) : Color.primary.opacity(0.07),
-                        in: RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        isRecording ? AnyShapeStyle(Color.accentColor.opacity(0.22)) : AnyShapeStyle(KalfaDesign.wash),
+                        in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius, style: .continuous)
                     )
                     .overlay {
                         if isRecording {
-                            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            RoundedRectangle(cornerRadius: KalfaDesign.controlRadius, style: .continuous)
                                 .strokeBorder(Color.accentColor, lineWidth: 1)
                         }
                     }

@@ -9,7 +9,9 @@ struct ScaleToggleView: View {
     let screen: ScreenInfo
 
     var body: some View {
-        VStack(spacing: 6) {
+        // A group, not a stack: each row is its own line whether the parent is
+        // a form in the window or a padded column in the panel.
+        Group {
             hiDPIRow
             refreshRow
             if let warning = softnessWarning {
@@ -23,21 +25,24 @@ struct ScaleToggleView: View {
     /// Flipping this keeps the desktop size and only changes the backing store —
     /// 2560 × 1440 drawn into 5120 × 2880 pixels instead of 2560 × 1440.
     private var hiDPIRow: some View {
-        SwitchRow(
+        KalfaSettingRow(
             L10n.t("hidpi"),
-            value: center.currentMode(for: screen).map { $0.pixelLabel + " px" },
-            isOn: Binding(
-                get: { center.currentMode(for: screen)?.isHiDPI ?? false },
-                set: { _ in apply(scaleTarget) }
-            ),
-            isEnabled: scaleTarget != nil && !center.isApplying,
+            detail: center.currentMode(for: screen).map { $0.pixelLabel + " px" },
             help: scaleHelp
         ) {
             renderingBadge
             if scaleTarget?.isExtended == true {
-                TagPill(L10n.t("hidpi.badge.hidden"), tint: .orange)
+                KalfaBadge(L10n.t("hidpi.badge.hidden"), tone: .warn)
                     .help(L10n.t("hidpi.badge.hidden.help"))
             }
+        } control: {
+            KalfaSwitch(
+                Binding(
+                    get: { center.currentMode(for: screen)?.isHiDPI ?? false },
+                    set: { _ in apply(scaleTarget) }
+                ),
+                isEnabled: scaleTarget != nil && !center.isApplying
+            )
         }
     }
 
@@ -49,11 +54,11 @@ struct ScaleToggleView: View {
     private var renderingBadge: some View {
         switch rendering {
         case .exact:
-            TagPill(L10n.t("grid.exact"), tint: .green)
+            KalfaBadge(L10n.t("grid.exact"), tone: .ok)
         case .supersampled(let factor):
-            TagPill(L10n.t("grid.supersampled", factor), tint: .green)
+            KalfaBadge(L10n.t("grid.supersampled", factor), tone: .ok)
         case .fractional:
-            TagPill(L10n.t("grid.fractional"), tint: .orange)
+            KalfaBadge(L10n.t("grid.fractional"), tone: .warn)
         case nil:
             EmptyView()
         }
@@ -91,22 +96,21 @@ struct ScaleToggleView: View {
     }
 
     private func softnessNote(_ sharpest: ScreenMode) -> some View {
-        HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "exclamationmark.triangle")
-                .foregroundStyle(.orange)
-                .font(.caption2)
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(alignment: .top, spacing: KalfaDesign.s) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(KalfaTone.warn.color)
+                .font(KalfaDesign.captionFont)
+            VStack(alignment: .leading, spacing: KalfaDesign.xs) {
                 Text(noteText(sharpest))
-                    .font(.caption2)
+                    .font(KalfaDesign.captionFont)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Button(L10n.t("grid.switchTo", sharpest.resolutionLabel)) { apply(sharpest) }
                     .buttonStyle(.borderless)
-                    .font(.caption2)
+                    .font(KalfaDesign.captionFont)
                     .disabled(center.isApplying)
             }
         }
-        .padding(.top, 2)
     }
 
     private func noteText(_ sharpest: ScreenMode) -> String {
@@ -120,17 +124,20 @@ struct ScaleToggleView: View {
     // MARK: Refresh rate
 
     private var refreshRow: some View {
-        SwitchRow(
+        KalfaSettingRow(
             L10n.t("refresh"),
-            value: center.currentMode(for: screen)?.refreshLabel,
-            isOn: Binding(
-                get: { isAtPeakRefresh },
-                set: { wantsFast in apply(center.refreshSibling(for: screen, fastest: wantsFast)) }
-            ),
-            isEnabled: center.refreshSibling(for: screen, fastest: !isAtPeakRefresh) != nil
-                && !center.isApplying,
+            detail: center.currentMode(for: screen)?.refreshLabel,
             help: refreshHelp
-        )
+        ) {
+            KalfaSwitch(
+                Binding(
+                    get: { isAtPeakRefresh },
+                    set: { wantsFast in apply(center.refreshSibling(for: screen, fastest: wantsFast)) }
+                ),
+                isEnabled: center.refreshSibling(for: screen, fastest: !isAtPeakRefresh) != nil
+                    && !center.isApplying
+            )
+        }
     }
 
     private var isAtPeakRefresh: Bool {

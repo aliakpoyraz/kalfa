@@ -10,7 +10,6 @@ struct CommandItem: Identifiable {
     let title: String
     let detail: String
     let icon: String
-    let tint: Color
     let keywords: [String]
     let run: () -> Void
 }
@@ -37,7 +36,6 @@ enum CommandCatalog {
             title: L10n.t("home.command.toggleMic"),
             detail: L10n.t("audio.mute.help"),
             icon: "mic.slash.fill",
-            tint: .red,
             keywords: ["mikrofon", "mic", "mute", "sustur", "microphone"]
         ) {
             audio.setInputMuted(!audio.isInputMuted)
@@ -49,7 +47,6 @@ enum CommandCatalog {
             title: L10n.t("home.command.toggleAwake"),
             detail: L10n.t("caffeine.help"),
             icon: "cup.and.saucer.fill",
-            tint: .orange,
             keywords: ["uyanık", "uyku", "awake", "sleep", "caffeine", "kafein"]
         ) {
             caffeine.toggle()
@@ -61,7 +58,6 @@ enum CommandCatalog {
             title: L10n.t("presentation"),
             detail: L10n.t("presentation.help"),
             icon: "rectangle.on.rectangle",
-            tint: .indigo,
             keywords: ["sunum", "presentation", "toplantı", "meeting"]
         ) {
             presentation.toggle()
@@ -76,7 +72,6 @@ enum CommandCatalog {
                 title: L10n.t("home.command.output", device.name),
                 detail: L10n.t("audio.output"),
                 icon: "speaker.wave.2.fill",
-                tint: .purple,
                 keywords: [device.name, "ses", "çıkış", "output", "sound", "device", "cihaz"]
             ) {
                 audio.select(device, direction: .output)
@@ -90,7 +85,6 @@ enum CommandCatalog {
                 title: L10n.t(key),
                 detail: HotkeyService.shared.label(for: slot.hotkey),
                 icon: icon,
-                tint: .teal,
                 keywords: ["pencere", "window", "yerleştir", "tile", "snap"]
             ) {
                 let placed = WindowService.place(slot.slot)
@@ -104,7 +98,6 @@ enum CommandCatalog {
                 title: L10n.t("home.command.dpiMode", L10n.t("dpi.mode.\(mode.rawValue)")),
                 detail: L10n.t("home.command.dpi.detail"),
                 icon: "lock.shield",
-                tint: .green,
                 keywords: ["dpi", "proxy", "engel", "site", mode.rawValue]
             ) {
                 EzDPI.mode = mode
@@ -113,11 +106,21 @@ enum CommandCatalog {
         }
 
         items.append(CommandItem(
+            id: "dim-reset",
+            title: L10n.t("brightness.reset"),
+            detail: HotkeyService.shared.label(for: .resetDimming),
+            icon: "sun.max",
+            keywords: ["parlaklık", "karartma", "brightness", "dim", "sıfırla", "reset"]
+        ) {
+            BrightnessService.shared.resetDimming()
+            finish(L10n.t("brightness.reset.done"))
+        })
+
+        items.append(CommandItem(
             id: "health",
             title: L10n.t("health.title"),
             detail: L10n.t("health.subtitle"),
             icon: "stethoscope",
-            tint: .orange,
             keywords: ["sağlık", "health", "izin", "permission", "durum", "status", "tanılama", "diagnostics"]
         ) {
             KalfaWindow.show(.health)
@@ -130,9 +133,8 @@ enum CommandCatalog {
             items.append(CommandItem(
                 id: "window-section-\(section.rawValue)",
                 title: section.title,
-                detail: L10n.t("window.subtitle.\(section.rawValue)"),
+                detail: section.subtitle,
                 icon: section.symbol,
-                tint: section.role.tint,
                 keywords: [section.rawValue, "pencere", "window", "aç", "open"]
             ) {
                 KalfaWindow.show(section)
@@ -144,7 +146,6 @@ enum CommandCatalog {
             title: L10n.t("disks.ejectAll"),
             detail: L10n.t("disks"),
             icon: "eject.fill",
-            tint: .gray,
             keywords: ["disk", "eject", "çıkar", "usb", "harici"]
         ) {
             let failed = DiskService.ejectAll()
@@ -158,7 +159,6 @@ enum CommandCatalog {
             title: L10n.t("header.rescan"),
             detail: L10n.t("home.command.refresh.detail"),
             icon: "arrow.clockwise",
-            tint: .blue,
             keywords: ["yenile", "tara", "refresh", "rescan", "ekran"]
         ) {
             center.refreshNow()
@@ -171,7 +171,6 @@ enum CommandCatalog {
                 title: L10n.t("home.command.scene", profile.name),
                 detail: L10n.t("home.command.scene.detail"),
                 icon: "sparkles.rectangle.stack",
-                tint: .blue,
                 keywords: [profile.name, "senaryo", "profil", "scene", "profile"]
             ) {
                 Task {

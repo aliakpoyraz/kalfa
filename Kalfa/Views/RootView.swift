@@ -3,25 +3,24 @@ import SwiftUI
 import UpkeepKit
 import KalfaUI
 
-/// The menu bar panel: what the machine is doing, and the switches worth
-/// flicking on the way past.
+/// The menu bar panel: a remote for the Mac.
 ///
-/// Reading down: the state line, the toggles as tiles that carry their own
-/// state, then the subjects that are worth a look without sitting down —
-/// displays, sound, scenes, live load, DPI. Everything that is *work* rather
-/// than a flick lives in the window; everything searchable lives in the
-/// palette. The panel used to carry a second copy of both and was longer than
-/// the screen for it.
+/// Reading down: the two sliders reached for most, the six switches flicked on
+/// the way past, then three subjects worth a look without sitting down. The
+/// panel keeps one height — a subject opens in place and goes back, rather than
+/// unfolding and pushing everything under it off the screen. Anything that is
+/// set once and left alone is in the window.
 struct RootView: View {
 
-    private enum Card: String {
-        case displays, audio, scenes, dpi, monitor
+    private enum Route {
+        case home, display, monitor
     }
 
     @Environment(DisplayCenter.self) private var center
     @Environment(ScrollService.self) private var scroll
 
-    @State private var openCard: Card?
+    @State private var route: Route = .home
+    @State private var selectedUUID: String?
     @State private var feedback: String?
     @State private var showingSaveSheet = false
 
@@ -29,36 +28,22 @@ struct RootView: View {
     private let caffeine = CaffeineService.shared
     private let presentation = PresentationMode.shared
     private let dockLock = DockLockService.shared
-    /// Observed, not just held: the DPI engine's state drives the tile and the
-    /// header chip, and a plain `let` would leave both stale.
+    private let brightness = BrightnessService.shared
+    private let health = HealthService.shared
+    /// Observed, not just held: the DPI engine starting or stopping has to
+    /// redraw its switch.
     @StateObject private var dpi = EzDPIStatus()
-    /// Only publishes while the monitoring card is open — it takes no samples
-    /// otherwise, so the closed-card summary deliberately stays generic.
     @ObservedObject private var monitor = Upkeep.monitor
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            header
-
-            VStack(alignment: .leading, spacing: KalfaDesign.s) {
-                if let pending = center.pendingRevert {
-                    revertBanner(pending)
-                }
-                tiles
-                cards
-
-                if let feedback {
-                    Label(feedback, systemImage: "checkmark.circle.fill")
-                        .font(KalfaDesign.captionFont)
-                        .foregroundStyle(.secondary)
-                        .transition(.opacity)
-                }
+        Group {
+            switch route {
+            case .home: home
+            case .display: displayPage
+            case .monitor: monitorPage
             }
-            .padding(.horizontal, KalfaDesign.edge)
-            .padding(.bottom, KalfaDesign.m)
-
-            footer
         }
+        .padding(KalfaDesign.m)
         .frame(width: KalfaDesign.panelWidth)
         // Thick, not ultra thin: this is a menu surface that has to stay
         // legible over whatever happens to be on screen behind it.
@@ -67,272 +52,411 @@ struct RootView: View {
         // the strings bundle on its own.
         .id(center.settings.language.rawValue)
         .animation(KalfaDesign.motion, value: feedback)
-        .onAppear { CommandPalette.shared.center = center }
+        .onAppear {
+            CommandPalette.shared.center = center
+            // The backlight may have been moved with the keyboard since the
+            // panel was last open.
+            center.syncBrightness()
+            health.refresh()
+            // Sampled only while the panel is up, so the summary line is live
+            // without a meter running in the background all day.
+            monitor.retain()
+        }
+        .onDisappear {
+            monitor.release()
+            route = .home
+        }
         .sheet(isPresented: $showingSaveSheet) {
             SaveProfileView()
                 .environment(center)
         }
     }
 
-    // MARK: Header
+    private var screen: ScreenInfo? {
+        center.screens.first { $0.uuid == selectedUUID } ?? center.screens.first
+    }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: KalfaDesign.s) {
-            HStack(spacing: KalfaDesign.s) {
-                Image(nsImage: NSApplication.shared.applicationIconImage)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 26, height: 26)
+    // MARK: Home
 
-                Text(L10n.t("app.name"))
-                    .font(KalfaDesign.titleFont)
-
-                Spacer()
-
-                if center.isApplying {
-                    ProgressView()
-                        .controlSize(.small)
-                        .accessibilityLabel(L10n.t("status.applying"))
-                }
-
-                KalfaToolbarButton(systemName: "magnifyingglass", help: searchHelp) {
-                    CommandPalette.shared.show()
-                }
-                KalfaToolbarButton(systemName: "stethoscope", help: L10n.t("health.title")) {
-                    KalfaWindow.show(.health)
-                }
-                KalfaToolbarButton(systemName: "macwindow", help: L10n.t("window.open")) {
-                    KalfaWindow.show()
+    private var home: some View {
+        VStack(alignment: .leading, spacing: KalfaDesign.m) {
+            if let pending = center.pendingRevert {
+                revertBanner(pending)
+            }
+            if center.screens.count > 1 {
+                screenPicker
+            }
+            if let screen {
+                VStack(alignment: .leading, spacing: KalfaDesign.xs) {
+                    BrightnessSlider(screen: screen)
+                    BrightnessNote(screen: screen)
+                        .padding(.leading, 26)
                 }
             }
+            volume
+            toggles
+            subjects
 
-            // The state line: what Kalfa would answer if asked "what is going on
-            // with this Mac right now?".
-            HStack(spacing: KalfaDesign.xs) {
-                KalfaChip(displaySummary, symbol: center.isClamshell ? "macbook.and.iphone" : "display", tint: .blue)
-                if let output = audio.currentOutput {
-                    KalfaChip(output.name, symbol: "speaker.wave.2.fill", tint: .purple)
-                }
-                if audio.isInputMuted {
-                    KalfaChip(L10n.t("home.state.muted"), symbol: "mic.slash.fill", tint: .red)
-                }
-                if dpi.isActive {
-                    KalfaChip(L10n.t("dpi"), symbol: "lock.shield.fill", tint: .green)
-                }
-                Spacer(minLength: 0)
+            if let feedback {
+                Label(feedback, systemImage: "checkmark.circle.fill")
+                    .font(KalfaDesign.captionFont)
+                    .foregroundStyle(.secondary)
+                    .transition(.opacity)
+            }
+            footer
+        }
+    }
+
+    /// Only shown with more than one display: which of them the brightness
+    /// slider and the display page are about.
+    private var screenPicker: some View {
+        Picker("", selection: Binding(
+            get: { screen?.uuid ?? "" },
+            set: { selectedUUID = $0 }
+        )) {
+            ForEach(center.screens) { item in
+                Text(item.isBuiltIn ? L10n.t("display.builtIn.short") : item.name).tag(item.uuid)
             }
         }
-        .padding(.horizontal, KalfaDesign.edge)
-        .padding(.top, KalfaDesign.m)
-        .padding(.bottom, KalfaDesign.m)
+        .pickerStyle(.segmented)
+        .labelsHidden()
     }
 
-    private var searchHelp: String {
-        "\(L10n.t("palette.title")) · \(HotkeyService.shared.label(for: .commandPalette))"
+    private var volume: some View {
+        VStack(alignment: .leading, spacing: KalfaDesign.xs) {
+            KalfaSlider(
+                value: Binding(get: { audio.volume * 100 }, set: { audio.volume = $0 / 100 }),
+                in: 0...100,
+                symbol: audio.volume < 0.01 ? "speaker.slash.fill" : "speaker.wave.2.fill",
+                label: L10n.t("tab.audio"),
+                valueText: "\(Int((audio.volume * 100).rounded()))",
+                isEnabled: audio.currentOutput != nil
+            )
+
+            Menu {
+                ForEach(audio.outputs) { device in
+                    Button {
+                        audio.select(device, direction: .output)
+                        say(L10n.t("home.feedback.output", device.name))
+                    } label: {
+                        if device.id == audio.currentOutput?.id {
+                            Label(device.name, systemImage: "checkmark")
+                        } else {
+                            Text(device.name)
+                        }
+                    }
+                }
+            } label: {
+                Text(audio.currentOutput?.name ?? L10n.t("audio.none.short"))
+                    .font(KalfaDesign.captionFont)
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .disabled(audio.outputs.isEmpty)
+            .padding(.leading, 26)
+        }
     }
 
-    // MARK: Tiles
+    // MARK: Toggles
 
-    private var tiles: some View {
-        LazyVGrid(
-            columns: [GridItem(.flexible(), spacing: KalfaDesign.s), GridItem(.flexible(), spacing: KalfaDesign.s)],
-            spacing: KalfaDesign.s
-        ) {
-            KalfaTile(
-                title: L10n.t("home.action.microphone"),
-                state: audio.isInputMuted ? L10n.t("home.state.muted") : L10n.t("home.state.ready"),
+    private var toggles: some View {
+        HStack(alignment: .top, spacing: KalfaDesign.xs) {
+            KalfaQuickToggle(
+                L10n.t("quick.mic"),
                 symbol: audio.isInputMuted ? "mic.slash.fill" : "mic.fill",
-                role: .microphone,
-                isOn: audio.isInputMuted
+                isOn: audio.isInputMuted,
+                tone: .bad,
+                help: "\(L10n.t(audio.isInputMuted ? "home.state.muted" : "home.state.ready")) · \(HotkeyService.shared.label(for: .muteInput))"
             ) {
                 audio.setInputMuted(!audio.isInputMuted)
                 say(L10n.t(audio.isInputMuted ? "home.feedback.micOff" : "home.feedback.micOn"))
             }
 
-            KalfaTile(
-                title: L10n.t("home.action.awake"),
-                state: caffeine.isActive ? L10n.t("on") : L10n.t("home.state.off"),
+            KalfaQuickToggle(
+                L10n.t("quick.awake"),
                 symbol: caffeine.isActive ? "cup.and.saucer.fill" : "cup.and.saucer",
-                role: .awake,
-                isOn: caffeine.isActive
+                isOn: caffeine.isActive,
+                help: L10n.t("caffeine")
             ) {
                 caffeine.toggle()
                 say(L10n.t(caffeine.isActive ? "home.feedback.awakeOn" : "home.feedback.awakeOff"))
+            } menu: {
+                ForEach(CaffeineService.Span.allCases) { span in
+                    Button(span.minutes.map { L10n.t("caffeine.minutes", $0) } ?? L10n.t("caffeine.indefinite")) {
+                        // The span is fixed when the assertion is taken, so a
+                        // running one has to be dropped and taken again.
+                        if caffeine.isActive { caffeine.stop() }
+                        caffeine.span = span
+                        caffeine.toggle()
+                        say(L10n.t("home.feedback.awakeOn"))
+                    }
+                }
             }
 
-            KalfaTile(
-                title: L10n.t("presentation"),
-                state: presentation.isOn ? L10n.t("on") : L10n.t("home.state.off"),
+            KalfaQuickToggle(
+                L10n.t("quick.presentation"),
                 symbol: "rectangle.on.rectangle",
-                role: .presentation,
-                isOn: presentation.isOn
+                isOn: presentation.isOn,
+                help: L10n.t("presentation")
             ) {
                 presentation.toggle()
                 say(L10n.t(presentation.isOn ? "home.feedback.presentationOn" : "home.feedback.presentationOff"))
             }
 
-            KalfaTile(
-                title: L10n.t("scroll"),
-                state: scroll.isEnabled ? L10n.t("on") : L10n.t("home.state.off"),
+            KalfaQuickToggle(
+                L10n.t("quick.scroll"),
                 symbol: "computermouse",
-                role: .scroll,
-                isOn: scroll.isEnabled
+                isOn: scroll.isEnabled,
+                help: L10n.t("scroll")
             ) {
                 scroll.isEnabled.toggle()
                 say(L10n.t(scroll.isEnabled ? "home.feedback.scrollOn" : "home.feedback.scrollOff"))
             }
 
-            KalfaTile(
-                title: L10n.t("home.action.dockLock"),
-                state: dockLock.isEnabled && !dockLock.isTrusted
-                    ? L10n.t("home.state.needsPermission")
-                    : L10n.t("dock.mode.\(dockLock.mode.rawValue)"),
+            KalfaQuickToggle(
+                L10n.t("quick.dock"),
                 symbol: "dock.rectangle",
-                role: .dock,
-                isOn: dockLock.isEnabled
+                isOn: dockLock.isEnabled,
+                tone: dockLock.isEnabled && !dockLock.isTrusted ? .warn : .accent,
+                help: dockLock.isEnabled && !dockLock.isTrusted
+                    ? L10n.t("home.state.needsPermission")
+                    : L10n.t("dock.mode.\(dockLock.mode.rawValue)")
             ) {
-                // Off, main display, edge touch — then round again.
-                dockLock.cycleMode()
-                if dockLock.isEnabled && !dockLock.isTrusted { dockLock.requestPermission() }
-                say(L10n.t("home.feedback.dockMode", L10n.t("dock.mode.\(dockLock.mode.rawValue)")))
-            }
-
-            KalfaTile(
-                title: L10n.t("dpi"),
-                state: L10n.t("dpi.mode.\(EzDPI.mode.rawValue)"),
-                symbol: dpi.isActive ? "lock.shield.fill" : "lock.shield",
-                role: .dpi,
-                isOn: dpi.isActive
-            ) {
-                // Cycles the three modes in the order people actually want them:
-                // automatic, forced on, off.
-                let order: [EzDPI.Mode] = [.auto, .on, .off]
-                let next = order[((order.firstIndex(of: EzDPI.mode) ?? 0) + 1) % order.count]
-                EzDPI.mode = next
-                say(L10n.t("home.feedback.dpiMode", L10n.t("dpi.mode.\(next.rawValue)")))
-            }
-
-            KalfaTile(
-                title: L10n.t("upkeep.title"),
-                state: L10n.t("upkeep.state"),
-                symbol: "wrench.adjustable",
-                role: .tools,
-                isOn: false
-            ) {
-                KalfaWindow.show(.upkeep)
-            }
-        }
-    }
-
-    // MARK: Cards
-
-    private var cards: some View {
-        VStack(spacing: KalfaDesign.s) {
-            KalfaCard(
-                title: L10n.t("tab.display"),
-                summary: modeSummary,
-                symbol: "display",
-                role: .display,
-                isExpanded: binding(for: .displays)
-            ) {
-                if center.screens.isEmpty {
-                    Text(L10n.t("empty.displays"))
-                        .font(KalfaDesign.bodyFont)
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, KalfaDesign.m)
-                } else {
-                    // Laid out directly rather than in a ScrollView: inside a
-                    // MenuBarExtra window a ScrollView resolves to zero ideal
-                    // height and silently swallows its content.
-                    ForEach(center.screens) { screen in
-                        DisplayCardView(screen: screen)
-                    }
-                    HStack {
-                        Spacer()
-                        Button(L10n.t("header.rescan"), systemImage: "arrow.clockwise") {
-                            center.refreshNow()
+                setDockMode(dockLock.isEnabled ? .off : lastDockMode)
+            } menu: {
+                ForEach(DockLockService.Mode.allCases, id: \.self) { mode in
+                    Button { setDockMode(mode) } label: {
+                        if mode == dockLock.mode {
+                            Label(L10n.t("dock.mode.\(mode.rawValue)"), systemImage: "checkmark")
+                        } else {
+                            Text(L10n.t("dock.mode.\(mode.rawValue)"))
                         }
-                        .buttonStyle(.borderless)
-                        .font(KalfaDesign.captionFont)
                     }
                 }
-                if let message = center.statusMessage {
-                    Text(message)
-                        .font(KalfaDesign.captionFont)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+            }
+
+            KalfaQuickToggle(
+                L10n.t("quick.dpi"),
+                symbol: dpi.isActive ? "lock.shield.fill" : "lock.shield",
+                isOn: EzDPI.mode != .off,
+                help: L10n.t("dpi.mode.\(EzDPI.mode.rawValue)")
+            ) {
+                setDPIMode(EzDPI.mode == .off ? .auto : .off)
+            } menu: {
+                ForEach(EzDPI.Mode.allCases, id: \.self) { mode in
+                    Button { setDPIMode(mode) } label: {
+                        if mode == EzDPI.mode {
+                            Label(L10n.t("dpi.mode.\(mode.rawValue)"), systemImage: "checkmark")
+                        } else {
+                            Text(L10n.t("dpi.mode.\(mode.rawValue)"))
+                        }
+                    }
                 }
-            }
-
-            KalfaCard(
-                title: L10n.t("tab.audio"),
-                summary: audio.currentOutput?.name ?? L10n.t("audio.none.short"),
-                symbol: "speaker.wave.2.fill",
-                role: .audio,
-                isExpanded: binding(for: .audio)
-            ) {
-                AudioTabView()
-            }
-
-            KalfaCard(
-                title: L10n.t("profiles"),
-                summary: sceneSummary,
-                symbol: "sparkles.rectangle.stack",
-                role: .scene,
-                isExpanded: binding(for: .scenes)
-            ) {
-                ProfilesSectionView(showingSaveSheet: $showingSaveSheet)
-            }
-
-            KalfaCard(
-                title: L10n.t("monitor"),
-                summary: monitorSummary,
-                symbol: "gauge.with.dots.needle.33percent",
-                role: .monitor,
-                isExpanded: binding(for: .monitor)
-            ) {
-                MonitorCardView()
-            }
-
-            KalfaCard(
-                title: L10n.t("tab.dpi"),
-                summary: L10n.t("dpi.mode.\(EzDPI.mode.rawValue)"),
-                symbol: "lock.shield",
-                role: .dpi,
-                isExpanded: binding(for: .dpi)
-            ) {
-                EzDPIPanel()
             }
         }
     }
 
-    /// Only one card at a time: the panel is a menu, and a menu that grows past
-    /// the screen is a menu you scroll instead of read.
-    private func binding(for card: Card) -> Binding<Bool> {
-        Binding(
-            get: { openCard == card },
-            set: { openCard = $0 ? card : nil }
-        )
+    /// The mode a click on the Dock switch turns back on: whichever one was in
+    /// use last, so the click undoes the click before it.
+    private var lastDockMode: DockLockService.Mode {
+        UserDefaults.standard.string(forKey: "dockLastMode")
+            .flatMap(DockLockService.Mode.init(rawValue:)) ?? .main
+    }
+
+    private func setDockMode(_ mode: DockLockService.Mode) {
+        if mode != .off { UserDefaults.standard.set(mode.rawValue, forKey: "dockLastMode") }
+        dockLock.mode = mode
+        if dockLock.isEnabled && !dockLock.isTrusted { dockLock.requestPermission() }
+        say(L10n.t("home.feedback.dockMode", L10n.t("dock.mode.\(mode.rawValue)")))
+    }
+
+    private func setDPIMode(_ mode: EzDPI.Mode) {
+        EzDPI.mode = mode
+        say(L10n.t("home.feedback.dpiMode", L10n.t("dpi.mode.\(mode.rawValue)")))
+    }
+
+    // MARK: Subjects
+
+    private var subjects: some View {
+        VStack(spacing: 0) {
+            KalfaNavRow(L10n.t("tab.display"), value: modeSummary) { route = .display }
+            KalfaDivider()
+            scenes
+            KalfaDivider()
+            KalfaNavRow(L10n.t("monitor"), value: monitorSummary) { route = .monitor }
+        }
+        .kalfaGroup()
+        .clipShape(RoundedRectangle(cornerRadius: KalfaDesign.groupRadius, style: .continuous))
+    }
+
+    /// Scenes saved for the arrangement that is plugged in, one click each.
+    private var scenes: some View {
+        let matching = center.profiles.profiles(for: center.setKey)
+        return HStack(spacing: KalfaDesign.xs) {
+            Text(L10n.t("profiles"))
+                .font(KalfaDesign.headingFont)
+            Spacer(minLength: KalfaDesign.s)
+            if matching.isEmpty {
+                Text(L10n.t("profiles.none.short"))
+                    .font(KalfaDesign.captionFont)
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(matching.prefix(3)) { profile in
+                Button(profile.name) {
+                    Task {
+                        let ok = await center.apply(profile)
+                        say(L10n.t(ok ? "home.feedback.sceneApplied" : "home.feedback.sceneFailed", profile.name))
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .lineLimit(1)
+                .disabled(center.isApplying)
+            }
+            KalfaIconButton(systemName: "plus", help: L10n.t("profiles.saveCurrent")) {
+                showingSaveSheet = true
+            }
+            .disabled(center.screens.isEmpty || center.isApplying)
+        }
+        .padding(.leading, KalfaDesign.m)
+        .padding(.trailing, KalfaDesign.xs)
+        .padding(.vertical, KalfaDesign.xs)
     }
 
     // MARK: Footer
 
     private var footer: some View {
-        HStack(spacing: KalfaDesign.s) {
-            Text(versionLabel)
+        HStack(spacing: KalfaDesign.xs) {
+            Button {
+                CommandPalette.shared.show()
+            } label: {
+                HStack(spacing: KalfaDesign.xs) {
+                    Image(systemName: "magnifyingglass")
+                    Text(L10n.t("panel.search"))
+                    Text(HotkeyService.shared.label(for: .commandPalette))
+                        .foregroundStyle(.tertiary)
+                }
                 .font(KalfaDesign.captionFont)
-                .foregroundStyle(.tertiary)
-            Spacer()
-            Button(L10n.t("window.open")) { KalfaWindow.show() }
-                .buttonStyle(.borderless)
-                .font(KalfaDesign.captionFont)
-            Button(L10n.t("footer.quit")) { NSApplication.shared.terminate(nil) }
-                .buttonStyle(.borderless)
-                .font(KalfaDesign.captionFont)
+                .foregroundStyle(.secondary)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(L10n.t("palette.title"))
+
+            Spacer(minLength: KalfaDesign.s)
+
+            if center.isApplying {
+                ProgressView()
+                    .controlSize(.small)
+                    .accessibilityLabel(L10n.t("status.applying"))
+            }
+
+            if issueCount > 0 {
+                Button {
+                    KalfaWindow.show(.health)
+                } label: {
+                    Label(L10n.t("panel.warnings", issueCount), systemImage: "exclamationmark.triangle.fill")
+                        .font(KalfaDesign.captionFont)
+                        .foregroundStyle(KalfaTone.warn.color)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(L10n.t("health.title"))
+            }
+
+            KalfaIconButton(systemName: "macwindow", help: L10n.t("window.open")) {
+                KalfaWindow.show()
+            }
+            KalfaIconButton(systemName: "power", help: L10n.t("footer.quit")) {
+                NSApplication.shared.terminate(nil)
+            }
         }
-        .padding(.horizontal, KalfaDesign.edge)
-        .padding(.vertical, KalfaDesign.s)
-        .background(.bar)
+    }
+
+    /// Things the health page would show in orange or red.
+    private var issueCount: Int {
+        health.checks.filter { $0.level == .problem || $0.level == .warning }.count
+    }
+
+    // MARK: Inner pages
+
+    private func page<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: KalfaDesign.m) {
+            Button {
+                route = .home
+            } label: {
+                HStack(spacing: KalfaDesign.xs) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                    Text(title)
+                        .font(KalfaDesign.titleFont)
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)
+            .accessibilityLabel(L10n.t("panel.back"))
+
+            content()
+        }
+    }
+
+    private var displayPage: some View {
+        page(L10n.t("tab.display")) {
+            if let pending = center.pendingRevert {
+                revertBanner(pending)
+            }
+            if center.screens.count > 1 {
+                screenPicker
+            }
+            if let screen {
+                DisplayHeader(screen: screen)
+                // Laid out directly rather than in a ScrollView: inside a
+                // MenuBarExtra window a ScrollView resolves to zero ideal
+                // height and silently swallows its content.
+                VStack(alignment: .leading, spacing: KalfaDesign.s) {
+                    DisplayRows(screen: screen, includesBrightness: false)
+                }
+                .padding(KalfaDesign.m)
+                .kalfaGroup()
+            } else {
+                Text(L10n.t("empty.displays"))
+                    .font(KalfaDesign.bodyFont)
+                    .foregroundStyle(.secondary)
+            }
+
+            if let message = center.statusMessage {
+                Text(message)
+                    .font(KalfaDesign.captionFont)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack {
+                Button(L10n.t("header.rescan"), systemImage: "arrow.clockwise") {
+                    center.refreshNow()
+                    center.syncBrightness()
+                }
+                Spacer()
+                Button(L10n.t("panel.allSettings")) { KalfaWindow.show(.displays) }
+            }
+            .buttonStyle(.borderless)
+            .font(KalfaDesign.captionFont)
+        }
+    }
+
+    private var monitorPage: some View {
+        page(L10n.t("monitor")) {
+            MonitorCardView()
+            HStack {
+                Spacer()
+                Button(L10n.t("upkeep.title")) { KalfaWindow.show(.upkeep) }
+                    .buttonStyle(.borderless)
+                    .font(KalfaDesign.captionFont)
+            }
+        }
     }
 
     // MARK: Revert banner
@@ -358,18 +482,22 @@ struct RootView: View {
         }
         .padding(KalfaDesign.m)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .kalfaSurface(tint: .orange, isActive: true)
+        .background(
+            KalfaTone.warn.color.opacity(0.16),
+            in: RoundedRectangle(cornerRadius: KalfaDesign.groupRadius, style: .continuous)
+        )
     }
 
     private func say(_ message: String) {
         feedback = message
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))
+            if feedback == message { feedback = nil }
+        }
     }
 
     // MARK: Summaries
 
-    /// Live numbers once the card has been opened, a plain label before that.
-    /// Showing "0%" while nothing is being measured would be a lie, and keeping
-    /// the sampler running just to fill this line would cost more than it tells.
     private var monitorSummary: String {
         guard !monitor.cpuHistory.isEmpty else { return L10n.t("monitor.summary.idle") }
         return L10n.t("monitor.summary",
@@ -377,31 +505,8 @@ struct RootView: View {
                       Int(monitor.sample.memory.usedFraction * 100))
     }
 
-    private var displaySummary: String {
-        let count = center.screens.count
-        guard count > 0 else { return L10n.t("header.noDisplays") }
-        return count == 1
-            ? L10n.t("header.displayCount.one")
-            : L10n.t("header.displayCount.many", count)
-    }
-
     private var modeSummary: String {
-        guard let main = center.screens.first(where: \.isMain) ?? center.screens.first else {
-            return L10n.t("header.noDisplays")
-        }
-        guard let mode = center.currentMode(for: main) else { return main.name }
-        return "\(main.name) · \(mode.summary)"
-    }
-
-    private var sceneSummary: String {
-        let matching = center.profiles.profiles(for: DisplaySetKey(center.screens))
-        return matching.isEmpty
-            ? L10n.t("profiles.none.short")
-            : L10n.t("profiles.count", matching.count)
-    }
-
-    private var versionLabel: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-        return "Kalfa \(version)"
+        guard let screen else { return L10n.t("header.noDisplays") }
+        return center.currentMode(for: screen)?.summary ?? screen.name
     }
 }

@@ -181,9 +181,9 @@ struct CommandPaletteView: View {
         HStack(spacing: 11) {
             Image(systemName: item.icon)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(item.tint)
+                .foregroundStyle(.secondary)
                 .frame(width: 28, height: 28)
-                .background(item.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
+                .background(KalfaDesign.wash, in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius))
             VStack(alignment: .leading, spacing: 1) {
                 Text(item.title)
                     .font(.callout.weight(.medium))

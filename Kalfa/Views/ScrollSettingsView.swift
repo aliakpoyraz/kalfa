@@ -10,42 +10,28 @@ struct ScrollSettingsView: View {
     var body: some View {
         @Bindable var scroll = scroll
 
-        VStack(alignment: .leading, spacing: 10) {
-            Toggle(L10n.t("scroll.enable"), isOn: $scroll.isEnabled)
-            helpText(L10n.t("scroll.enable.help"))
+        Toggle(isOn: $scroll.isEnabled) {
+            Text(L10n.t("scroll.enable"))
+            Text(L10n.t("scroll.enable.help"))
+        }
 
-            if scroll.isEnabled && !scroll.isTrusted {
-                permissionNotice
-            }
+        if scroll.isEnabled && !scroll.isTrusted {
+            permissionNotice
         }
     }
 
     /// Accessibility is granted to the signature, not the app bundle, so an
     /// ad-hoc build loses it on every rebuild — worth saying out loud here.
     private var permissionNotice: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(L10n.t("scroll.permission.title"))
-                .font(.caption.weight(.semibold))
-            Text(L10n.t("scroll.permission.body"))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: KalfaDesign.s) {
+            Label(L10n.t("scroll.permission.title"), systemImage: "exclamationmark.triangle.fill")
+                .font(KalfaDesign.headingFont)
+                .foregroundStyle(KalfaTone.warn.color)
+            Text(L10n.t("scroll.permission.body")).kalfaFootnote()
             HStack {
                 Button(L10n.t("scroll.permission.grant")) { scroll.requestPermission() }
                 Button(L10n.t("scroll.permission.open")) { scroll.openAccessibilitySettings() }
             }
-            .controlSize(.small)
         }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
-    }
-
-    private func helpText(_ text: String) -> some View {
-        Text(text)
-            .font(.caption2)
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
     }
 }

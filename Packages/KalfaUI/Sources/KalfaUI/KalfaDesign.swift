@@ -1,294 +1,400 @@
 import SwiftUI
 
-/// The panel's visual language.
+/// Kalfa's visual language.
 ///
-/// Three rules hold the redesign together:
+/// Four rules:
 ///
-/// 1. **Everything live is visible without opening anything.** Toggles are tiles
-///    that carry their own state; nothing binary hides behind a disclosure arrow.
-/// 2. **One grammar per kind of thing.** A tile is a switch, a card is a subject
-///    you can open, a row is a setting inside one. No fourth pattern.
-/// 3. **System colours only.** Kalfa follows macOS appearance and contrast
-///    settings rather than maintaining a palette of its own; role tints are the
-///    standard ones people already read (red for microphone, orange for awake).
+/// 1. **The panel is a remote, the window is settings.** What gets touched
+///    several times a day sits in the panel as a slider or a switch; what gets
+///    set once lives in the window as a form. Nothing has a copy in both.
+/// 2. **Colour says state, not subject.** Something that is on fills with the
+///    system accent. Orange is a warning, red is an error or a muted microphone,
+///    and that is the whole palette. Icons are monochrome.
+/// 3. **One scale.** Five spacings and five type sizes; a literal number in a
+///    view is a mistake, not a decision.
+/// 4. **One control per kind of choice.** On/off is a switch everywhere, two to
+///    four options are a segmented control, more are a menu.
 public enum KalfaDesign {
 
-    public static let panelWidth: CGFloat = 392
+    public static let panelWidth: CGFloat = 340
 
-    // Spacing scale. Four steps, used everywhere; no ad-hoc paddings.
+    // Spacing.
     public static let xs: CGFloat = 4
     public static let s: CGFloat = 8
     public static let m: CGFloat = 12
     public static let l: CGFloat = 16
-    public static let edge: CGFloat = 14
+    public static let xl: CGFloat = 24
 
-    public static let tileRadius: CGFloat = 11
-    public static let cardRadius: CGFloat = 13
-    public static let controlRadius: CGFloat = 7
+    public static let controlRadius: CGFloat = 8
+    public static let groupRadius: CGFloat = 10
 
-    // Type scale. Four sizes; anything else is a mistake, not a decision.
-    public static let titleFont = Font.system(size: 15, weight: .semibold)
-    public static let headingFont = Font.system(size: 13, weight: .semibold)
-    public static let bodyFont = Font.system(size: 12)
+    /// The height of a slider track and the diameter of its knob.
+    public static let sliderHeight: CGFloat = 22
+    /// The round face of a quick toggle.
+    public static let toggleSize: CGFloat = 38
+    /// Forms stop growing here, so a label and its control stay within reach of
+    /// each other however wide the window is dragged.
+    public static let formWidth: CGFloat = 600
+    /// Left edge of a window page, matching where a grouped form puts its rows.
+    public static let pageInset: CGFloat = 20
+
+    // Type.
     public static let captionFont = Font.system(size: 11)
+    public static let bodyFont = Font.system(size: 13)
+    public static let headingFont = Font.system(size: 13, weight: .semibold)
+    public static let titleFont = Font.system(size: 15, weight: .semibold)
+    public static let pageFont = Font.system(size: 20, weight: .semibold)
 
-    /// Short enough not to be in the way, long enough to be seen. Halved when the
-    /// reader has asked for reduced motion.
+    /// Short enough not to be in the way, long enough to be seen.
     public static let motion = Animation.easeOut(duration: 0.18)
+
+    /// The quiet fill behind controls and groups. A wash of the text colour, not
+    /// a material: a material samples the desktop behind the window, and a
+    /// control must not change colour with the wallpaper.
+    public static let wash = Color.primary.opacity(0.07)
 }
 
-/// What a control is about.
-///
-/// One tint per subject. An earlier pass cut this to five on the theory that
-/// colour should name the subject and the filled tint alone should say "on" —
-/// which looked tidy in the abstract and was wrong in the panel: it turned the
-/// toggles grey, and a grey "on" does not read as on. The tints are back,
-/// because in a panel you scan rather than read, colour is the fastest thing
-/// the eye resolves, and these are the colours people already associate with
-/// each thing (red for a muted microphone, orange for staying awake).
-///
-/// `neutral` and `alert` stay from that pass: they are the two that mean
-/// something rather than name something.
-public enum KalfaRole {
-    case neutral, alert
-    case display, audio, microphone, awake, presentation, dpi, scroll, dock, tools, scene, monitor
+/// What a colour is allowed to mean.
+public enum KalfaTone {
+    case accent, ok, warn, bad, neutral
 
-    public var tint: Color {
+    public var color: Color {
         switch self {
+        case .accent: return .accentColor
+        case .ok: return .green
+        case .warn: return .orange
+        case .bad: return .red
         case .neutral: return .secondary
-        case .alert: return .orange
-        case .display: return .blue
-        case .audio: return .purple
-        case .microphone: return .red
-        case .awake: return .orange
-        case .presentation: return .indigo
-        case .dpi: return .green
-        case .scroll: return .teal
-        case .dock: return .pink
-        case .tools: return .gray
-        case .scene: return .cyan
-        case .monitor: return .mint
         }
     }
 }
 
-// MARK: - Surfaces
+// MARK: - Slider
 
-private struct KalfaSurface: ViewModifier {
-    let tint: Color?
-    let isActive: Bool
-    let radius: CGFloat
+/// The panel's slider: a wide track you can hit without aiming, with the value
+/// read out beside it.
+///
+/// `zero` marks where a second, different kind of range begins below the first —
+/// brightness uses it for the stretch where the backlight has run out and the
+/// picture is darkened instead. That stretch is drawn hatched so the change of
+/// meaning is visible before the knob gets there, and the knob catches briefly
+/// at the boundary.
+public struct KalfaSlider: View {
 
-    func body(content: Content) -> some View {
-        content
-            .background {
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    // A tinted wash when on, a neutral one when off — never a
-                    // material. A material samples the desktop behind the
-                    // window, so an inactive card sitting over a red photo came
-                    // out red and read as a warning. Colour in this panel means
-                    // something; it cannot be decided by the wallpaper.
-                    .fill(isActive ? AnyShapeStyle((tint ?? .accentColor).opacity(0.16)) : AnyShapeStyle(Color.primary.opacity(0.06)))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: radius, style: .continuous)
-                            .strokeBorder(
-                                isActive ? (tint ?? .accentColor).opacity(0.45) : .primary.opacity(0.08),
-                                lineWidth: 0.5
-                            )
-                    }
+    @Binding private var value: Double
+    private let range: ClosedRange<Double>
+    private let zero: Double?
+    private let symbol: String
+    private let label: String
+    private let valueText: String
+    private let isEnabled: Bool
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    public init(
+        value: Binding<Double>,
+        in range: ClosedRange<Double>,
+        zero: Double? = nil,
+        symbol: String,
+        label: String,
+        valueText: String,
+        isEnabled: Bool = true
+    ) {
+        self._value = value
+        self.range = range
+        self.zero = zero
+        self.symbol = symbol
+        self.label = label
+        self.valueText = valueText
+        self.isEnabled = isEnabled
+    }
+
+    public var body: some View {
+        HStack(spacing: KalfaDesign.s) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(width: 18)
+                .accessibilityHidden(true)
+
+            track
+
+            Text(valueText)
+                .font(KalfaDesign.captionFont.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(width: 28, alignment: .trailing)
+                .accessibilityHidden(true)
+        }
+        .opacity(isEnabled ? 1 : 0.4)
+        .allowsHitTesting(isEnabled)
+        .accessibilityElement()
+        .accessibilityLabel(label)
+        .accessibilityValue(valueText)
+        .accessibilityAdjustableAction { direction in
+            let step = (range.upperBound - range.lowerBound) / 20
+            switch direction {
+            case .increment: value = min(value + step, range.upperBound)
+            case .decrement: value = max(value - step, range.lowerBound)
+            @unknown default: break
             }
+        }
+    }
+
+    private var track: some View {
+        GeometryReader { geometry in
+            let knob = KalfaDesign.sliderHeight
+            let travel = max(geometry.size.width - knob, 1)
+            let position = knob / 2 + travel * fraction(of: value)
+            let boundary = zeroFraction.map { knob / 2 + travel * $0 }
+            let isBelow = zero.map { value < $0 } ?? false
+
+            ZStack(alignment: .leading) {
+                Capsule().fill(KalfaDesign.wash)
+
+                Capsule()
+                    .fill(isBelow ? AnyShapeStyle(Color.secondary.opacity(0.55)) : AnyShapeStyle(fill))
+                    .frame(width: position + knob / 2)
+
+                if let boundary {
+                    Hatch()
+                        .stroke(Color.primary.opacity(colorScheme == .dark ? 0.35 : 0.22), lineWidth: 1)
+                        .frame(width: boundary)
+                        .clipShape(Capsule().size(width: geometry.size.width, height: knob))
+                    Rectangle()
+                        .fill(Color.primary.opacity(0.5))
+                        .frame(width: 1.5, height: knob * 0.45)
+                        .offset(x: boundary - 0.75)
+                }
+
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .black.opacity(0.3), radius: 1.5, y: 0.5)
+                    .overlay(Circle().strokeBorder(.black.opacity(0.12), lineWidth: 0.5))
+                    .frame(width: knob, height: knob)
+                    .offset(x: position - knob / 2)
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { drag in
+                        let raw = (drag.location.x - knob / 2) / travel
+                        value = snapped(range.lowerBound + min(max(raw, 0), 1) * (range.upperBound - range.lowerBound))
+                    }
+            )
+        }
+        .frame(height: KalfaDesign.sliderHeight)
+    }
+
+    private var fill: Color {
+        colorScheme == .dark ? .white.opacity(0.85) : .white
+    }
+
+    private func fraction(of value: Double) -> Double {
+        let span = range.upperBound - range.lowerBound
+        guard span > 0 else { return 0 }
+        return min(max((value - range.lowerBound) / span, 0), 1)
+    }
+
+    private var zeroFraction: Double? {
+        guard let zero, zero > range.lowerBound else { return nil }
+        return fraction(of: zero)
+    }
+
+    /// Whole numbers only, and a small catch at the boundary so "exactly the
+    /// lowest backlight" is easy to land on from either side.
+    private func snapped(_ raw: Double) -> Double {
+        let rounded = raw.rounded()
+        if let zero, zero > range.lowerBound, abs(rounded - zero) <= 2 { return zero }
+        return rounded
     }
 }
 
-extension View {
-    public func kalfaSurface(tint: Color? = nil, isActive: Bool = false, radius: CGFloat = KalfaDesign.cardRadius) -> some View {
-        modifier(KalfaSurface(tint: tint, isActive: isActive, radius: radius))
+/// Diagonal lines across whatever rectangle it is given.
+private struct Hatch: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let gap: CGFloat = 5
+        var x = rect.minX - rect.height
+        while x < rect.maxX {
+            path.move(to: CGPoint(x: x, y: rect.maxY))
+            path.addLine(to: CGPoint(x: x + rect.height, y: rect.minY))
+            x += gap
+        }
+        return path
     }
 }
 
-// MARK: - Tile
+// MARK: - Quick toggle
 
-/// A live switch. The whole rectangle is the control, it is tinted while the
-/// thing is on, and the second line always says what the current state *is*
-/// rather than repeating the title.
-public struct KalfaTile: View {
-    public let title: String
-    public let state: String
-    public let symbol: String
-    public let role: KalfaRole
-    public let isOn: Bool
-    public let action: () -> Void
+/// A round switch with its name underneath: the things that get flicked on the
+/// way past. Filled means on.
+///
+/// A toggle with more than two states takes a `menu`. The click still just turns
+/// the thing on or off — it never cycles through modes blind — and the modes
+/// are a right-click away.
+public struct KalfaQuickToggle<MenuContent: View>: View {
+
+    private let title: String
+    private let symbol: String
+    private let isOn: Bool
+    private let tone: KalfaTone
+    private let help: String
+    private let action: () -> Void
+    private let menu: MenuContent
 
     @State private var hovering = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    public init(title: String, state: String, symbol: String, role: KalfaRole, isOn: Bool, action: @escaping () -> Void) {
+    public init(
+        _ title: String,
+        symbol: String,
+        isOn: Bool,
+        tone: KalfaTone = .accent,
+        help: String = "",
+        action: @escaping () -> Void,
+        @ViewBuilder menu: () -> MenuContent
+    ) {
         self.title = title
-        self.state = state
         self.symbol = symbol
-        self.role = role
         self.isOn = isOn
+        self.tone = tone
+        self.help = help
+        self.action = action
+        self.menu = menu()
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            VStack(spacing: KalfaDesign.xs) {
+                Image(systemName: symbol)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(isOn ? Color.white : Color.primary)
+                    .frame(width: KalfaDesign.toggleSize, height: KalfaDesign.toggleSize)
+                    .background(
+                        isOn ? AnyShapeStyle(tone.color) : AnyShapeStyle(Color.primary.opacity(hovering ? 0.13 : 0.07)),
+                        in: Circle()
+                    )
+
+                Text(title)
+                    .font(KalfaDesign.captionFont)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .animation(reduceMotion ? nil : KalfaDesign.motion, value: isOn)
+        .contextMenu { menu }
+        .help(help)
+        .accessibilityLabel(title)
+        .accessibilityValue(help)
+        .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
+    }
+}
+
+extension KalfaQuickToggle where MenuContent == EmptyView {
+    public init(
+        _ title: String,
+        symbol: String,
+        isOn: Bool,
+        tone: KalfaTone = .accent,
+        help: String = "",
+        action: @escaping () -> Void
+    ) {
+        self.init(title, symbol: symbol, isOn: isOn, tone: tone, help: help, action: action) { EmptyView() }
+    }
+}
+
+// MARK: - Group and rows
+
+extension View {
+    /// The rounded wash that holds a set of rows in the panel.
+    public func kalfaGroup() -> some View {
+        background(KalfaDesign.wash, in: RoundedRectangle(cornerRadius: KalfaDesign.groupRadius, style: .continuous))
+    }
+
+    /// Inner padding of one row inside a group.
+    public func kalfaRowPadding() -> some View {
+        padding(.horizontal, KalfaDesign.m).padding(.vertical, KalfaDesign.s)
+    }
+}
+
+/// The line between two rows of a group.
+public struct KalfaDivider: View {
+    public init() {}
+    public var body: some View {
+        Divider().padding(.leading, KalfaDesign.m)
+    }
+}
+
+/// A row that goes somewhere: a subject on the left, what it is worth right now
+/// on the right, and a chevron.
+public struct KalfaNavRow: View {
+
+    private let title: String
+    private let value: String
+    private let action: () -> Void
+
+    @State private var hovering = false
+
+    public init(_ title: String, value: String, action: @escaping () -> Void) {
+        self.title = title
+        self.value = value
         self.action = action
     }
 
     public var body: some View {
         Button(action: action) {
             HStack(spacing: KalfaDesign.s) {
-                Image(systemName: symbol)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(isOn ? role.tint : Color.secondary)
-                    .frame(width: 28, height: 28)
-                    .background(
-                        (isOn ? role.tint : Color.secondary).opacity(isOn ? 0.18 : 0.10),
-                        in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius, style: .continuous)
-                    )
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title)
-                        .font(KalfaDesign.bodyFont.weight(.medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                    Text(state)
-                        .font(KalfaDesign.captionFont)
-                        .foregroundStyle(isOn ? AnyShapeStyle(role.tint) : AnyShapeStyle(.secondary))
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
+                Text(title)
+                    .font(KalfaDesign.headingFont)
+                Spacer(minLength: KalfaDesign.s)
+                Text(value)
+                    .font(KalfaDesign.captionFont.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.tertiary)
             }
-            .padding(KalfaDesign.s)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .kalfaSurface(tint: role.tint, isActive: isOn, radius: KalfaDesign.tileRadius)
-            .overlay {
-                if hovering {
-                    RoundedRectangle(cornerRadius: KalfaDesign.tileRadius, style: .continuous)
-                        .fill(.primary.opacity(0.05))
-                }
-            }
-            .contentShape(RoundedRectangle(cornerRadius: KalfaDesign.tileRadius))
+            .kalfaRowPadding()
+            .background(Color.primary.opacity(hovering ? 0.05 : 0))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
-        .animation(reduceMotion ? nil : KalfaDesign.motion, value: isOn)
         .accessibilityLabel(title)
-        .accessibilityValue(state)
-        .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
+        .accessibilityValue(value)
     }
 }
 
-// MARK: - Card
+/// One setting: its name, an optional line saying what it is worth, and the
+/// control that changes it. Used wherever a native form is not available — the
+/// panel's inner pages and the display cards.
+public struct KalfaSettingRow<Accessory: View, Control: View>: View {
 
-/// A subject that can be opened: displays, sound, DPI, scenes.
-///
-/// The header is a summary line that is worth reading with the card shut — the
-/// point is that the panel tells you the state of the machine before you touch
-/// anything.
-public struct KalfaCard<Content: View>: View {
-    public let title: String
-    public let summary: String?
-    public let symbol: String
-    public let role: KalfaRole
-    @Binding public var isExpanded: Bool
-    @ViewBuilder public let content: () -> Content
-
-    @State private var hovering = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    public init(
-        title: String,
-        summary: String?,
-        symbol: String,
-        role: KalfaRole,
-        isExpanded: Binding<Bool>,
-        @ViewBuilder content: @escaping () -> Content
-    ) {
-        self.title = title
-        self.summary = summary
-        self.symbol = symbol
-        self.role = role
-        self._isExpanded = isExpanded
-        self.content = content
-    }
-
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Button {
-                withAnimation(reduceMotion ? nil : KalfaDesign.motion) { isExpanded.toggle() }
-            } label: {
-                HStack(spacing: KalfaDesign.s) {
-                    Image(systemName: symbol)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(role.tint)
-                        .frame(width: 26, height: 26)
-                        .background(role.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius, style: .continuous))
-
-                    Text(title)
-                        .font(KalfaDesign.headingFont)
-
-                    Spacer(minLength: KalfaDesign.s)
-
-                    if let summary {
-                        Text(summary)
-                            .font(KalfaDesign.captionFont)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                }
-                .padding(KalfaDesign.m)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(title)
-            .accessibilityValue(summary ?? "")
-            .accessibilityHint(L10n.t(isExpanded ? "a11y.collapse" : "a11y.expand"))
-
-            if isExpanded {
-                VStack(alignment: .leading, spacing: KalfaDesign.s) {
-                    Divider().opacity(0.5)
-                    content()
-                }
-                .padding(.horizontal, KalfaDesign.m)
-                .padding(.bottom, KalfaDesign.m)
-                .transition(.opacity)
-            }
-        }
-        .kalfaSurface()
-        .overlay {
-            if hovering && !isExpanded {
-                RoundedRectangle(cornerRadius: KalfaDesign.cardRadius, style: .continuous)
-                    .fill(.primary.opacity(0.04))
-                    .allowsHitTesting(false)
-            }
-        }
-        .onHover { hovering = $0 }
-    }
-}
-
-// MARK: - Row
-
-/// One setting inside a card or the tools window: a label, what it is worth now,
-/// and the control that changes it.
-public struct KalfaRow<Control: View>: View {
-    public let title: String
-    public let value: String?
-    public let help: String
-    @ViewBuilder public let control: () -> Control
+    private let title: String
+    private let detail: String?
+    private let help: String
+    private let accessory: Accessory
+    private let control: Control
 
     public init(
         _ title: String,
-        value: String? = nil,
+        detail: String? = nil,
         help: String = "",
-        @ViewBuilder control: @escaping () -> Control
+        @ViewBuilder accessory: () -> Accessory,
+        @ViewBuilder control: () -> Control
     ) {
         self.title = title
-        self.value = value
+        self.detail = detail
         self.help = help
-        self.control = control
+        self.accessory = accessory()
+        self.control = control()
     }
 
     public var body: some View {
@@ -296,26 +402,94 @@ public struct KalfaRow<Control: View>: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(KalfaDesign.bodyFont)
-                if let value {
-                    Text(value)
+                if let detail {
+                    Text(detail)
                         .font(KalfaDesign.captionFont.monospacedDigit())
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
             }
+            accessory
             Spacer(minLength: KalfaDesign.s)
-            control()
+            control
         }
-        .frame(minHeight: 26)
+        .frame(minHeight: 28)
         .help(help)
     }
 }
 
-/// A compact toolbar control with a visible hover and pressed state.
-public struct KalfaToolbarButton: View {
-    public let systemName: String
-    public let help: String
-    public let action: () -> Void
+extension KalfaSettingRow where Accessory == EmptyView {
+    public init(
+        _ title: String,
+        detail: String? = nil,
+        help: String = "",
+        @ViewBuilder control: () -> Control
+    ) {
+        self.init(title, detail: detail, help: help, accessory: { EmptyView() }, control: control)
+    }
+}
+
+/// A switch the size the panel wants, with no label of its own.
+public struct KalfaSwitch: View {
+    private let isOn: Binding<Bool>
+    private let isEnabled: Bool
+
+    public init(_ isOn: Binding<Bool>, isEnabled: Bool = true) {
+        self.isOn = isOn
+        self.isEnabled = isEnabled
+    }
+
+    public var body: some View {
+        Toggle("", isOn: isOn)
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .disabled(!isEnabled)
+    }
+}
+
+// MARK: - Badge
+
+/// A short word that qualifies the thing next to it, in the tone of what it
+/// means.
+public struct KalfaBadge: View {
+
+    private let text: String
+    private let symbol: String?
+    private let tone: KalfaTone
+
+    public init(_ text: String, symbol: String? = nil, tone: KalfaTone = .neutral) {
+        self.text = text
+        self.symbol = symbol
+        self.tone = tone
+    }
+
+    public var body: some View {
+        HStack(spacing: 3) {
+            if let symbol {
+                Image(systemName: symbol)
+                    .font(.system(size: 9, weight: .semibold))
+            }
+            Text(text)
+                .font(KalfaDesign.captionFont.weight(.medium))
+                .lineLimit(1)
+        }
+        .foregroundStyle(tone.color)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(tone.color.opacity(0.14), in: Capsule())
+        .accessibilityElement(children: .combine)
+    }
+}
+
+// MARK: - Icon button
+
+/// A small borderless button that is only an icon, with a visible hover.
+public struct KalfaIconButton: View {
+
+    private let systemName: String
+    private let help: String
+    private let action: () -> Void
 
     @State private var hovering = false
 
@@ -329,45 +503,17 @@ public struct KalfaToolbarButton: View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 12, weight: .medium))
-                .frame(width: 27, height: 27)
+                .foregroundStyle(.secondary)
+                .frame(width: 26, height: 26)
                 .background(
-                    .primary.opacity(hovering ? 0.09 : 0.001),
+                    Color.primary.opacity(hovering ? 0.09 : 0.001),
                     in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius, style: .continuous)
                 )
-                .contentShape(RoundedRectangle(cornerRadius: KalfaDesign.controlRadius))
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .help(help)
         .accessibilityLabel(help)
-    }
-}
-
-/// The state line at the top of the panel: one chip per thing worth knowing at a
-/// glance, so the machine's condition is legible before any control is touched.
-public struct KalfaChip: View {
-    public let text: String
-    public let symbol: String
-    public let tint: Color?
-
-    public init(_ text: String, symbol: String, tint: Color? = nil) {
-        self.text = text
-        self.symbol = symbol
-        self.tint = tint
-    }
-
-    public var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: symbol)
-                .font(.system(size: 9, weight: .semibold))
-            Text(text)
-                .font(KalfaDesign.captionFont)
-                .lineLimit(1)
-        }
-        .foregroundStyle(tint ?? .secondary)
-        .padding(.horizontal, 7)
-        .padding(.vertical, 3)
-        .background((tint ?? .secondary).opacity(0.12), in: Capsule())
-        .accessibilityElement(children: .combine)
     }
 }
