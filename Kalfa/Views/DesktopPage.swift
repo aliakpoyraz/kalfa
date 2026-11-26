@@ -9,12 +9,15 @@ struct DesktopPage: View {
     private let dockLock = DockLockService.shared
 
     @State private var ejectMessage: String?
-    @State private var showsHiddenFiles = SystemTweaks.showsHiddenFiles
-    @State private var showsAllExtensions = SystemTweaks.showsAllExtensions
-    @State private var screenshotShadow = SystemTweaks.screenshotShadow
-    @State private var dockIsInstant = SystemTweaks.dockIsInstant
-    @State private var screenshotFormat = SystemTweaks.screenshotFormat
-    @State private var screenshotFolder = SystemTweaks.screenshotFolder
+    // Plain defaults, filled in by `refreshTweakState` once the page is up. A
+    // `@State` default is evaluated every time the view struct is built, so
+    // reading the real values here meant reading them on every redraw.
+    @State private var showsHiddenFiles = false
+    @State private var showsAllExtensions = false
+    @State private var screenshotShadow = true
+    @State private var dockIsInstant = false
+    @State private var screenshotFormat = "png"
+    @State private var screenshotFolder = URL(fileURLWithPath: NSHomeDirectory() + "/Desktop")
 
     var body: some View {
         Form {

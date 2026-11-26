@@ -3,6 +3,20 @@
 Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/),
 sürümleme [SemVer](https://semver.org/lang/tr/).
 
+## [1.2.2] — 2026-11-27
+
+### Düzeltildi
+- **Masaüstü ve Ağ sayfaları açılırken uygulama çökebiliyordu.** Sayfa kurulurken ana iş
+  parçacığında `defaults` ve `networksetup` komutlarının bitmesi bekleniyordu; bekleme
+  çalışma döngüsünü döndürdüğü için SwiftUI kendi güncellemesinin içine yeniden
+  giriyordu. Komut bekleme artık döngüyü döndürmüyor, ayar okumaları süreç başlatmadan
+  yapılıyor, DNS arka planda okunuyor.
+- **IPv6'sız ağlarda DNS seçimi hiçbir şey yapmıyordu.** `networksetup` çıktısındaki
+  "IPv6 IP address: none" satırı yüzünden bağlı Wi-Fi bağlantısız sayılıyor, seçilen DNS
+  hiçbir servise yazılmıyordu.
+- Kenar çubuğu, sayfa dışarıdan (adres ya da komut paletiyle) değiştiğinde aynı seçimi
+  yeniden yayınlıyordu.
+
 ## [1.2.1] — 2026-11-27
 
 ### Düzeltildi

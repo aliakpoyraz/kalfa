@@ -44,43 +44,54 @@ final class NetworkTools {
     private(set) var dns: DNSChoice = .automatic
     private(set) var dnsDetail: String = ""
 
-    private init() {
-        refreshDNS()
-    }
+    /// Nothing is read here. The first use of `shared` is usually a view being
+    /// built, and that is no place to run four `networksetup` commands; the page
+    /// asks for a refresh once it is on screen.
+    private init() {}
 
     // MARK: DNS
 
+    /// Reads the current DNS off the main thread and publishes it when it is in.
     func refreshDNS() {
-        let services = activeServices()
-        guard let first = services.first else {
-            dns = .automatic
-            dnsDetail = ""
-            return
+        Task {
+            let (choice, detail) = await Task.detached { Self.readDNS() }.value
+            dns = choice
+            dnsDetail = detail
         }
+    }
+
+    private nonisolated static func readDNS() -> (DNSChoice, String) {
+        guard let first = activeServices().first else { return (.automatic, "") }
         let output = Shell.result("/usr/sbin/networksetup", ["-getdnsservers", first])
         let servers = output
             .split(whereSeparator: \.isNewline)
             .map(String.init)
             .filter { $0.first?.isNumber == true }
 
-        dns = DNSChoice.allCases.first { $0.servers == servers } ?? (servers.isEmpty ? .automatic : .automatic)
-        dnsDetail = servers.isEmpty ? L10n.t("dns.fromRouter") : servers.joined(separator: ", ")
+        let choice = DNSChoice.allCases.first { $0.servers == servers } ?? .automatic
+        return (choice, servers.isEmpty ? L10n.t("dns.fromRouter") : servers.joined(separator: ", "))
     }
 
     /// Applies to every service that is actually up, so the setting survives
     /// moving between Wi-Fi and a cable the way the proxy already does.
     func setDNS(_ choice: DNSChoice) {
-        for service in activeServices() {
-            let arguments = ["-setdnsservers", service] + (choice.servers ?? ["empty"])
-            _ = Shell.result("/usr/sbin/networksetup", arguments)
-        }
+        // Shown at once; the commands run behind it and the read-back corrects
+        // the picker if any of them did not take.
         dns = choice
-        refreshDNS()
+        Task {
+            await Task.detached {
+                for service in Self.activeServices() {
+                    let arguments = ["-setdnsservers", service] + (choice.servers ?? ["empty"])
+                    _ = Shell.result("/usr/sbin/networksetup", arguments)
+                }
+            }.value
+            refreshDNS()
+        }
     }
 
     /// Only the services with a working connection; setting DNS on a disconnected
     /// one succeeds silently and then surprises the next time it comes up.
-    private func activeServices() -> [String] {
+    private nonisolated static func activeServices() -> [String] {
         let listing = Shell.result("/usr/sbin/networksetup", ["-listallnetworkservices"])
         let names = listing
             .split(whereSeparator: \.isNewline)
@@ -89,23 +100,12 @@ final class NetworkTools {
 
         return names.filter { service in
             let info = Shell.result("/usr/sbin/networksetup", ["-getinfo", service])
-            return info.contains("IP address:") && !info.contains("IP address: none")
+            // The line has to *start* with it. Searching the whole text also
+            // matched "IPv6 IP address: none", which every IPv4-only network
+            // prints, and so counted a working Wi-Fi as disconnected.
+            return info.split(whereSeparator: \.isNewline).contains { line in
+                line.hasPrefix("IP address: ") && line != "IP address: none"
+            }
         }
-    }
-}
-
-/// Small wrapper so the tools above read as one line each.
-enum Shell {
-    static func result(_ path: String, _ arguments: [String]) -> String {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: path)
-        process.arguments = arguments
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-        do { try process.run() } catch { return "" }
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        return String(decoding: data, as: UTF8.self)
     }
 }

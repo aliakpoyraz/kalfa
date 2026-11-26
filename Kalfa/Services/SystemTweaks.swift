@@ -74,18 +74,37 @@ enum SystemTweaks {
 
     // MARK: defaults(1)
 
+    // Reads go through CFPreferences, not `defaults read`. It is the same
+    // store, including changes made from a terminal, without starting a process
+    // every time a view asks what a switch is set to.
+
+    private static func value(_ domain: String, _ key: String) -> Any? {
+        CFPreferencesAppSynchronize(domain as CFString)
+        return CFPreferencesCopyAppValue(key as CFString, domain as CFString)
+    }
+
     private static func string(_ domain: String, _ key: String) -> String? {
-        let result = run("/usr/bin/defaults", ["read", domain, key])
-        let value = result.trimmingCharacters(in: .whitespacesAndNewlines)
-        return value.isEmpty ? nil : value
+        switch value(domain, key) {
+        case let text as String: return text.isEmpty ? nil : text
+        case let number as NSNumber: return number.stringValue
+        default: return nil
+        }
     }
 
     private static func bool(_ domain: String, _ key: String) -> Bool {
-        ["1", "true", "YES"].contains(string(domain, key) ?? "0")
+        switch value(domain, key) {
+        case let number as NSNumber: return number.boolValue
+        case let text as String: return ["1", "true", "yes"].contains(text.lowercased())
+        default: return false
+        }
     }
 
     private static func doubleValue(_ domain: String, _ key: String) -> Double? {
-        string(domain, key).flatMap(Double.init)
+        switch value(domain, key) {
+        case let number as NSNumber: return number.doubleValue
+        case let text as String: return Double(text)
+        default: return nil
+        }
     }
 
     private static func write(_ domain: String, _ key: String, _ value: String, type: String? = nil) {
@@ -108,19 +127,6 @@ enum SystemTweaks {
 
     @discardableResult
     private static func run(_ path: String, _ arguments: [String]) -> String {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: path)
-        process.arguments = arguments
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-        do {
-            try process.run()
-        } catch {
-            return ""
-        }
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        return String(decoding: data, as: UTF8.self)
+        Shell.result(path, arguments)
     }
 }

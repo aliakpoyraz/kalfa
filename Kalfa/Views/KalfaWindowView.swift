@@ -110,7 +110,13 @@ struct KalfaWindowView: View {
         NavigationSplitView {
             List(selection: Binding(
                 get: { router.section },
-                set: { router.section = $0 ?? router.section }
+                // Only on a real change. The list also calls this while it is
+                // being updated to match a section chosen from outside — a URL,
+                // the palette — and publishing from inside that update is what
+                // SwiftUI warns about.
+                set: { new in
+                    if let new, new != router.section { router.section = new }
+                }
             )) {
                 ForEach(KalfaWindow.Section.groups, id: \.key) { group in
                     Section(L10n.t(group.key)) {
@@ -379,5 +385,6 @@ private struct NetworkPage: View {
         .padding(.horizontal, KalfaDesign.pageInset)
         .padding(.vertical, KalfaDesign.m)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear { network.refreshDNS() }
     }
 }
