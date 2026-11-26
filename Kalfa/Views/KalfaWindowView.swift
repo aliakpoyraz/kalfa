@@ -264,7 +264,7 @@ private struct DisplaysPage: View {
                 .pickerStyle(.segmented)
                 LabeledContent(L10n.t("brightness.reset")) {
                     Text(HotkeyService.shared.label(for: .resetDimming))
-                        .font(KalfaDesign.bodyFont.monospaced())
+                        .font(KalfaDesign.bodyFont)
                         .foregroundStyle(.secondary)
                     Button(L10n.t("brightness.lift")) { brightness.resetDimming() }
                         .disabled(!brightness.isDimming)
@@ -349,8 +349,11 @@ private struct NetworkPage: View {
     private let network = NetworkTools.shared
 
     var body: some View {
-        VStack(alignment: .leading, spacing: KalfaDesign.l) {
-            VStack(alignment: .leading, spacing: KalfaDesign.s) {
+        VStack(alignment: .leading, spacing: KalfaDesign.m) {
+            // No `fixedSize` on the text here. This page does not scroll, and a
+            // text told to take its ideal height inside a split view that is
+            // still measuring itself grows until it pushes the window apart.
+            HStack(spacing: KalfaDesign.m) {
                 Text(L10n.t("dns"))
                     .font(KalfaDesign.headingFont)
                 Picker("", selection: Binding(get: { network.dns }, set: { network.setDNS($0) })) {
@@ -361,15 +364,17 @@ private struct NetworkPage: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .fixedSize()
-                Text("\(network.dnsDetail)  \(L10n.t("dns.help"))").kalfaFootnote()
+                Text(network.dnsDetail)
+                    .font(KalfaDesign.captionFont.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
             }
+            .help(L10n.t("dns.help"))
 
-            VStack(alignment: .leading, spacing: KalfaDesign.s) {
-                Text(L10n.t("tab.dpi"))
-                    .font(KalfaDesign.headingFont)
-                EzDPIPanel()
-                EzDPISettings()
-            }
+            EzDPIPanel()
+            EzDPISettings()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .padding(.horizontal, KalfaDesign.pageInset)
         .padding(.vertical, KalfaDesign.m)

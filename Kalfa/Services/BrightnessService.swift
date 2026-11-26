@@ -2,6 +2,7 @@ import AppKit
 import CoreGraphics
 import Foundation
 import Observation
+import KalfaUI
 
 /// One brightness scale for every display, whatever drives its backlight.
 ///
@@ -37,7 +38,7 @@ final class BrightnessService {
     }
 
     /// The bottom of the scale, a third of the way below zero.
-    static let lowest: Double = -50
+    static let lowest = BrightnessScale.lowest
     /// Share of the signal that always gets through.
     static let floorChoices: [Double] = [0.4, 0.3, 0.2]
 
@@ -145,12 +146,8 @@ final class BrightnessService {
         reapply()
     }
 
-    /// A saved darkening only comes back while the backlight is still at the
-    /// bottom. If the brightness was raised some other way in the meantime, the
-    /// person has plainly asked for a brighter screen.
     private func restored(hardware: Double, dim: Double?) -> Double {
-        guard allowsBelowZero, let dim, dim < 0, hardware <= 1.5 else { return hardware }
-        return max(dim, Self.lowest)
+        BrightnessScale.restored(hardware: hardware, savedDim: dim, allowsBelowZero: allowsBelowZero)
     }
 
     // MARK: Changing
@@ -237,11 +234,7 @@ final class BrightnessService {
     /// Share of the signal let through for a display at its current level.
     private func factor(for screen: ScreenInfo) -> Double {
         guard let level = levels[screen.uuid] else { return 1 }
-        if backends[screen.uuid] == .software {
-            return floor + (1 - floor) * level / 100
-        }
-        guard level < 0 else { return 1 }
-        return 1 - (level / Self.lowest) * (1 - floor)
+        return BrightnessScale.factor(level: level, floor: floor, softwareOnly: backends[screen.uuid] == .software)
     }
 
     private func reapply() {
@@ -270,13 +263,11 @@ final class BrightnessService {
     }
 
     private func raw(fromPercent percent: Double, _ screen: ScreenInfo) -> Double {
-        let low = minimumRaw(screen)
-        return low + (1 - low) * percent / 100
+        BrightnessScale.raw(fromPercent: percent, minimum: minimumRaw(screen))
     }
 
     private func percent(fromRaw raw: Double, _ screen: ScreenInfo) -> Double {
-        let low = minimumRaw(screen)
-        return min(max((raw - low) / (1 - low), 0), 1) * 100
+        BrightnessScale.percent(fromRaw: raw, minimum: minimumRaw(screen))
     }
 
     /// DDC is a slow serial bus: a write per slider tick makes monitors stutter
@@ -312,7 +303,7 @@ final class BrightnessService {
                   let raw = SystemBrightness.get(screen.displayID)
             else { continue }
             let hardware = percent(fromRaw: raw, screen)
-            guard hardware > 1.5 else { continue }
+            guard hardware > BrightnessScale.bottomTolerance else { continue }
             levels[screen.uuid] = hardware
             persist(hardware, for: screen.uuid, .system)
             Dimmer.apply(1, to: screen, method: method)

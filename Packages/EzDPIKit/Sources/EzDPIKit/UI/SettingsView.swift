@@ -53,7 +53,7 @@ struct GeneralTab: View {
                         }
                        ))
                 Text(L10n.t("dpi.settings.few-apps-like-discord"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
             } header: {
                 Text(L10n.t("dpi.settings.compatibility"))
             }
@@ -75,7 +75,7 @@ struct GeneralTab: View {
                         .multilineTextAlignment(.trailing)
                     }
                     Text(L10n.t("dpi.settings.default-18080-common-ports"))
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
                     Button(L10n.t("dpi.settings.apply")) { supervisor.applyConfigChange() }
                 }
             } header: {
@@ -85,13 +85,13 @@ struct GeneralTab: View {
             Section {
                 if supervisor.activeServices.isEmpty {
                     Text(L10n.t("dpi.settings.no-active-network-found"))
-                        .font(.caption).foregroundStyle(.orange)
+                        .font(KalfaDesign.captionFont).foregroundStyle(KalfaTone.warn.color)
                 } else {
                     Text(L10n.t("dpi.settings.connected-via", supervisor.activeServices.joined(separator: ", ")))
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
                 }
                 Text(L10n.t("dpi.settings.settings-follow-when-switch"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
             } header: {
                 Text(L10n.t("dpi.settings.status"))
             }

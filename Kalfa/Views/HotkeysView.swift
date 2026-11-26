@@ -40,7 +40,7 @@ private struct HotkeyRow: View {
                 isRecording ? stopRecording() : startRecording()
             } label: {
                 Text(isRecording ? L10n.t("hotkey.recording") : hotkeys.label(for: action))
-                    .font(KalfaDesign.bodyFont.monospaced())
+                    .font(KalfaDesign.bodyFont)
                     .frame(minWidth: 64)
                     .padding(.horizontal, KalfaDesign.s)
                     .padding(.vertical, KalfaDesign.xs)

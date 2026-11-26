@@ -35,7 +35,7 @@ struct DesktopPage: View {
                                     .font(KalfaDesign.bodyFont)
                                     .lineLimit(1)
                                 Text(HotkeyService.shared.label(for: slot.hotkey))
-                                    .font(KalfaDesign.captionFont.monospaced())
+                                    .font(KalfaDesign.captionFont)
                                     .foregroundStyle(.tertiary)
                             }
                             .frame(maxWidth: .infinity)

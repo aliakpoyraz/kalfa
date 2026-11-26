@@ -2,10 +2,11 @@
 
 **macOS menü çubuğundan ekranını, sesini, bakımını ve engellenen siteleri tek yerden yönet.**
 
-Kalfa, menü çubuğunda yaşayan bir Mac aletidir. Ekran çözünürlüğü ve HiDPI, monitör
-parlaklığı, ses cihazları, mikrofon susturma, uyanık tutma, sunum modu, pencere
-yerleştirme, disk temizliği, uygulama kaldırma, kesintisiz fare kaydırması ve
-engellenen sitelere erişim — hepsi aynı panelde.
+Kalfa, menü çubuğunda yaşayan bir Mac aletidir. Ekran çözünürlüğü ve HiDPI, her ekranda
+parlaklık (monitörün kendi izin verdiğinden daha karanlığa kadar), ses cihazları,
+mikrofon susturma, uyanık tutma, sunum modu, pencere yerleştirme, disk temizliği,
+uygulama kaldırma, kesintisiz fare kaydırması ve engellenen sitelere erişim: hepsi tek
+panelde, ayarları tek pencerede.
 
 [English](README.en.md) · macOS 14+ · Swift 6 · MIT
 
@@ -20,8 +21,13 @@ zip'i aç, `Kalfa.app`'i Uygulamalar klasörüne taşı. İlk açılış için
 [bu adıma](#ilk-açılış-gatekeeper) bak.
 
 <p align="center">
-  <img src="docs/gorseller/panel.png" width="420" alt="Kalfa menü çubuğu paneli">
+  <img src="docs/gorseller/panel.png" width="340" alt="Kalfa menü çubuğu paneli">
+  <img src="docs/gorseller/panel-karartma.png" width="340" alt="Parlaklık sıfırın altında: ek karartma">
 </p>
+
+Panel bir kumandadır: üstte parlaklık ve ses, ortada altı anahtar, altta içinde açılan
+üç konu. Sağdaki görüntüde parlaklık sıfırın altına çekilmiş; ekranın ışığı en düşükte,
+görüntü ayrıca karartılıyor.
 
 ---
 
@@ -29,7 +35,8 @@ zip'i aç, `Kalfa.app`'i Uygulamalar klasörüne taşı. İlk açılış için
 <summary><b>İçindekiler</b></summary>
 
 - [Neden var](#neden-var)
-- [Ne yapar](#ne-yapar) — [Ekran](#ekran) · [Ses](#ses) · [Sistem](#sistem) ·
+- [Ne yapar](#ne-yapar) — [Ekran](#ekran) · [Parlaklık](#parlaklık) · [Ses](#ses) ·
+  [Masaüstü](#masaüstü) · [Güç](#güç) ·
   [Bakım](#bakım) · [DPI](#dpi--engellenen-siteler) · [Sağlık](#sağlık) ·
   [Kaydırma](#kesintisiz-fare-kaydırması) · [Dock konumu](#dock-konumu) ·
   [Komut paleti](#komut-paleti)
@@ -87,15 +94,46 @@ yerde, izinler bir kez verilir.
   modu bulup uygular. Ayrıntı: [Neden özel API](#neden-özel-api-kullanıyor).
 - **Onaylı geçiş.** Riskli bir mod uygulandığında 15 saniyelik geri sayım başlar.
   Ekran okunmaz hâle gelirse hiçbir şeye dokunmadan eski moda döner.
-- **DDC parlaklık ve kontrast.** Harici monitörün kendi menüsüne girmeden.
+- **Parlaklık ve kontrast.** Her ekranda, harici monitörün kendi menüsüne girmeden.
+  Ayrıntısı [aşağıda](#parlaklık).
 - **Kablo sinyali.** Bağlantının renk biçimi ve bit derinliği (örn. 10-bit YCbCr 4:2:2).
   Salt okunur — macOS bunu seçmek için desteklenen bir yol sunmuyor — ama metnin neden
   yumuşadığını açıklayan ikinci sebep çoğu zaman budur.
 - **Profiller.** Ekran düzenine göre kaydedilir; o düzen bağlandığında kendiliğinden
   uygulanabilir. İstersen ses çıkışı, DPI modu ve uyanık tutma durumu da profile girer.
 
+### Parlaklık
+
+Bağlı her ekranın tek bir kaydırıcısı vardır ve ışığı kim yönetiyorsa Kalfa oradan
+konuşur:
+
+| Ekran | Yol |
+|---|---|
+| MacBook'un kendi ekranı, Apple ekranları | Sistemin kendi parlaklığı (parlaklık tuşlarıyla aynı değer) |
+| Harici monitör | DDC/CI ile monitörün kendi parlaklığı |
+| İkisine de yanıt vermeyen ekran | Yalnız görüntü karartılır; bu, kaydırıcının altında yazar |
+
+**Sıfırın altı.** Kaydırıcının sol üçte biri çizgilidir. Işık en düşüğe indikten sonra
+kaydırıcı o bölgeye girer ve görüntünün kendisi karartılır; monitörün menüsünün izin
+verdiğinden daha karanlık bir ekran böyle elde edilir. Gece, en kısık ayarı hâlâ fazla
+gelen bir monitör içindir.
+
+- **Alt sınır vardır.** Ekran hiçbir zaman seçtiğin en düşük görünürlüğün (%40, %30 ya
+  da %20) altına inmez; kaydırıcıyı geri çekemeyeceğin bir siyaha ulaşılamaz.
+- **Kendiliğinden geri gelir, kendiliğinden kalkar.** Uyku ve ekran değişiminden sonra
+  karartma yeniden kurulur. Kalfa kapanırsa ya da çökerse ekran normale döner. Işığı
+  parlaklık tuşlarıyla yükseltirsen karartma da kalkar.
+- **Acil çıkış:** <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> bütün karartmayı
+  kaldırır.
+- **İki yöntem.** Varsayılan, ekranın renk tablosunu ölçekler: imleci de karartır,
+  ekran görüntülerine ve ekran paylaşımına yansımaz. Bir ekranda etkisi olmazsa
+  Ekran sayfasından *karartma penceresi*ne geçilir.
+- <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>↓</kbd> / <kbd>↑</kbd> imlecin olduğu
+  ekranın parlaklığını bir kademe değiştirir, sıfırda durmaz.
+
 ### Ses
 
+- Panelde ses kaydırıcısı ve çıkış seçici; ayrıntı pencerenin Ses sayfasında.
 - Çıkış ve giriş cihazını menüden seç, seviyeleri ayarla.
 - **Cihaz başına ses hafızası:** kulaklığa geri döndüğünde bıraktığın seviyeyle açılır.
 - **Gerçek sistem geneli mikrofon susturma.** Uygulamanın kendi susturması değil,
@@ -103,19 +141,25 @@ yerde, izinler bir kez verilir.
   menü çubuğunda gösterge belirir.
 - **Uygulama başına ses karıştırıcı** (macOS 14.2+).
 
-### Sistem
+### Masaüstü
 
-<img src="docs/gorseller/sistem.png" width="720" alt="Sistem bölümü">
+<img src="docs/gorseller/masaustu.png" width="720" alt="Masaüstü bölümü">
+
+- **Pencere yerleştirme** — sol/sağ/üst/alt yarı, ortala, doldur; klavye kısayollarıyla.
+- **Dock konumu** — Dock'un hangi ekranda duracağı. Ayrıntısı [aşağıda](#dock-konumu).
+- **Kesintisiz kaydırma** — tek anahtar.
+- **Gizli anahtarlar** — Finder gizli dosyalar ve uzantılar, ekran görüntüsü biçimi,
+  klasörü ve gölgesi, Dock gecikmesi.
+- **Harici diskleri çıkar.**
+
+### Güç
+
+<img src="docs/gorseller/guc.png" width="720" alt="Güç bölümü">
 
 - **Uyanık tut** — süreli ya da kapatana dek; "şu uygulamalar açıkken uyuma" kuralıyla.
 - **Sunum modu** — Dock'u gizler, masaüstü simgelerini kaldırır, diğer ekranları karartır,
   uykuyu engeller. Kapatınca ve uygulamadan çıkınca hepsi geri gelir.
 - **Zamanlayıcı** — belirli süre sonra uyut, ekranı kapat ya da kapat.
-- **Pencere yerleştirme** — sol/sağ/üst/alt yarı, ortala, doldur; klavye kısayollarıyla.
-- **DNS** — bağlı tüm ağ servislerine uygulanır, Wi-Fi'dan kabloya geçince seninle gelir.
-- **Harici diskleri çıkar**, **gizli anahtarlar** (Finder gizli dosyalar, ekran görüntüsü
-  biçimi ve klasörü, Dock gecikmesi), **klavye kısayolları**.
-- **Dock konumu** — Dock'un hangi ekranda duracağı. Ayrıntısı aşağıda.
 
 ### Bakım
 
@@ -158,7 +202,10 @@ yerde, izinler bir kez verilir.
 
 ### DPI — engellenen siteler
 
-<img src="docs/gorseller/dpi.png" width="720" alt="DPI bölümü">
+<img src="docs/gorseller/ag.png" width="720" alt="Ağ bölümü: DNS ve DPI">
+
+Pencerenin **Ağ** sayfasındadır; aynı sayfada **DNS** seçimi de durur (bağlı tüm ağ
+servislerine uygulanır, Wi-Fi'dan kabloya geçince seninle gelir).
 
 Türkiye'de ve benzeri yerlerde bazı siteler TLS el sıkışması sırasındaki sunucu adına
 bakılarak engellenir. Kalfa yerel bir HTTP proxy'si çalıştırır ve **yalnızca senin
@@ -197,8 +244,8 @@ macOS, imleç hangi ekranın Dock kenarına bastırırsa Dock'u o ekrana taşır
 monitörün altındaysa bu kenar laptopun alt kenarıdır ve imleç aşağı indikçe Dock oraya
 kaçar. "Ekranların ayrı alanları var" ayarını kapatmak da artık işe yaramıyor.
 
-Panelde **Dock kilidi** düğmesi üç mod arasında geçer (Sistem > Gizli anahtarlar'da da
-seçilir):
+Panelde **Dock** anahtarı açıp kapatır; sağ tıklayınca modlar çıkar (Masaüstü
+sayfasında da seçilir):
 
 | Mod | Ne yapar |
 |---|---|
@@ -224,7 +271,7 @@ Türkçe karakterden bağımsızdır: "cozunurluk" yazınca "çözünürlük" bu
 
 ## Klavye kısayolları
 
-Hepsi sistem genelidir ve **Sistem → Klavye kısayolları**'ndan değiştirilebilir ya da kapatılabilir. Başka bir
+Hepsi sistem genelidir ve **Ayarlar → Klavye kısayolları**'ndan değiştirilebilir ya da kapatılabilir. Başka bir
 uygulama aynı tuşu kaptıysa Sağlık sayfası bunu söyler.
 
 | Kısayol | Ne yapar |
@@ -235,6 +282,8 @@ uygulama aynı tuşu kaptıysa Sağlık sayfası bunu söyler.
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>↑</kbd> / <kbd>↓</kbd> | Üst / alt yarı |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>C</kbd> | Ortala |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>↩</kbd> | Ekranı doldur |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>↓</kbd> / <kbd>↑</kbd> | İmlecin olduğu ekranın parlaklığını azalt / artır |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> | Ek karartmayı kaldır |
 
 ---
 
@@ -269,11 +318,13 @@ listelerini sıfırlamak demekti.
 | [Mos](https://github.com/Caldis/Mos) | CC BY-NC | Kaydırma **davranışı**: çentik başına alt sınır, iki aşamalı süzgeç, girdi önceliği, kaydırma fazı göndermeme | **Tek satır kod kopyalanmadı.** Mos ticari kullanıma kapalı; kod alınsaydı Kalfa MIT olamazdı |
 | [mole](https://github.com/tw93/mole) | GPL-3.0 | Bakım **özellik kümesi**: canlı izleme, disk analizi, kaldırıcı, temizlik | **Kod, dize ve kural listesi kopyalanmadı**, davranış sıfırdan yazıldı. Aksi hâlde Kalfa GPL'e geçmek zorunda kalırdı |
 | [DockAnchor](https://github.com/bwya77/DockAnchor) | MIT | Dock kilidinin yöntemi: oturum düzeyinde olay dinleyici, kenar şeridinde olayı düşürmek | Kod kopyalanmadı; geçit/duvar ayrımı ve kenara dokunma modu Kalfa'nın |
+| [MonitorControl](https://github.com/MonitorControl/MonitorControl) | MIT | Monitörün ışığı bittikten sonra görüntüyü karartarak devam etme fikri | Kod kopyalanmadı; tek ölçek, alt sınır ve geri gelme kuralı Kalfa'nın |
 | [SpoofDPI](https://github.com/xvzc/SpoofDPI) | Apache-2.0 | Parçalama yaklaşımının kendisi | Eskiden ikili olarak pakete gömülüydü; **24.09.2026'da çıkarıldı**, yerine Kalfa'nın kendi motoru yazıldı |
 
 Fikir düzeyinde borçlu olunan diğerleri: pencere yerleştirme için **Rectangle** ve
 **Magnet**, uyanık tutma için **Amphetamine** ve **KeepingYouAwake**, komut paleti için
-**Raycast**, panelin karo/kart dili için Apple'ın kendi **Denetim Merkezi**. Hiçbirinin
+**Raycast**, panelin kaydırıcı ve anahtar dili için Apple'ın kendi **Denetim Merkezi**,
+pencerenin düzeni için **Sistem Ayarları**. Hiçbirinin
 kodu kullanılmadı.
 
 ### Lisans neden önemliydi
@@ -365,10 +416,15 @@ Büyük ihtimalle iki Kalfa birden çalışıyor (ör. biri /Applications'ta, bi
 gönderir. Birini kapatıp sil.
 
 **DPI açık ama site hâlâ açılmıyor.**
-DPI → Test bölümünde adresi dene: önce doğrudan, sonra Kalfa üzerinden bağlanıp sonucu
+Ağ → Test bölümünde adresi dene: önce doğrudan, sonra Kalfa üzerinden bağlanıp sonucu
 cümleyle söyler. Kalfa ile de açılmıyorsa DPI ayarlarında **Standart** yerine
 **Alternatif 1** (rastgele kesim) ya da **Alternatif 2** (TLS kaydı parçalama) dene. IP düzeyinde engellenen
 siteleri hiçbir parçalama yöntemi açamaz; o durumda VPN gerekir.
+
+**Ekran çok karanlık kaldı.**
+<kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> ek karartmayı kaldırır; Kalfa'dan
+çıkmak da aynı işi görür. Ekran hiçbir durumda seçtiğin en düşük görünürlüğün altına
+inmez. Karartma hiç görünmüyorsa Ekran sayfasında yöntemi *karartma penceresi* yap.
 
 **Harici monitörde yazılar yumuşak.**
 İki ayrı sebebi var, Ekran bölümü ikisini de gösterir: (1) küsuratlı ölçekleme — mod
@@ -394,13 +450,17 @@ Proxy'ler'den kapat.
 /Applications/Kalfa.app/Contents/MacOS/Kalfa --dump
 ```
 
-Bağlı ekranları, kullanılan modu, kablo sinyalini, DDC okumasını ve pencere sunucusunun
-mod listesini yazdırır.
+Bağlı ekranları, kullanılan modu, kablo sinyalini, DDC okumasını, parlaklığın hangi
+yoldan ayarlanacağını ve pencere sunucusunun mod listesini yazdırır.
 
 **URL şeması** — Kısayollar, Raycast ya da kabuk betiğinden:
 
 ```bash
-open "kalfa://window?section=dpi"     # pencereyi DPI sayfasında aç
+open "kalfa://window?section=network" # pencereyi Ağ sayfasında aç
+                                      # (displays, audio, desktop, power, upkeep,
+                                      #  network, health, settings)
+open "kalfa://brightness?level=-20"   # imlecin olduğu ekran: sıfırın 20 altı
+open "kalfa://brightness?reset"       # ek karartmayı kaldır
 open "ezdpi://on"                     # DPI'yı sürekli açık moda al
 open "ezdpi://auto"                   # kural kararı versin
 open "ezdpi://relaunch?bundle=com.hnc.Discord"
@@ -412,13 +472,20 @@ open "ezdpi://relaunch?bundle=com.hnc.Discord"
 
 ```
 Kalfa/                  uygulama hedefi — panel, pencere, servisler
-Packages/KalfaUI/       paylaşılan görsel dil (karo/kart/satır) ve dize arama
+Packages/KalfaUI/       paylaşılan görsel dil (kaydırıcı, anahtar, satır, rozet),
+                        parlaklık ölçeğinin hesabı ve dize arama
 Packages/EzDPIKit/      DPI yarısı: proxy motoru, kural değerlendirme, arayüzü
 Packages/UpkeepKit/     bakım yarısı: ölçüm, disk taraması, temizlik, kaldırma
 ```
 
-Üç yüzey vardır ve bir şey yalnız birinde bulunur: **panel** (günlük anahtarlar),
-**pencere** (oturup yapılan işler), **komut paleti** (adıyla ulaşma).
+Üç yüzey vardır ve bir şey yalnız birinde bulunur: **panel** (günde birkaç kez
+dokunulan kaydırıcı ve anahtarlar), **pencere** (bir kez ayarlanıp bırakılanlar, macOS
+Ayarlar düzeninde), **komut paleti** (adıyla ulaşma).
+
+Görsel dilin dört kuralı `KalfaDesign.swift`'in başında yazar: renk konuyu değil durumu
+anlatır, boşluk ve yazı tek ölçekten gelir, her seçim türünün tek kontrolü vardır.
+`scripts/check-design.sh` görünümlerde ölçeğin dışına çıkan boşluk, yazı stili ya da
+rengi yakalar; CI'da derlemeden önce koşar.
 
 ### Neden özel API kullanıyor
 
@@ -439,7 +506,10 @@ ret sebebidir) ve macOS'un gelecek bir sürümünde bu çağrı değişebilir.
 ./build.sh            # Release derlemesi → dist/Kalfa.app
 ./build.sh Debug      # hata ayıklama derlemesi
 
+./scripts/check-design.sh   # görünümler tasarım ölçeğine uyuyor mu
+
 # Testler (ağ gerektirenler dahil)
+(cd Packages/KalfaUI   && swift test)    # parlaklık ölçeği: alt sınır, geri gelme
 (cd Packages/UpkeepKit && swift test)    # güvenlik kapıları
 (cd Packages/EzDPIKit  && swift test)    # proxy, parçalama, DoH
 ```
@@ -460,7 +530,10 @@ ret sebebidir) ve macOS'un gelecek bir sürümünde bu çağrı değişebilir.
   pencere sunucusunun özel mod listesi, olay dinleyicisi, sistem proxy'si, ev dizini
   genelinde tarama ve çöpe taşıma, DDC, yönetici yetkisiyle betik. Bu kategorideki
   uygulamaların hiçbiri orada değildir.
-- Sanal ekran, gamma/ICC yönetimi, çentik gizleme.
+- Sanal ekran, renk profili (ICC) yönetimi, çentik gizleme. Renk tablosuna yalnızca ek
+  karartma için dokunulur.
+- Parlaklık tuşlarını (F1/F2) harici monitöre yönlendirmek. Bunun için medya tuşlarını
+  olay dinleyicisiyle yakalamak gerekir; Kalfa onun yerine ayrı bir kısayol verir.
 - Root gerektiren DPI teknikleri.
 - "RAM temizleme" ve benzeri yalancı hızlandırıcılar.
 

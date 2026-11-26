@@ -29,16 +29,16 @@ struct WhenTab: View {
                     VStack(alignment: .leading, spacing: 1) {
                         HStack {
                             Image(systemName: rule.enabled ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(rule.enabled ? .green : .secondary)
+                                .foregroundStyle(rule.enabled ? KalfaTone.ok.color : .secondary)
                             Text(rule.name)
                         }
                         Text(describe(rule.trigger))
-                            .font(.caption2).foregroundStyle(.secondary)
+                            .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
                     }
                     .tag(rule.id)
                 }
             }
-            HStack(spacing: 6) {
+            HStack(spacing: KalfaDesign.s) {
                 Menu {
                     Button(L10n.t("dpi.when.while-app-open")) { add(.app(bundleIDs: [])) }
                     Button(L10n.t("dpi.when.on-certain-network")) { add(.network(ssids: [], serviceNames: [])) }
@@ -54,7 +54,7 @@ struct WhenTab: View {
                     .disabled(selectedIndex == nil)
                 Spacer()
             }
-            .padding(6)
+            .padding(KalfaDesign.s)
         }
     }
 
@@ -109,7 +109,7 @@ struct WhenTab: View {
                 }
                 Button(L10n.t("dpi.when.choose-app")) { pickApp(at: index) }
                 Text(L10n.t("dpi.when.turns-on-moment-app"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
             } header: {
                 Text(L10n.t("dpi.when.while-these-apps-open"))
             }
@@ -133,7 +133,7 @@ struct WhenTab: View {
                     }
                 } else {
                     Text(L10n.t("dpi.when.cannot-read-wi-fi"))
-                        .font(.caption).foregroundStyle(.orange)
+                        .font(KalfaDesign.captionFont).foregroundStyle(KalfaTone.warn.color)
                 }
             } header: {
                 Text(L10n.t("dpi.when.wi-fi-network"))
@@ -168,7 +168,7 @@ struct WhenTab: View {
                     }
                 }
                 Text(L10n.t("dpi.when.if-pick-no-days"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
             } header: {
                 Text(L10n.t("dpi.when.days"))
             }
@@ -182,7 +182,7 @@ struct WhenTab: View {
                     set: { store.config.rules[index].trigger = .schedule(days: days, startMinute: start, endMinute: $0) }
                 ), in: 0...1439, step: 15)
                 Text(L10n.t("dpi.when.if-end-earlier-than"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
             } header: {
                 Text(L10n.t("dpi.when.hours"))
             }

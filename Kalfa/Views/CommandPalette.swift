@@ -116,16 +116,16 @@ struct CommandPaletteView: View {
             } else {
                 Divider()
                 Text(L10n.t("home.noResults"))
-                    .font(.callout)
+                    .font(KalfaDesign.bodyFont)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(14)
+                    .padding(KalfaDesign.l)
             }
         }
         .frame(width: 560)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: KalfaDesign.groupRadius, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: KalfaDesign.groupRadius, style: .continuous)
                 .strokeBorder(.primary.opacity(0.1), lineWidth: 0.5)
         }
         .onAppear {
@@ -137,7 +137,7 @@ struct CommandPaletteView: View {
     }
 
     private var field: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: KalfaDesign.m) {
             Image(systemName: "sparkle.magnifyingglass")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(.secondary)
@@ -150,12 +150,12 @@ struct CommandPaletteView: View {
 
             if let feedback {
                 Text(feedback)
-                    .font(.caption)
+                    .font(KalfaDesign.captionFont)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, KalfaDesign.l)
         .frame(height: 54)
     }
 
@@ -170,7 +170,7 @@ struct CommandPaletteView: View {
                             .onTapGesture { run(item) }
                     }
                 }
-                .padding(6)
+                .padding(KalfaDesign.s)
             }
             .frame(maxHeight: 320)
             .onChange(of: selection) { proxy.scrollTo(selection, anchor: .center) }
@@ -178,7 +178,7 @@ struct CommandPaletteView: View {
     }
 
     private func row(_ item: CommandItem, isSelected: Bool) -> some View {
-        HStack(spacing: 11) {
+        HStack(spacing: KalfaDesign.m) {
             Image(systemName: item.icon)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.secondary)
@@ -186,24 +186,24 @@ struct CommandPaletteView: View {
                 .background(KalfaDesign.wash, in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius))
             VStack(alignment: .leading, spacing: 1) {
                 Text(item.title)
-                    .font(.callout.weight(.medium))
+                    .font(KalfaDesign.bodyFont.weight(.medium))
                 Text(item.detail)
-                    .font(.caption)
+                    .font(KalfaDesign.captionFont)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
             if isSelected {
                 Image(systemName: "return")
-                    .font(.caption)
+                    .font(KalfaDesign.captionFont)
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
+        .padding(.horizontal, KalfaDesign.m)
+        .padding(.vertical, KalfaDesign.s)
         .background(
             isSelected ? Color.accentColor.opacity(0.16) : .clear,
-            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+            in: RoundedRectangle(cornerRadius: KalfaDesign.controlRadius, style: .continuous)
         )
     }
 

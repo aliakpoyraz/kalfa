@@ -41,6 +41,15 @@ enum Diagnostics {
                 print("  DDC         \(ddc[screen.displayID] ?? "no response")")
             }
 
+            // Which route Kalfa's brightness slider would take on this display.
+            if let raw = SystemBrightness.get(screen.displayID) {
+                print("  backlight   system, \(Int((raw * 100).rounded()))%")
+            } else if screen.supportsDDC, ddc[screen.displayID]?.contains("brightness") == true {
+                print("  backlight   DDC")
+            } else {
+                print("  backlight   none (picture dimming only)")
+            }
+
             let setKey = DisplaySetKey(screens)
             if let link = LinkInfo.link(for: screen.uuid, in: setKey) {
                 print("  link        \(link.label)")

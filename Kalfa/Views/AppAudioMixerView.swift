@@ -78,8 +78,8 @@ private struct MixerProcessRow: View {
                     valueText: "\(Int((level * 100).rounded()))"
                 )
                 MeterBar(value: mixer.meter(for: process), isMuted: level == 0)
-                    .padding(.leading, 26)
-                    .padding(.trailing, 36)
+                    .padding(.leading, KalfaDesign.sliderLeading)
+                    .padding(.trailing, KalfaDesign.sliderTrailing)
             }
 
             Button { mixer.toggleMute(for: process) } label: {

@@ -3,6 +3,48 @@
 Biçim: [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/),
 sürümleme [SemVer](https://semver.org/lang/tr/).
 
+## [1.2.0] — 2026-11-26
+
+Arayüz baştan tasarlandı ve parlaklık artık her ekranda, sıfırın altına kadar.
+
+### Eklendi
+- **Sıfırın altında parlaklık.** Ekranın ışığı en düşüğe indikten sonra kaydırıcı
+  çizgili bölgeye girer ve görüntü ayrıca karartılır. Alt sınır seçilebilir (%40, %30,
+  %20); ekran bunun altına inmez. Uyku ve ekran değişiminden sonra yeniden kurulur,
+  Kalfa kapanınca ya da çökünce kendiliğinden kalkar, ışık parlaklık tuşlarıyla
+  yükseltilirse o da kalkar. İki yöntem: renk tablosu (varsayılan) ve karartma penceresi.
+- **Dahili ekranın parlaklığı.** MacBook ekranı ve Apple ekranları da aynı kaydırıcıda.
+- **DDC'ye yanıt vermeyen monitörde parlaklık.** "Yanıt vermiyor" yazısı yerine
+  görüntüyü karartan bir kaydırıcı.
+- Kısayollar: ⌃⌥⌘↓ / ⌃⌥⌘↑ imlecin olduğu ekranın parlaklığı, ⌃⌥⌘0 karartmayı kaldır.
+- `kalfa://brightness?level=<n>` ve `kalfa://brightness?reset`.
+- Profiller artık her ekranın parlaklığını (ek karartma dahil) taşıyabilir.
+- `--dump` her ekranın parlaklığının hangi yoldan ayarlanacağını yazar.
+- `scripts/check-design.sh`: görünümlerde tasarım ölçeğinin dışına çıkan boşluk, yazı
+  stili ya da rengi yakalar; CI'da koşar. Parlaklık ölçeği için 12 test.
+
+### Değişti
+- **Panel bir kumanda oldu.** Yedi karo ve beş açılır kart yerine: parlaklık ve ses
+  kaydırıcıları, altı yuvarlak anahtar, panelin içinde açılıp geri dönülen üç konu
+  (Ekran, Profiller, İzleme). Panel boyu artık açılan karta göre uzamıyor.
+- Dock ve DPI anahtarları modlar arasında körlemesine dönmüyor: tık açar/kapatır, sağ
+  tık modları gösterir. Uyanık tut anahtarında sağ tık süreyi seçer.
+- **Pencere macOS Ayarlar düzeninde.** Her sayfa gruplu form; içerik 600 pt'de durur,
+  etiket ile kontrol yan yana kalır. Akordeon kalmadı.
+- Sistem sayfası ikiye bölündü: **Masaüstü** (pencere yerleştirme, Dock, kaydırma, gizli
+  anahtarlar, diskler) ve **Güç** (uyanık tut, sunum, zamanlayıcı). DPI ile DNS **Ağ**
+  sayfasında toplandı. Hakkında, Ayarlar'ın sonuna indi. Eski
+  `kalfa://window?section=system|dpi|about` adresleri yeni sayfalara yönlenir.
+- Renk artık konuyu değil durumu anlatıyor: açık olan şey sistem vurgu rengiyle dolar,
+  turuncu yalnız uyarı, kırmızı yalnız hata ve susturulmuş mikrofon. 13 konu rengi kalktı.
+- Aç/kapa her yerde anahtar; onay kutusu kalmadı. Boşluk ve yazı boyutu tek ölçekten.
+- Sağlık sayfası ilgi bekleyenleri üstte listeler; sayısı panelin altında ve kenar
+  çubuğunda görünür.
+
+### Kaldırıldı
+- Paneldeki durum çipleri, Bakım karosu ve DPI kartı (yerleri: anahtarların kendisi,
+  pencerenin Bakım ve Ağ sayfaları).
+
 ## [1.1.1] — 2026-10-19
 
 ### Düzeltildi

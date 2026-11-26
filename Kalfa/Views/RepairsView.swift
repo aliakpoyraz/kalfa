@@ -36,12 +36,12 @@ struct RepairsView: View {
                         if task.needsAdmin {
                             Text(L10n.t("repair.admin"))
                                 .font(KalfaDesign.captionFont)
-                                .padding(.horizontal, 5)
+                                .padding(.horizontal, KalfaDesign.xs)
                                 .padding(.vertical, 1)
                                 .background(
-                                    Capsule().fill(Color.orange.opacity(0.18))
+                                    Capsule().fill(KalfaTone.warn.color.opacity(0.18))
                                 )
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(KalfaTone.warn.color)
                         }
                         Spacer(minLength: KalfaDesign.xs)
 
@@ -49,7 +49,7 @@ struct RepairsView: View {
                             ProgressView().controlSize(.small)
                         } else if service.succeeded(task) {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
+                                .foregroundStyle(KalfaTone.ok.color)
                         } else {
                             Button(L10n.t("repair.run")) { service.run(task) }
                                 .controlSize(.small)
@@ -63,7 +63,7 @@ struct RepairsView: View {
                     if let error = service.failure(task) {
                         Text(error)
                             .font(KalfaDesign.captionFont)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(KalfaTone.warn.color)
                             .lineLimit(2)
                     }
                 }

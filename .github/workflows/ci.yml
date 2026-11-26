@@ -14,8 +14,17 @@ jobs:
       - name: xcodegen kur
         run: brew install xcodegen
 
+      # Derlemeden önce: görünümlerde ölçeğin dışına çıkan boşluk, yazı stili
+      # ya da renk varsa burada durur.
+      - name: Tasarım ölçeği denetimi
+        run: ./scripts/check-design.sh
+
       - name: Uygulamayı derle
         run: ./build.sh
+
+      - name: Parlaklık ölçeği testleri
+        run: swift test
+        working-directory: Packages/KalfaUI
 
       - name: Bakım testleri
         run: swift test

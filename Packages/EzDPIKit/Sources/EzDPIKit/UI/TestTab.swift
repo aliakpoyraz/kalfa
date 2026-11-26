@@ -13,7 +13,7 @@ struct TestTab: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: KalfaDesign.m) {
             HStack {
                 Button(diagnostics.running
                        ? L10n.t("dpi.test.testing")
@@ -28,7 +28,7 @@ struct TestTab: View {
 
                 if !supervisor.isActive {
                     Text(L10n.t("dpi.test.kalfa-off-only-normal"))
-                        .font(.caption).foregroundStyle(.orange)
+                        .font(KalfaDesign.captionFont).foregroundStyle(KalfaTone.warn.color)
                 }
                 Spacer()
             }
@@ -41,13 +41,13 @@ struct TestTab: View {
                 )
             } else {
                 List(diagnostics.checks) { check in
-                    HStack(alignment: .top, spacing: 10) {
+                    HStack(alignment: .top, spacing: KalfaDesign.m) {
                         Image(systemName: icon(for: check))
                             .foregroundStyle(color(for: check))
                         VStack(alignment: .leading, spacing: 2) {
                             Text(check.domain).font(.system(size: 13, weight: .medium))
                             Text(verdict(for: check))
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
                         }
                         Spacer()
                     }
@@ -55,7 +55,7 @@ struct TestTab: View {
                 }
             }
         }
-        .padding(4)
+        .padding(KalfaDesign.xs)
     }
 
     /// Dört olası durumun her biri için tek cümlelik karar.
@@ -94,8 +94,8 @@ struct TestTab: View {
     private func color(for check: DomainCheck) -> Color {
         guard let direct = check.direct else { return .secondary }
         if let proxied = check.throughProxy {
-            return proxied.ok ? .green : .red
+            return proxied.ok ? KalfaTone.ok.color : KalfaTone.bad.color
         }
-        return direct.ok ? .green : .orange
+        return direct.ok ? KalfaTone.ok.color : KalfaTone.warn.color
     }
 }

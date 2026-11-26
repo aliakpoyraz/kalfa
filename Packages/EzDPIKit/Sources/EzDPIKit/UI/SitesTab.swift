@@ -28,24 +28,24 @@ struct SitesTab: View {
                 ForEach(store.config.groups) { group in
                     HStack {
                         Image(systemName: group.enabled ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(group.enabled ? .green : .secondary)
+                            .foregroundStyle(group.enabled ? KalfaTone.ok.color : .secondary)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(group.name)
                             Text(L10n.t("dpi.sites.addresses", "\(group.domains.count)"))
-                                .font(.caption2).foregroundStyle(.secondary)
+                                .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
                         }
                     }
                     .tag(group.id)
                 }
             }
-            HStack(spacing: 6) {
+            HStack(spacing: KalfaDesign.s) {
                 Button { addGroup() } label: { Image(systemName: "plus") }
                 Button { removeGroup() } label: { Image(systemName: "minus") }
                     .disabled(selectedIndex == nil)
                 Spacer()
             }
             .buttonStyle(.borderless)
-            .padding(6)
+            .padding(KalfaDesign.s)
         }
     }
 
@@ -79,7 +79,7 @@ struct SitesTab: View {
                     }
                     if binding.wrappedValue.domains.isEmpty {
                         Text(L10n.t("dpi.sites.no-addresses-yet-type"))
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
                     }
                 } header: {
                     Text(L10n.t("dpi.sites.addresses.header"))
@@ -98,9 +98,9 @@ struct SitesTab: View {
                         }
                     }
                     Text(binding.wrappedValue.preset.hint)
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
                     Text(L10n.t("dpi.sites.if-site-still-will"))
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(KalfaDesign.captionFont).foregroundStyle(.secondary)
 
                     if store.config.settings.advancedMode {
                         Picker(L10n.t("dpi.sites.name-resolution"), selection: binding.dnsMode) {

@@ -2,10 +2,11 @@
 
 **Your displays, sound, upkeep and blocked sites — managed from one menu bar icon on macOS.**
 
-Kalfa is a Mac utility that lives in the menu bar. Resolution and HiDPI, monitor
-brightness, audio devices, a real system-wide mic mute, keep-awake, presentation
-mode, window tiling, disk cleanup, app uninstalling, smooth mouse scrolling and
-access to blocked sites — all in the same panel.
+Kalfa is a Mac utility that lives in the menu bar. Resolution and HiDPI, brightness
+on every display (down past what the monitor's own menu allows), audio devices, a
+real system-wide mic mute, keep-awake, presentation mode, window tiling, disk
+cleanup, app uninstalling, smooth mouse scrolling and access to blocked sites: all
+in one panel, with the settings in one window.
 
 *[Türkçe README](README.md)* · macOS 14+ · Swift 6 · MIT
 
@@ -19,15 +20,21 @@ access to blocked sites — all in the same panel.
 unzip, move `Kalfa.app` to Applications, then see [first launch](#first-launch-gatekeeper).
 
 <p align="center">
-  <img src="docs/gorseller/panel.png" width="420" alt="The Kalfa menu bar panel">
+  <img src="docs/gorseller/panel.png" width="340" alt="The Kalfa menu bar panel">
+  <img src="docs/gorseller/panel-karartma.png" width="340" alt="Brightness below zero: extra dimming">
 </p>
+
+The panel is a remote: brightness and volume on top, six switches in the middle,
+three subjects that open in place underneath. On the right, brightness has been
+pulled below zero — the backlight is at its lowest and the picture is darkened as
+well. (Screenshots are of the Turkish interface; the app ships in both languages.)
 
 <details>
 <summary><b>Contents</b></summary>
 
 - [Why it exists](#why-it-exists)
-- [What it does](#what-it-does) — [Displays](#displays) · [Sound](#sound) ·
-  [System](#system) · [Upkeep](#upkeep) · [DPI](#dpi--blocked-sites) ·
+- [What it does](#what-it-does) — [Displays](#displays) · [Brightness](#brightness) ·
+  [Sound](#sound) · [Desktop](#desktop) · [Power](#power) · [Upkeep](#upkeep) · [DPI](#dpi--blocked-sites) ·
   [Health](#health) · [Command palette](#command-palette)
 - [Keyboard shortcuts](#keyboard-shortcuts)
 - [Smooth scrolling](#smooth-scrolling) · [Dock position](#dock-position)
@@ -84,29 +91,64 @@ has no way to get it back. The DPI half came from **ezDPI**; both were merged on
 | **Native timing marker** | Says when the active mode is one macOS synthesized rather than one the monitor advertises |
 | **Cable signal readout** | Colour format and framebuffer bit depth, e.g. `10-bit YCbCr 4:2:2` |
 | **Layout profiles** | Saved per set of connected panels; can also carry audio output, DPI mode and keep-awake |
-| **DDC/CI brightness + contrast** | Apple Silicon, via `IOAVService` |
+| **Brightness + contrast on every display** | See [Brightness](#brightness) |
 | **Confirm-or-revert** | Unverified modes roll back after 15 seconds unless kept |
+
+### Brightness
+
+Every connected display has one slider, and Kalfa talks to whoever owns its light:
+
+| Display | Route |
+|---|---|
+| The MacBook's own panel, Apple displays | The system's brightness (the value the brightness keys move) |
+| External monitor | The monitor's own brightness over DDC/CI (`IOAVService`) |
+| A display that answers neither | The picture is darkened; the slider says so |
+
+**Below zero.** The left third of the slider is hatched. Once the backlight is at
+its lowest the knob enters that zone and the picture itself is darkened, which is
+how a display gets dimmer than its own menu allows — for the monitor whose lowest
+setting is still too bright at night.
+
+- **There is a floor.** The screen never goes under the lowest visibility you pick
+  (40%, 30% or 20%); you cannot reach a black you cannot drag back from.
+- **It comes back by itself and leaves by itself.** Dimming is restored after sleep
+  and display changes. If Kalfa quits or crashes the screen returns to normal.
+  Raise the backlight with the brightness keys and the dimming lifts too.
+- **Emergency exit:** <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> lifts all of it.
+- **Two methods.** The default scales the display's colour table: it dims the
+  pointer too and stays out of screenshots and screen sharing. If it has no
+  effect on a display, switch to the *dimming window* on the Displays page.
+- <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>↓</kbd> / <kbd>↑</kbd> step the display
+  under the pointer, and do not stop at zero.
 
 ### Sound
 
+- A volume slider and output picker in the panel; the rest on the Sound page.
 - Pick output and input devices from a menu, set both levels.
 - **Per-device volume memory** — back on your headphones, back at their level.
 - **A real system-wide mic mute** — the device, not one app's button; a menu bar
   indicator shows while muted.
 - **Per-app volume mixer** (macOS 14.2+).
 
-### System
+### Desktop
 
-<img src="docs/gorseller/sistem.png" width="720" alt="System page">
+<img src="docs/gorseller/masaustu.png" width="720" alt="Desktop page">
+
+- **Window tiling** — halves, centre, fill; with keyboard shortcuts.
+- **Dock position** — which display the Dock stays on. See [below](#dock-position).
+- **Smooth scrolling** — one switch.
+- **Hidden switches** — Finder hidden files and extensions, screenshot format,
+  folder and shadow, Dock delay.
+- **Eject external disks.**
+
+### Power
+
+<img src="docs/gorseller/guc.png" width="720" alt="Power page">
 
 - **Keep awake** — for a time or until turned off, plus "never sleep while these apps run".
 - **Presentation mode** — hides the Dock and desktop icons, dims other displays,
   prevents sleep; everything is restored when you turn it off or quit.
 - **Timer** — sleep, display off or shut down after a delay.
-- **Window tiling** — halves, centre, fill; with keyboard shortcuts.
-- **DNS** — applied to every connected network service.
-- **Eject external disks**, **hidden switches** (Finder hidden files, screenshot
-  format and folder, Dock delay), **keyboard shortcuts**, **Dock position**.
 
 ### Upkeep
 
@@ -137,7 +179,10 @@ has no way to get it back. The DPI half came from **ezDPI**; both were merged on
 
 ### DPI — blocked sites
 
-<img src="docs/gorseller/dpi.png" width="720" alt="DPI page">
+<img src="docs/gorseller/ag.png" width="720" alt="Network page: DNS and DPI">
+
+Lives on the window's **Network** page, next to the **DNS** choice (applied to
+every connected network service).
 
 Some networks block sites by reading the server name in the TLS handshake. Kalfa
 runs a local HTTP proxy and, **only for the domains you list**, writes the first
@@ -168,7 +213,7 @@ Opens from anywhere with a shortcut. Turkish search ignores diacritics:
 
 ## Keyboard shortcuts
 
-All system-wide; change or disable them under **System → Keyboard shortcuts**.
+All system-wide; change or disable them under **Settings → Keyboard shortcuts**.
 
 | Shortcut | Action |
 |---|---|
@@ -178,6 +223,8 @@ All system-wide; change or disable them under **System → Keyboard shortcuts**.
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>↑</kbd> / <kbd>↓</kbd> | Top / bottom half |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>C</kbd> | Centre |
 | <kbd>⌃</kbd><kbd>⌥</kbd><kbd>↩</kbd> | Fill the screen |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>↓</kbd> / <kbd>↑</kbd> | Brightness down / up on the display under the pointer |
+| <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> | Lift extra dimming |
 
 ---
 
@@ -206,8 +253,8 @@ edge of. With a laptop under an external monitor, that edge is the laptop's
 bottom — exactly where the pointer lands when pushed down — and turning off
 "Displays have separate Spaces" no longer stops it.
 
-The **Dock lock** tile in the panel cycles three modes (also under System >
-Hidden switches):
+The **Dock** switch in the panel turns it on and off; right-click it for the modes
+(also on the Desktop page):
 
 | Mode | What it does |
 |---|---|
@@ -376,6 +423,12 @@ Accessibility is tied to the signature, which changes every release. In System
 Settings → Privacy & Security → Accessibility, remove Kalfa with **–** and add it
 again with **+**. The Health page flags this in red.
 
+**The screen stayed too dark.**
+<kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>0</kbd> lifts the extra dimming; so does
+quitting Kalfa. The screen never goes under the lowest visibility you chose. If
+dimming shows no effect at all, set the method to *dimming window* on the Displays
+page.
+
 **The window does not open, or settings seem to vanish.**
 Most likely two copies are running (say, one in /Applications and one in
 Downloads). Two processes with the same name send `kalfa://` links to the wrong
@@ -411,7 +464,7 @@ Details → Proxies.
 ```
 
 Prints every connected display, its active mode, the cable signal, the DDC
-reading, and the full mode list with IOKit flags. It calls out an active mode
+reading, which route its brightness takes, and the full mode list with IOKit flags. It calls out an active mode
 that is not the panel's native timing.
 
 ```
@@ -453,12 +506,14 @@ Kalfa/
                LinkInfo        cable signal and framebuffer readings
                DisplayCenter   state, reconfiguration callback, auto-apply
                ProfileStore · DDCService · AppSettings · LaunchAtLogin
+               BrightnessService one scale per display: system, DDC or dimming
+               SystemBrightness · Dimmer   the backlight and the darkening
                ScrollService   the wheel event tap and its pixel playback
                DockLockService the pointer tap that keeps or moves the Dock
   Views/       RootView (the panel) · KalfaWindowView (the one window)
-               DisplayCardView · ModePickerView · ScaleToggleView · LinkRow
-               DDCControlsView · ProfilesSectionView · SaveProfileView
-               SettingsView · ScrollSettingsView · AboutView · HealthView
+               DisplayRows · ModePickerView · ScaleToggleView · LinkRow
+               AudioPage · DesktopPage · PowerPage · HealthView · SettingsView
+               ProfilesSectionView · SaveProfileView · ScrollSettingsView
   Bridging/    IOAVService and CGS declarations
 
 Packages/KalfaUI/    the shared visual language and the string lookup
@@ -511,6 +566,9 @@ must not freeze.
 ./build.sh            # Release build → dist/Kalfa.app
 ./build.sh Debug
 
+./scripts/check-design.sh                # do the views keep to the design scale
+
+(cd Packages/KalfaUI   && swift test)    # brightness scale: the floor, coming back
 (cd Packages/UpkeepKit && swift test)    # safety gates
 (cd Packages/EzDPIKit  && swift test)    # proxy, fragmenting, DoH
 ```
@@ -518,6 +576,10 @@ must not freeze.
 - The Xcode project is generated from `project.yml` by **xcodegen**; the version
   number lives only there (`MARKETING_VERSION`).
 - Strings live in `tr.lproj` / `en.lproj`; every key must exist in both.
+- The visual language is four rules at the top of `KalfaDesign.swift`: colour says
+  state rather than subject, spacing and type come from one scale, each kind of
+  choice has one control. `scripts/check-design.sh` catches a view that steps
+  outside the scale, and runs in CI before the build.
 - CI (`.github/workflows/ci.yml`) builds and runs the offline tests on every push.
 - History: [CHANGELOG.md](CHANGELOG.md) (in Turkish).
 
@@ -525,9 +587,10 @@ must not freeze.
 
 ## Not included
 
-Virtual displays, gamma and colour temperature, ICC profile switching, notch
-hiding, brightness-key interception, root-only DPI techniques (fake TTL, desync),
-and "free up RAM" style fake speed-ups.
+Virtual displays, colour temperature, ICC profile switching, notch hiding,
+brightness-key (F1/F2) interception — Kalfa gives brightness its own shortcut
+instead — root-only DPI techniques (fake TTL, desync), and "free up RAM" style
+fake speed-ups. The colour table is touched only for extra dimming.
 
 ## Credits
 
@@ -541,6 +604,7 @@ Kalfa is the merger of two apps by the same author — **Klapa** (displays) and
 | [Mos](https://github.com/Caldis/Mos) | CC BY-NC | Scrolling **behaviour** | **No code** — it would have made Kalfa non-commercial |
 | [mole](https://github.com/tw93/mole) | GPL-3.0 | The upkeep **feature set** | **No code, strings or rule lists** — it would have forced Kalfa to GPL |
 | [DockAnchor](https://github.com/bwya77/DockAnchor) | MIT | The Dock lock method | Code not copied |
+| [MonitorControl](https://github.com/MonitorControl/MonitorControl) | MIT | The idea of carrying on by darkening the picture once the backlight runs out | Code not copied; the single scale, the floor and the restore rule are Kalfa's |
 | [SpoofDPI](https://github.com/xvzc/SpoofDPI) | Apache-2.0 | The fragmenting approach | Used to be bundled; replaced by Kalfa's own engine on 24.09.2026 |
 
 ## License

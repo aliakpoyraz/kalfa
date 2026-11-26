@@ -63,7 +63,7 @@ struct UninstallView: View {
                                     if app.isRunning {
                                         Text(L10n.t("upkeep.uninstall.running"))
                                             .font(KalfaDesign.captionFont)
-                                            .foregroundStyle(.orange)
+                                            .foregroundStyle(KalfaTone.warn.color)
                                     }
                                 }
                                 Spacer(minLength: KalfaDesign.xs)
@@ -132,7 +132,7 @@ struct UninstallView: View {
                 if let error = service.lastError {
                     Label(error, systemImage: "exclamationmark.triangle.fill")
                         .font(KalfaDesign.captionFont)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(KalfaTone.warn.color)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -141,14 +141,14 @@ struct UninstallView: View {
                 if let result = service.lastResult {
                     Label(result, systemImage: "checkmark.circle.fill")
                         .font(KalfaDesign.bodyFont)
-                        .foregroundStyle(.green)
+                        .foregroundStyle(KalfaTone.ok.color)
                 }
                 Text(L10n.t("upkeep.uninstall.hint"))
                     .font(KalfaDesign.bodyFont)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
     }
 

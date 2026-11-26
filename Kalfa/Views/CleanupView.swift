@@ -30,7 +30,7 @@ struct CleanupView: View {
                 Text(L10n.t("upkeep.clean.hint"))
                     .font(KalfaDesign.bodyFont)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
                 list
             }
@@ -68,7 +68,7 @@ struct CleanupView: View {
             if let result = service.lastResult {
                 Label(result, systemImage: "checkmark.circle.fill")
                     .font(KalfaDesign.captionFont)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(KalfaTone.ok.color)
             }
         }
     }
@@ -96,7 +96,7 @@ struct CleanupView: View {
                     else { expanded.insert(category.rawValue) }
                 } label: {
                     Image(systemName: isOpen ? "chevron.down" : "chevron.right")
-                        .font(.caption2)
+                        .font(KalfaDesign.captionFont)
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -158,7 +158,7 @@ struct CleanupView: View {
             if let error = service.lastError {
                 Text(error)
                     .font(KalfaDesign.captionFont)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(KalfaTone.warn.color)
             }
             Button(L10n.t("upkeep.clean.action")) { confirming = true }
                 .buttonStyle(.borderedProminent)

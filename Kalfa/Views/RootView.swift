@@ -90,7 +90,7 @@ struct RootView: View {
                 VStack(alignment: .leading, spacing: KalfaDesign.xs) {
                     BrightnessSlider(screen: screen)
                     BrightnessNote(screen: screen)
-                        .padding(.leading, 26)
+                        .padding(.leading, KalfaDesign.sliderLeading)
                 }
             }
             volume
@@ -153,7 +153,7 @@ struct RootView: View {
             .menuStyle(.borderlessButton)
             .fixedSize()
             .disabled(audio.outputs.isEmpty)
-            .padding(.leading, 26)
+            .padding(.leading, KalfaDesign.sliderLeading)
         }
     }
 

@@ -24,7 +24,7 @@ struct DiskAnalysisView: View {
                 Text(L10n.t("upkeep.disk.hint"))
                     .font(KalfaDesign.bodyFont)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
                 trail
                 rows
@@ -33,7 +33,7 @@ struct DiskAnalysisView: View {
             if let error = disk.lastError {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .font(KalfaDesign.captionFont)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(KalfaTone.warn.color)
             }
         }
         .confirmationDialog(
@@ -103,7 +103,7 @@ struct DiskAnalysisView: View {
             ForEach(Array(disk.trail.enumerated()), id: \.offset) { index, node in
                 if index > 0 {
                     Image(systemName: "chevron.right")
-                        .font(.caption2)
+                        .font(KalfaDesign.captionFont)
                         .foregroundStyle(.tertiary)
                 }
                 Button(node.name) { disk.jump(to: index) }
@@ -168,7 +168,7 @@ private struct DiskRow: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 64, alignment: .trailing)
         }
-        .padding(.vertical, 3)
+        .padding(.vertical, KalfaDesign.xs)
         .padding(.horizontal, KalfaDesign.s)
         .background(alignment: .leading) {
             // The bar is the row, not a separate column: at a glance the eye

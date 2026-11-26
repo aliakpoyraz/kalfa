@@ -20,7 +20,7 @@ struct MenuPanel: View {
                     Text(statusReason)
                         .font(KalfaDesign.captionFont)
                         .foregroundStyle(supervisor.lastError == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(KalfaTone.warn.color))
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(2)
                 }
                 Spacer(minLength: KalfaDesign.s)
                 modePicker

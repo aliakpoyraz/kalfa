@@ -18,6 +18,11 @@ let package = Package(
             name: "KalfaUI",
             path: "Sources/KalfaUI",
             swiftSettings: [.swiftLanguageMode(.v5)]
-        )
+        ),
+        .testTarget(
+            name: "KalfaUITests",
+            dependencies: ["KalfaUI"],
+            path: "Tests/KalfaUITests"
+        ),
     ]
 )

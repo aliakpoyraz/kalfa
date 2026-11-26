@@ -30,6 +30,11 @@ public enum KalfaDesign {
 
     /// The height of a slider track and the diameter of its knob.
     public static let sliderHeight: CGFloat = 22
+    /// Where a slider's track starts and ends inside its row: the icon and the
+    /// read-out on either side. Lines that sit under a slider indent by these so
+    /// they line up with the track rather than with the icon.
+    public static let sliderLeading: CGFloat = 26
+    public static let sliderTrailing: CGFloat = 36
     /// The round face of a quick toggle.
     public static let toggleSize: CGFloat = 38
     /// Forms stop growing here, so a label and its control stay within reach of
